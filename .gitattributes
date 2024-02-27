@@ -1,0 +1,9 @@
+*.acorn filter=lfs diff=lfs merge=lfs binary
+*.ai filter=lfs diff=lfs merge=lfs binary
+*.eps filter=lfs diff=lfs merge=lfs binary
+*.jpeg filter=lfs diff=lfs merge=lfs binary
+*.jpg filter=lfs diff=lfs merge=lfs binary
+*.pdf filter=lfs diff=lfs merge=lfs binary
+*.png filter=lfs diff=lfs merge=lfs binary
+*.pxd filter=lfs diff=lfs merge=lfs binary
+*.pxm filter=lfs diff=lfs merge=lfs binary

@@ -20,10 +20,10 @@ v7.2.0
 
 ## Fetch tokens from AWS Identity Center
 
-1. Delete some (possibly) cached files related to AWS authorization so that we begin with a fresh slate.
+> [!CAUTION]
+> This may mean that you'll need to re-auth things like VS Code, AWS CLI, and others.
 
-    > [!CAUTION]
-    > This may mean that you'll need to re-auth things like VS Code, AWS CLI, and others.
+1. Delete some (possibly) cached files related to AWS authorization so that we begin with a fresh slate.
 
     ```bash
     find ~/.aws/sso/cache/ -type f -name "*.json" | xargs -I% rm -Rf "%"
@@ -55,9 +55,17 @@ v7.2.0
 
 1. For _SSO registration scopes_, press the RETURN key to accept the default value.
 
+1. You will be prompted to approve the code in your web browser. Check to make sure the code in the browser matches the code in your terminal.
+
+    <div><img src="docs/auth@2x.png" alt="Verify code" width="50%"></div>
+
 1. A new browser tab will open asking you to grant permission to `botocore-client-northwood-labs`. Choose _Allow_.
 
-    <div><img src="" alt="Grant permission to botocore" width=""></div>
+    <div><img src="docs/approve@2x.png" alt="Grant permission to botocore" width="50%"></div>
+
+1. Once approved, your terminal should display a listing of accounts that you have access to.
+
+    <div><img src="docs/terminal@2x.png" alt="Terminal view of AWS accounts"></div>
 
 1. **Quit the CLI app** with `Ctrl+C`.
 
