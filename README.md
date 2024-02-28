@@ -2,7 +2,7 @@
 
 Logging into a user interface to grab credentials that you copy-paste into your shell session is both **cumbersome** and **insecure**.
 
-By leverging [AWS Vault] backed by [AWS Identity Center] (née AWS SSO), we can pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
+By leveraging [AWS Vault] backed by [AWS Identity Center] (née AWS SSO), we can pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
 
 ## Preface
 
