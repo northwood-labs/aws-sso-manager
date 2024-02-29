@@ -48,5 +48,21 @@ region = $(echo "${data}" | jq -r '.region' || true)
 output = json
 
 EOF
+
+        # Adapted from https://github.com/99designs/aws-vault/blob/master/USAGE.md#docker
+        if [[ ${role} == *"AdministratorAccess"* ]]; then
+            echo "[profile devenv-${ACCT}-admin]"
+            echo "source_profile=${ACCT}-admin"
+        elif [[ ${role} == *"PowerUserAccess"* ]]; then
+            echo "[profile devenv-${ACCT}]"
+            echo "source_profile=${ACCT}"
+        elif [[ ${role} == *"ReadOnlyAccess"* ]]; then
+            echo "[profile devenv-${ACCT}-ro]"
+            echo "source_profile=${ACCT}-ro"
+        fi
+        cat << EOF
+role_arn=arn:aws:iam::${AWS_ID}:role/dev-env
+
+EOF
     done
 done
