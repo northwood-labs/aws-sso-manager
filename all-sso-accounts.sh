@@ -9,6 +9,13 @@ data="$(accesstokenfromcache)"
 SSO_ACCOUNTS="$(listaccounts | sed 's/ /:/')"
 
 # echo "${SSO_ACCOUNTS}"
+cat <<EOF
+[sso-session northwood-labs-sso]
+sso_start_url = $(echo "${data}" | jq -r '.startUrl' || true)
+sso_region = $(echo "${data}" | jq -r '.region' || true)
+sso_registration_scopes = sso:account:access
+
+EOF
 
 # Loop over each of the accounts.
 for ACCT in ${SSO_ACCOUNTS}; do
@@ -39,11 +46,10 @@ for ACCT in ${SSO_ACCOUNTS}; do
         elif [[ ${role} == *"ReadOnlyAccess"* ]]; then
             echo "[profile ${ACCT}-ro]"
         fi
-        cat << EOF
-sso_start_url = $(echo "${data}" | jq -r '.startUrl' || true)
+        cat <<EOF
+sso_session = northwood-labs-sso
 sso_account_id = ${AWS_ID}
 sso_role_name = ${role}
-sso_region = $(echo "${data}" | jq -r '.region' || true)
 region = $(echo "${data}" | jq -r '.region' || true)
 output = json
 
@@ -53,16 +59,8 @@ EOF
         if [[ ${role} == *"AdministratorAccess"* ]]; then
             echo "[profile devenv-${ACCT}-admin]"
             echo "source_profile=${ACCT}-admin"
-        elif [[ ${role} == *"PowerUserAccess"* ]]; then
-            echo "[profile devenv-${ACCT}]"
-            echo "source_profile=${ACCT}"
-        elif [[ ${role} == *"ReadOnlyAccess"* ]]; then
-            echo "[profile devenv-${ACCT}-ro]"
-            echo "source_profile=${ACCT}-ro"
+            echo "role_arn=arn:aws:iam::${AWS_ID}:role/dev-env"
+            echo ""
         fi
-        cat << EOF
-role_arn=arn:aws:iam::${AWS_ID}:role/dev-env
-
-EOF
     done
 done
