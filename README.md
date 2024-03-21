@@ -114,40 +114,6 @@ You can pass the 12-digit AWS Account ID from the AWS Identity Center dashboard 
     ./single-account.sh 0123456789012 sandbox
     ```
 
-1. This will generate the output that can be copy-pasted into your `~/.aws/config` file.
-
-    ```ini
-    [sso-session northwood-labs-sso]
-    sso_start_url = https://d-9a6770fb65.awsapps.com/start
-    sso_region = us-east-2
-    sso_registration_scopes = sso:account:access
-
-    [profile sandbox-admin]
-    sso_session = northwood-labs-sso
-    sso_account_id = 590184084631
-    sso_role_name = NWL-AdministratorAccess
-    region = us-east-2
-    output = json
-
-    [profile devenv-sandbox-admin]
-    source_profile=sandbox-admin
-    role_arn=arn:aws:iam::590184084631:role/dev-env
-
-    [profile sandbox]
-    sso_session = northwood-labs-sso
-    sso_account_id = 590184084631
-    sso_role_name = NWL-PowerUserAccess
-    region = us-east-2
-    output = json
-
-    [profile sandbox-ro]
-    sso_session = northwood-labs-sso
-    sso_account_id = 590184084631
-    sso_role_name = NWL-ReadOnlyAccess
-    region = us-east-2
-    output = json
-    ```
-
 ## Verify account
 
 This can log you _directly_ into the AWS Management Console with the correct role.
