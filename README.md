@@ -117,11 +117,15 @@ You can pass the 12-digit AWS Account ID from the AWS Identity Center dashboard 
 1. This will generate the output that can be copy-pasted into your `~/.aws/config` file.
 
     ```ini
-    [profile sandbox-admin]
+    [sso-session northwood-labs-sso]
     sso_start_url = https://d-9a6770fb65.awsapps.com/start
+    sso_region = us-east-2
+    sso_registration_scopes = sso:account:access
+
+    [profile sandbox-admin]
+    sso_session = northwood-labs-sso
     sso_account_id = 590184084631
     sso_role_name = NWL-AdministratorAccess
-    sso_region = us-east-2
     region = us-east-2
     output = json
 
@@ -130,28 +134,18 @@ You can pass the 12-digit AWS Account ID from the AWS Identity Center dashboard 
     role_arn=arn:aws:iam::590184084631:role/dev-env
 
     [profile sandbox]
-    sso_start_url = https://d-9a6770fb65.awsapps.com/start
+    sso_session = northwood-labs-sso
     sso_account_id = 590184084631
     sso_role_name = NWL-PowerUserAccess
-    sso_region = us-east-2
     region = us-east-2
     output = json
-
-    [profile devenv-sandbox]
-    source_profile=sandbox
-    role_arn=arn:aws:iam::590184084631:role/dev-env
 
     [profile sandbox-ro]
-    sso_start_url = https://d-9a6770fb65.awsapps.com/start
+    sso_session = northwood-labs-sso
     sso_account_id = 590184084631
     sso_role_name = NWL-ReadOnlyAccess
-    sso_region = us-east-2
     region = us-east-2
     output = json
-
-    [profile devenv-sandbox-ro]
-    source_profile=sandbox-ro
-    role_arn=arn:aws:iam::590184084631:role/dev-env
     ```
 
 ## Verify account
