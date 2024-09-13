@@ -14,6 +14,7 @@ echo " "
 echo " "
 
 echo "==> Accounts in AWS SSO but not in aws-vault..."
+aws-vault list --profiles >/tmp/local-list.txt
 grep -v -f /tmp/local-list.txt /tmp/sso-list.txt | tr '[:space:]' ' ' || echo -n "None"
 
 echo " "
