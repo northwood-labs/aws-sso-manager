@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 set -euo pipefail
 
-# shellcheck disable=1091
+# shellcheck disable=SC1091
 source list-accounts.sh
 
 echo "==> Accounts in AWS SSO..."
@@ -20,5 +20,6 @@ grep -v -f /tmp/local-list.txt /tmp/sso-list.txt | tr '[:space:]' ' ' || echo -n
 echo " "
 echo " "
 
-echo "==> List of commands for importing the remaining AWS SSO accounts into aws-vault..."
+echo "==> Profile entries to add to ~/aws/config..."
+echo " "
 ./generate-single-account-list.sh
