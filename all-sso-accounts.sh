@@ -10,7 +10,7 @@ SSO_ACCOUNTS="$(listaccounts | sed 's/ /:/')"
 
 # echo "${SSO_ACCOUNTS}"
 cat <<EOF
-[sso-session northwood-labs-sso]
+[sso-session nwl]
 sso_start_url = $(echo "${data}" | jq -r '.startUrl' || true)
 sso_region = $(echo "${data}" | jq -r '.region' || true)
 sso_registration_scopes = sso:account:access
@@ -47,7 +47,7 @@ for ACCT in ${SSO_ACCOUNTS}; do
             echo "[profile ${ACCT}-ro]"
         fi
         cat <<EOF
-sso_session = northwood-labs-sso
+sso_session = nwl
 sso_account_id = ${AWS_ID}
 sso_role_name = ${role}
 region = $(echo "${data}" | jq -r '.region' || true)
