@@ -66,7 +66,7 @@ v7.2.0
 
 ## [Existing users] Updating your set of AWS credentials
 
-1. Log into the SSO session. This will require a web browser to go through the Okta authentication flow.
+1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
     ```bash
     aws sso login --sso-session nwl
@@ -88,12 +88,12 @@ If you have a file called `~/.aws/credentials`, the goal is to **delete** it so 
 
     ```ini
     [sso-session nwl]
-    sso_start_url = https://d-9a6770fb65.awsapps.com/start
+    sso_start_url = https://northwood-labs.awsapps.com/start
     sso_region = us-east-2
     sso_registration_scopes = sso:account:access
     ```
 
-1. Log into the SSO session. This will require a web browser to go through the Okta authentication flow.
+1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
     ```bash
     aws sso login --sso-session nwl
