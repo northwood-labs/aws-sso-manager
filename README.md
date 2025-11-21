@@ -82,7 +82,7 @@ v7.2.0
 
 If you have a file called `~/.aws/credentials`, the goal is to **delete** it so that only `~/.aws/config` remains. We will NOT be storing credentials in plain text.
 
-1. Since this is the first time you're adding credentials, your `~/.aws/config` should be pretty much blank.
+1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank.
 
     Add the following INI entry to the file:
 
