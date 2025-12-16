@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
-import "github.com/northwood-labs/aws-sso-vault/cmd"
+import (
+	clihelpers "github.com/northwood-labs/cli-helpers"
+)
 
-func main() {
-	cmd.Execute()
+var versionCmd = clihelpers.VersionScreen()
+
+func init() { // lint:allow_init
+	rootCmd.AddCommand(versionCmd)
 }

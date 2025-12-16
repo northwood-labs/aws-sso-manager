@@ -1,14 +1,26 @@
+// Copyright 2025, Northwood Labs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package cmd
 
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
-	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/sso"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
@@ -16,13 +28,14 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
 type (
-	model struct {
+	listModel struct {
 		help     help.Model
 		lastKey  string
 		keys     keyMap
@@ -54,13 +67,18 @@ type (
 	listRole struct {
 		AccountID string `json:"account_id"`
 		Name      string `json:"name"`
+		Profile   string `json:"profile"`
 	}
 )
 
 const height = 20
 
 var (
+	fAccounts string
+	fRoles    string
+
 	accounts listAccounts
+	// profileID string
 
 	baseStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
@@ -100,6 +118,14 @@ var (
 		in AWS SSO, allowing users to see which accounts and roles are available for
 		authentication.
 		`),
+		Args: cobra.RangeArgs(0, 1),
+		Example: strings.TrimSpace(dedent.Dedent(`
+		aws-sso-vault list
+		aws-sso-vault list <sso-profile>
+		aws-sso-vault list <sso-profile> --json
+		aws-sso-vault list <sso-profile> --accounts <substring>
+		aws-sso-vault list <sso-profile> --roles <substring>
+		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
 
@@ -155,68 +181,8 @@ var (
 				Type(spinner.Dots).
 				Action(func(accounts *listAccounts) func() {
 					return func() {
-						var accts listAccounts
-						ssoClient := sso.NewFromConfig(sdkConfig)
-
-						paginator := sso.NewListAccountsPaginator(ssoClient, &sso.ListAccountsInput{
-							AccessToken: &cache.AccessToken,
-							MaxResults:  aws.Int32(100),
-						})
-
-						for paginator.HasMorePages() {
-							output, err := paginator.NextPage(cmd.Context())
-							if err != nil {
-								cobra.CheckErr(fmt.Errorf("could not list SSO accounts: %w", err))
-							}
-
-							for _, account := range output.AccountList {
-								singleAccount := listAccount{
-									ID:    aws.ToString(account.AccountId),
-									Name:  aws.ToString(account.AccountName),
-									Email: aws.ToString(account.EmailAddress),
-								}
-
-								rolePaginator := sso.NewListAccountRolesPaginator(ssoClient, &sso.ListAccountRolesInput{
-									AccessToken: &cache.AccessToken,
-									AccountId:   account.AccountId,
-									MaxResults:  aws.Int32(100),
-								})
-
-								for rolePaginator.HasMorePages() {
-									roleOutput, err := rolePaginator.NextPage(cmd.Context())
-									if err != nil {
-										cobra.CheckErr(fmt.Errorf(
-											"could not list roles for account %s: %w",
-											aws.ToString(account.AccountId),
-											err,
-										))
-									}
-
-									for _, role := range roleOutput.RoleList {
-										singleAccount.Roles = append(singleAccount.Roles, listRole{
-											AccountID: aws.ToString(account.AccountId),
-											Name:      aws.ToString(role.RoleName),
-										})
-									}
-								}
-
-								// Sort roles by name
-								sort.SliceStable(singleAccount.Roles, func(i, j int) bool {
-									return strings.ToLower(
-										singleAccount.Roles[i].Name,
-									) < strings.ToLower(
-										singleAccount.Roles[j].Name,
-									)
-								})
-
-								accts.Accounts = append(accts.Accounts, singleAccount)
-							}
-						}
-
-						// Sort accounts by name
-						sort.SliceStable(accts.Accounts, func(i, j int) bool {
-							return strings.ToLower(accts.Accounts[i].Name) < strings.ToLower(accts.Accounts[j].Name)
-						})
+						accts, err := listAWSAccounts(cmd, &sdkConfig, cache, profileName, fAccounts, fRoles)
+						cobra.CheckErr(err)
 
 						*accounts = accts
 					}
@@ -241,18 +207,27 @@ var (
 				{Title: "ID", Width: 20},           // lint:allow_raw_number
 				{Title: "Account Name", Width: 20}, // lint:allow_raw_number
 				{Title: "Role Name", Width: 35},    // lint:allow_raw_number
+				{Title: "Profile Name", Width: 25}, // lint:allow_raw_number
 			}
 
 			rows := []table.Row{}
+			rowCount := 0
 
 			for i := range accounts.Accounts {
 				for j := range accounts.Accounts[i].Roles {
+					rowCount++
+
+					accountName := accounts.Accounts[i].Name
+					roleName := accounts.Accounts[i].Roles[j].Name
+					profile := getProfileName(profileName, accountName, roleName)
+
 					rows = append(
 						rows,
 						table.Row{
 							accounts.Accounts[i].ID,
-							accounts.Accounts[i].Name,
-							accounts.Accounts[i].Roles[j].Name,
+							accountName,
+							roleName,
+							profile,
 						},
 					)
 				}
@@ -262,7 +237,9 @@ var (
 				table.WithColumns(columns),
 				table.WithRows(rows),
 				table.WithFocused(true),
-				table.WithHeight(height),
+				table.WithHeight(
+					int(math.Min(height, float64(rowCount+1))),
+				),
 			)
 
 			s := table.DefaultStyles()
@@ -277,7 +254,7 @@ var (
 				Bold(false)
 			t.SetStyles(s)
 
-			m := model{
+			m := listModel{
 				table: t,
 				keys:  keys,
 				help:  help.New(),
@@ -288,6 +265,10 @@ var (
 				os.Exit(1)
 			}
 
+			// if profileID != "" {
+			// 	fmt.Println(profileID)
+			// }
+
 			return nil
 		},
 	}
@@ -295,6 +276,10 @@ var (
 
 func init() {
 	rootCmd.AddCommand(listCmd)
+
+	listCmd.Flags().StringVarP(&fAccounts, "accounts", "a", "", "Filter by account name substring")
+	listCmd.Flags().StringVarP(&fRoles, "roles", "r", "", "Filter by role name substring")
+	listCmd.Flags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
@@ -325,11 +310,11 @@ func (k keyMap) FullHelp() [][]key.Binding { // lint:allow_large_memory // Imple
 	}
 }
 
-func (m model) Init() tea.Cmd { // lint:allow_large_memory // Implementing a model I have no control over.
+func (m listModel) Init() tea.Cmd { // lint:allow_large_memory // Implementing a model I have no control over.
 	return nil
 }
 
-func (m model) Update( // lint:allow_large_memory // Implementing a model I have no control over.
+func (m listModel) Update( // lint:allow_large_memory // Implementing a model I have no control over.
 	msg tea.Msg,
 ) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -350,7 +335,7 @@ func (m model) Update( // lint:allow_large_memory // Implementing a model I have
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Enter):
 			m.quitting = true
-			// instanceID = m.table.SelectedRow()[1]
+			// profileID = m.table.SelectedRow()[3]
 
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Quit):
@@ -365,7 +350,7 @@ func (m model) Update( // lint:allow_large_memory // Implementing a model I have
 	return m, cmd
 }
 
-func (m model) View() string { // lint:allow_large_memory // Implementing a model I have no control over.
+func (m listModel) View() string { // lint:allow_large_memory // Implementing a model I have no control over.
 	if m.quitting {
 		return ""
 	}

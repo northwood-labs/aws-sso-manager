@@ -1,3 +1,17 @@
+// Copyright 2025, Northwood Labs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package cmd
 
 import (
@@ -8,12 +22,14 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials/ssocreds"
+	"github.com/aws/aws-sdk-go-v2/service/sso"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc/types"
 	"github.com/spf13/cobra"
@@ -368,4 +384,95 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	}
 
 	return cacheFile, nil
+}
+
+func listAWSAccounts(
+	cmd *cobra.Command,
+	sdkConfig *aws.Config,
+	cache *cacheFileData,
+	profileName, fAccounts, fRoles string,
+) (listAccounts, error) {
+	var accts listAccounts
+	ssoClient := sso.NewFromConfig(*sdkConfig)
+
+	paginator := sso.NewListAccountsPaginator(ssoClient, &sso.ListAccountsInput{
+		AccessToken: &cache.AccessToken,
+		MaxResults:  aws.Int32(100),
+	})
+
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(cmd.Context())
+		if err != nil {
+			return accts, fmt.Errorf("could not list SSO accounts: %w", err)
+		}
+
+		for _, account := range output.AccountList {
+			if fAccounts != "" && !strings.Contains(
+				strings.ToLower(aws.ToString(account.AccountName)),
+				strings.ToLower(fAccounts),
+			) {
+				continue
+			}
+
+			singleAccount := listAccount{
+				ID:    aws.ToString(account.AccountId),
+				Name:  aws.ToString(account.AccountName),
+				Email: aws.ToString(account.EmailAddress),
+			}
+
+			rolePaginator := sso.NewListAccountRolesPaginator(ssoClient, &sso.ListAccountRolesInput{
+				AccessToken: &cache.AccessToken,
+				AccountId:   account.AccountId,
+				MaxResults:  aws.Int32(100),
+			})
+
+			for rolePaginator.HasMorePages() {
+				roleOutput, err := rolePaginator.NextPage(cmd.Context())
+				if err != nil {
+					return accts, fmt.Errorf(
+						"could not list roles for account %s: %w",
+						aws.ToString(account.AccountId),
+						err,
+					)
+				}
+
+				for _, role := range roleOutput.RoleList {
+					if fRoles != "" && !strings.Contains(
+						strings.ToLower(aws.ToString(role.RoleName)),
+						strings.ToLower(fRoles),
+					) {
+						continue
+					}
+
+					singleAccount.Roles = append(singleAccount.Roles, listRole{
+						AccountID: aws.ToString(account.AccountId),
+						Name:      aws.ToString(role.RoleName),
+						Profile: getProfileName(
+							profileName,
+							aws.ToString(account.AccountName),
+							aws.ToString(role.RoleName),
+						),
+					})
+				}
+			}
+
+			// Sort roles by name
+			sort.SliceStable(singleAccount.Roles, func(i, j int) bool {
+				return strings.ToLower(
+					singleAccount.Roles[i].Name,
+				) < strings.ToLower(
+					singleAccount.Roles[j].Name,
+				)
+			})
+
+			accts.Accounts = append(accts.Accounts, singleAccount)
+		}
+	}
+
+	// Sort accounts by name
+	sort.SliceStable(accts.Accounts, func(i, j int) bool {
+		return strings.ToLower(accts.Accounts[i].Name) < strings.ToLower(accts.Accounts[j].Name)
+	})
+
+	return accts, nil
 }

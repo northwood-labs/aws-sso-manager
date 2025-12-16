@@ -1,10 +1,26 @@
+// Copyright 2025, Northwood Labs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package cmd
 
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
 	configFile "github.com/northwood-labs/aws-config-parser/ini"
@@ -19,6 +35,11 @@ var initCmd = &cobra.Command{
 	Initializes AWS SSO Vault configuration by setting up the SSO config for
 	AWS CLI and/or AWS Vault.
 	`),
+	Args: cobra.RangeArgs(0, 1),
+	Example: strings.TrimSpace(dedent.Dedent(`
+	aws-sso-vault init
+	aws-sso-vault init <sso-profile>
+	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			ssoStartURL string
@@ -26,6 +47,25 @@ var initCmd = &cobra.Command{
 			ssoScopes   string
 			profileName string
 		)
+
+		logger.Infof("Passed %d arguments.", len(args))
+
+		if len(args) == 1 {
+			profileName = args[0]
+		} else {
+			profileName = asvConfig.GetString("profile-name")
+		}
+
+		if profileName == "" {
+			err := huh.NewInput().
+				Title("SSO profile name").
+				Description("should be short; no spaces").
+				Value(&profileName).
+				Run()
+			if err != nil {
+				return err
+			}
+		}
 
 		if asvConfig.Get("sso-start-url") != nil {
 			ssoStartURL = asvConfig.Get("sso-start-url").(string)
@@ -39,23 +79,10 @@ var initCmd = &cobra.Command{
 			ssoScopes = asvConfig.Get("sso-scopes").(string)
 		}
 
-		if asvConfig.Get("profile-name") != nil {
-			profileName = asvConfig.Get("profile-name").(string)
-		}
-
 		logger.Infof("Read the AWS config file at %s.", awsConfigFilePath)
 
 		sections, err := loadAWSConfig(awsConfigFilePath)
 		cobra.CheckErr(err)
-
-		if profileName == "" {
-			err := huh.NewInput().
-				Title("SSO profile name").
-				Description("should be short; no spaces").
-				Value(&profileName).
-				Run()
-			cobra.CheckErr(err)
-		}
 
 		sessionName := fmt.Sprintf("sso-session %s", profileName)
 
@@ -160,7 +187,13 @@ var initCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}()
 
+		_, err = f.WriteString("; -------- aws-sso-vault: start " + profileName + " --------\n")
+		cobra.CheckErr(err)
+
 		_, err = f.WriteString(generateAWSConfig(sections))
+		cobra.CheckErr(err)
+
+		_, err = f.WriteString("; -------- aws-sso-vault: end " + profileName + " --------\n")
 		cobra.CheckErr(err)
 
 		fmt.Printf("Successfully initialized SSO configuration in %s\n", awsConfigFilePath)
@@ -177,5 +210,4 @@ func init() {
 	initCmd.Flags().StringP("sso-region", "r", "", "The AWS region where AWS SSO is configured (e.g., us-east-1)")
 	initCmd.Flags().
 		StringP("sso-scopes", "s", "sso:account:access", "The AWS SSO scope to request during authentication")
-	initCmd.Flags().StringP("profile-name", "n", "", "The name of this SSO profile (recommend something short)")
 }
