@@ -1,4 +1,4 @@
-// Copyright 2025, Northwood Labs
+// Copyright 2025-2026, Northwood Labs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -199,6 +199,13 @@ var (
 				}
 
 				fmt.Println(string(data))
+
+				return err
+			}
+
+			if len(accounts.Accounts) == 0 {
+				fmt.Println("No AWS accounts are assigned to this user.")
+
 				os.Exit(0)
 			}
 
