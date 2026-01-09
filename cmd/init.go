@@ -86,14 +86,17 @@ var initCmd = &cobra.Command{
 
 		sessionName := fmt.Sprintf("sso-session %s", profileName)
 
-		logger.Infof("Load the session section and update values for [%s].", sessionName)
+		logger.Infof("Load the session section and check for [%s].", sessionName)
 
-		section, ok := sections.GetSection(sessionName)
-		if !ok {
-			logger.Infof("Config file does not have section [%s]; creating new section.", sessionName)
-
-			section = configFile.NewSection(sessionName)
+		_, ok := sections.GetSection(sessionName)
+		if ok {
+			return fmt.Errorf("Config file already contains [%s] section. Delete it from the "+
+				"config file and re-run `init`.", sessionName)
 		}
+
+		// -------------------------------------------------------------------------------------------------------------
+
+		section := configFile.NewSection(sessionName)
 
 		logger.Info("Ask for SSO start URL if not provided already.")
 
@@ -130,19 +133,6 @@ var initCmd = &cobra.Command{
 				Run()
 			cobra.CheckErr(err)
 		}
-
-		logger.Infof("Get the [%s] section or create it if it does not exist.", sessionName)
-
-		sections = sections.SetSection(sessionName, section)
-		if section, ok = sections.GetSection(sessionName); !ok {
-			return fmt.Errorf("failed to create or get section [%s]", sessionName)
-		}
-
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println("Recovered:", r)
-			}
-		}()
 
 		logger.Info("Create ssoStartURL entry.")
 
@@ -187,10 +177,11 @@ var initCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}()
 
-		_, err = f.WriteString("; -------- aws-sso-vault: start " + profileName + " --------\n")
+		// Start with a linebreak.
+		_, err = f.WriteString("\n; -------- aws-sso-vault: start " + profileName + " --------\n")
 		cobra.CheckErr(err)
 
-		_, err = f.WriteString(generateAWSConfig(sections))
+		_, err = f.WriteString(strings.TrimSpace(generateSingleAWSConfig(section)) + "\n")
 		cobra.CheckErr(err)
 
 		_, err = f.WriteString("; -------- aws-sso-vault: end " + profileName + " --------\n")

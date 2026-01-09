@@ -190,7 +190,7 @@ var updateCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}()
 
-		_, err = f.WriteString(generateAWSConfig(sections))
+		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(sections))+"\n")
 		cobra.CheckErr(err)
 
 		logger.Debug("", "temp file", tmpFilename)

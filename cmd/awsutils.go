@@ -1,4 +1,4 @@
-// Copyright 2025-2026, Northwood Labs
+// Copyright 2025, Northwood Labs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -141,6 +141,22 @@ func createAWSConfigFile() string {
 
 	return awsConfigFilePath
 }
+
+// generateSingleAWSConfig generates the AWS config file content from the given sections.
+func generateSingleAWSConfig(section ini.Section) string {
+	var out strings.Builder
+
+	fmt.Fprintf(&out, "[%s]\n", section.Name)
+
+	for _, key := range section.List() {
+		fmt.Fprintf(&out, "%s = %s\n", key, section.String(key))
+	}
+
+	fmt.Fprintln(&out, "")
+
+	return out.String()
+}
+
 
 // generateAWSConfig generates the AWS config file content from the given sections.
 func generateAWSConfig(sections ini.Sections) string {
