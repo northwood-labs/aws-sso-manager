@@ -41,6 +41,7 @@ var (
 		valid credentials are available for AWS CLI and AWS Vault.
 		`),
 		Args: cobra.RangeArgs(0, 1),
+		Aliases: []string{"login"},
 		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-vault auth
 		aws-sso-vault auth <sso-profile>

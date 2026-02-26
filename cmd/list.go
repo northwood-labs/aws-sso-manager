@@ -119,6 +119,7 @@ var (
 		authentication.
 		`),
 		Args: cobra.RangeArgs(0, 1),
+		Aliases: []string{"ls"},
 		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-vault list
 		aws-sso-vault list <sso-profile>

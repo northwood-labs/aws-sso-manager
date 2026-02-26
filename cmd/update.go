@@ -41,6 +41,7 @@ var updateCmd = &cobra.Command{
 	remains current and accurate.
 	`),
 	Args: cobra.RangeArgs(0, 1),
+	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
 	aws-sso-vault update
 	aws-sso-vault update <sso-profile>

@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -204,6 +205,34 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	}
 
 	return backup.Name(), nil
+}
+
+func getAllManagedSections() ([]string, error) {
+	var ssoProfiles []string
+
+	conf, err := os.Open(awsConfigFilePath)
+	if err != nil {
+		return ssoProfiles, err
+	}
+
+	defer func() {
+		_ = conf.Close()
+	}()
+
+	confScanner := bufio.NewScanner(conf)
+
+	for confScanner.Scan() {
+		confLine := strings.TrimSpace(confScanner.Text())
+		prefix := "[sso-session "
+
+		if strings.HasPrefix(confLine, prefix) {
+			ssoProfiles = append(ssoProfiles, confLine[len(prefix):len(confLine)-1])
+		}
+	}
+
+	slices.Sort(ssoProfiles)
+
+	return ssoProfiles, nil
 }
 
 func truncate(filename string, perm os.FileMode) error {
