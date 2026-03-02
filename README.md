@@ -1,135 +1,81 @@
-# Adding AWS Identity Center (née AWS SSO) accounts
+# Adding AWS Identity Center accounts
 
 Logging into a user interface to grab credentials that you copy-paste into your shell session is both **cumbersome** and **insecure**.
 
-By leveraging [AWS Vault] backed by [AWS Identity Center] (née AWS SSO), we can pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
+This tool will help you manage your AWS Organizations and [AWS Identity Center] (née AWS SSO) profiles stored in `~/.aws/config`.
 
-## Prerequisites
+These SSO profiles can be used with `$AWS_PROFILE` or [AWS Vault], allowing you to pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
 
-### macOS
+It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
-<details>
-<summary>See list…</summary>
-
-* [Xcode Command Line Tools](https://mac.install.guide/commandlinetools/)
-* [Homebrew](https://mac.install.guide/homebrew/)
-* [jq](https://jqlang.github.io/jq/)
-
-    ```bash
-    brew install jq
-    ```
-
-* [AWS CLI](https://aws.amazon.com/cli/)
-
-    ```bash
-    brew install awscli
-    ```
-
-* [AWS Vault](https://github.com/99designs/aws-vault/releases/latest)
-
-    ```bash
-    brew install aws-vault
-    ```
-
-    **Suggestion:** Unless you genuinely prefer using a separate macOS keychain for AWS Vault credentials, we **highly suggest** setting the `AWS_VAULT_KEYCHAIN_NAME=login` environment variable in your shell profile. The `login` keychain is unlocked when you log into macOS, and locked when you log out. Setting this will save you an extra password-entry step.
-
-</details>
-
-### Linux
-
-<details>
-<summary>See list…</summary><br>
-
-* [jq](https://jqlang.github.io/jq/)
-* [AWS CLI](https://aws.amazon.com/cli/)
-* [AWS Vault](https://github.com/99designs/aws-vault/releases/latest)
-
-</details>
-
-### Windows
-
-Use [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install), then follow the instructions for Linux.
-
-## Preface
-
-These instructions were written using the following versions of tools:
-
-```bash
-$ aws --version
-aws-cli/2.17.49 Python/3.11.10 Darwin/23.6.0 source/arm64
-```
-
-```bash
-$ aws-vault --version
-v7.2.0
-```
-
-## [Existing users] Updating your set of AWS credentials
-
-1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
-
-    ```bash
-    aws sso login --sso-session nwl
-    ```
-
-1. Get an understanding of the differences between what you have configured for AWS CLI and/or AWS Vault, and what you have access to via AWS SSO (both tools reference the SSO entries in `~/.aws/config`).
-
-    ```bash
-    ./account-diff.sh
-    ```
-
-## [New users] Setting-up your AWS credentials for the first time
+## Adding your AWS Identity Center account
 
 If you have a file called `~/.aws/credentials`, the goal is to **delete** it so that only `~/.aws/config` remains. We will NOT be storing credentials in plain text.
 
-1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank.
+1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
-    Add the following INI entry to the file:
-
-    ```ini
-    [sso-session nwl]
-    sso_start_url = https://northwood-labs.awsapps.com/start
-    sso_region = us-east-2
-    sso_registration_scopes = sso:account:access
+    ```bash
+    aws-sso-vault init <ID>
     ```
+
+    The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
+
+    You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
+
+1. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
+
+    ```text
+    ; -------- aws-sso-vault: start abc --------
+    [sso-session abc]
+    sso_region = us-east-1
+    sso_registration_scopes = sso:account:access
+    sso_start_url = https://abc.awsapps.com/start
+    ; -------- aws-sso-vault: end abc --------
+    ```
+
+## Authenticate with your AWS Identity Center account
 
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
     ```bash
-    aws sso login --sso-session nwl
+    aws-sso-vault auth <ID>
     ```
 
 1. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
 
     <div><img src="docs/auth@2x.png" alt="Match the authorization code" width="50%"></div>
 
-1. You will be asked to grant permission to `botocore-client-nwl`. Choose _Allow_.
+1. You will be asked to grant permission to a client. Choose _Allow_.
 
     <div><img src="docs/approve@2x.png" alt="Grant permission to botocore" width="50%"></div>
 
-### Generate updated configuration
+## Updating your accounts
 
-> [!IMPORTANT]
-> Make sure you've cloned this repo (or downloaded the latest copy of it), and your terminal is `cd`'d into the directory containing this README.
-
-1. Run the script. This will write AWS configuration to `stdout`.
+1. If you want to see the list of accounts and roles you have access to via AWS Identity Center, run `list`.
 
     ```bash
-    ./all-sso-accounts.sh
+    aws-sso-vault list <ID>
     ```
 
-    The AWS configuration profiles will look something like this:
+1. If you want to update your config file with the current set of accounts and profiles you have available, run the following:
 
-    ```ini
-    [profile nonprod]
-    sso_session = nwl
-    sso_account_id = 381492142681
-    sso_role_name = NWL-PowerUserAccess
-    region = us-east-2
-    output = json
+    ```bash
+    aws-sso-vault update <ID>
     ```
 
-1. If you have multiple roles that you are allowed to assume, they will be split into multiple profiles in the `sso_role_name` key of each profile. `NWL-AdministratorAccess`, `NWL-PowerUserAccess`, and `NWL-ReadOnlyAccess` are handled. (If we roll-out another role, this script should be updated.)
+1. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
+
+    See `docs/config_file.md` for more information.
+
+## Generate console links
+
+1. One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
+
+    ```bash
+    aws-sso-vault console <ID> <CONSOLE_URL>
+    ```
+
+    It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
 
 ## Usage
 
@@ -161,17 +107,9 @@ See the documentation for your specific SDK, but everything supported in the AWS
 
 ## Troubleshooting
 
-### `Invalid endpoint: https://portal.sso..amazonaws.com`
-
-Log into the SSO session first.
-
-```bash
-aws sso login --sso-session nwl
-```
-
-### `The config profile ({PROFILE}) could not be found`
+### `The profile [sso-session {PROFILE}] does not exist in the AWS config file.`
 
 Make sure you replaced `{PROFILE}` with the actual name of the profile. The use of `{PROFILE}` in the code samples is just a placeholder.
 
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
-[AWS Vault]: https://github.com/99designs/aws-vault
+[AWS Vault]: https://github.com/ByteNess/aws-vault
