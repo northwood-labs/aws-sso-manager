@@ -10,7 +10,8 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 ## Adding your AWS Identity Center account
 
-If you have a file called `~/.aws/credentials`, the goal is to **delete** it so that only `~/.aws/config` remains. We will NOT be storing credentials in plain text.
+> [!NOTE]
+> If you have a file called `~/.aws/credentials`, the goal is to **delete** it so that only `~/.aws/config` remains. We will NOT be storing credentials in plain text.
 
 1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
@@ -50,6 +51,9 @@ If you have a file called `~/.aws/credentials`, the goal is to **delete** it so 
     <div><img src="docs/approve@2x.png" alt="Grant permission to botocore" width="50%"></div>
 
 ## Updating your accounts
+
+> [!NOTE]
+> The `aws-sso-vault: start` and `end` markers are what allows the `update` functionality to work correctly. Removing them will break updates. Please leave these markers in-place.
 
 1. If you want to see the list of accounts and roles you have access to via AWS Identity Center, run `list`.
 
