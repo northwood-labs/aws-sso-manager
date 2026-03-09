@@ -40,11 +40,11 @@ var (
 		can be used to manually trigger the authentication process and ensure that
 		valid credentials are available for AWS CLI and AWS Vault.
 		`),
-		Args: cobra.RangeArgs(0, 1),
+		Args:    cobra.RangeArgs(0, 1),
 		Aliases: []string{"login"},
 		Example: strings.TrimSpace(dedent.Dedent(`
-		aws-sso-vault auth
-		aws-sso-vault auth <sso-profile>
+		aws-sso-manager auth
+		aws-sso-manager auth <sso-profile>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string

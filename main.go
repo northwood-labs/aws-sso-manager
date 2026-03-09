@@ -14,7 +14,7 @@
 
 package main
 
-import "github.com/northwood-labs/aws-sso-vault/cmd"
+import "github.com/northwood-labs/aws-sso-manager/cmd"
 
 func main() {
 	cmd.Execute()

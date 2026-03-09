@@ -118,14 +118,14 @@ var (
 		in AWS SSO, allowing users to see which accounts and roles are available for
 		authentication.
 		`),
-		Args: cobra.RangeArgs(0, 1),
+		Args:    cobra.RangeArgs(0, 1),
 		Aliases: []string{"ls"},
 		Example: strings.TrimSpace(dedent.Dedent(`
-		aws-sso-vault list
-		aws-sso-vault list <sso-profile>
-		aws-sso-vault list <sso-profile> --json
-		aws-sso-vault list <sso-profile> --accounts <substring>
-		aws-sso-vault list <sso-profile> --roles <substring>
+		aws-sso-manager list
+		aws-sso-manager list <sso-profile>
+		aws-sso-manager list <sso-profile> --json
+		aws-sso-manager list <sso-profile> --accounts <substring>
+		aws-sso-manager list <sso-profile> --roles <substring>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string

@@ -1,4 +1,4 @@
-module github.com/northwood-labs/aws-sso-vault
+module github.com/northwood-labs/aws-sso-manager
 
 go 1.25.4
 

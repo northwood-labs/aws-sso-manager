@@ -52,10 +52,10 @@ var (
 		`),
 		Args: cobra.RangeArgs(0, 2),
 		Example: strings.TrimSpace(dedent.Dedent(`
-		aws-sso-vault console
-		aws-sso-vault console <url>
-		aws-sso-vault console <sso-profile>
-		aws-sso-vault console <sso-profile> <url>
+		aws-sso-manager console
+		aws-sso-manager console <url>
+		aws-sso-manager console <sso-profile>
+		aws-sso-manager console <sso-profile> <url>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (

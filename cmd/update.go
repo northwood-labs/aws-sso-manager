@@ -37,14 +37,14 @@ var updateCmd = &cobra.Command{
 	Simplifies updating accounts and roles in the AWS config.
 
 	This command provides a streamlined way for users to update the AWS accounts
-	and roles in their AWS SSO Vault configuration, ensuring that their setup
+	and roles in their AWS SSO Manager configuration, ensuring that their setup
 	remains current and accurate.
 	`),
-	Args: cobra.RangeArgs(0, 1),
+	Args:    cobra.RangeArgs(0, 1),
 	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
-	aws-sso-vault update
-	aws-sso-vault update <sso-profile>
+	aws-sso-manager update
+	aws-sso-manager update <sso-profile>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -191,7 +191,7 @@ var updateCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}()
 
-		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(sections))+"\n")
+		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(sections)) + "\n")
 		cobra.CheckErr(err)
 
 		logger.Debug("", "temp file", tmpFilename)

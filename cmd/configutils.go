@@ -88,7 +88,7 @@ func getProfileName(profileName, account, role string) string {
 }
 
 func getManagedSection(profileName string) (string, error) {
-	tmp, err := os.CreateTemp("", "aws-sso-vault-managed-*.ini")
+	tmp, err := os.CreateTemp("", "aws-sso-manager-managed-*.ini")
 	if err != nil {
 		return "", err
 	}
@@ -109,10 +109,10 @@ func getManagedSection(profileName string) (string, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if strings.Contains(line, "aws-sso-vault: start "+profileName) {
+		if strings.Contains(line, "aws-sso-manager: start "+profileName) {
 			doCopy = true
 			continue
-		} else if strings.Contains(line, "aws-sso-vault: end "+profileName) {
+		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
 			break
 		} else {
 			if doCopy {
@@ -133,7 +133,7 @@ func getManagedSection(profileName string) (string, error) {
 }
 
 func setManagedSection(tmpFile, profileName string) (string, error) {
-	backup, err := os.CreateTemp("", "aws-sso-vault-config-*.ini")
+	backup, err := os.CreateTemp("", "aws-sso-manager-config-*.ini")
 	if err != nil {
 		return "", err
 	}
@@ -161,7 +161,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	for confScanner.Scan() {
 		confLine := confScanner.Text()
 
-		if strings.Contains(confLine, "aws-sso-vault: start "+profileName) {
+		if strings.Contains(confLine, "aws-sso-manager: start "+profileName) {
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
 				return "", err
@@ -169,7 +169,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 
 			doInject = true
 			continue
-		} else if strings.Contains(confLine, "aws-sso-vault: end "+profileName) {
+		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
 				return "", err

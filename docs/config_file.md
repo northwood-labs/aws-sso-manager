@@ -18,7 +18,7 @@ It is also designed to help you manage configs across multiple AWS Organizations
 > [!NOTE]
 > _Most_ configurations are scoped to a particular SSO Profile. This allows you to set up your naming rules per-Organization. For brevity, this is marked in the names as `%`.
 
-The configuration file lives at `${HOME}/.aws-sso-vault.toml` for macOS and Linux, and `%USERPROFILE%\.aws-sso-vault.toml` for Windows.
+The configuration file lives at `${HOME}/.aws-sso-manager.toml` for macOS and Linux, and `%USERPROFILE%\.aws-sso-manager.toml` for Windows.
 
 This is the organization of the [TOML](https://toml.io) keys in the config file.
 
@@ -47,7 +47,7 @@ This is the organization of the [TOML](https://toml.io) keys in the config file.
 
 This is a `string` and represents the _SSO profile_ name to use as a default when no _SSO profile_ is explicitly provided to the CLI.
 
-If you run `aws-sso-vault auth` and this config value is set to `abc`, then the command will execute `aws-sso-vault auth abc`. However, if you explicitly run `aws-sso-vault auth xyz`, then the command will execute that.
+If you run `aws-sso-manager auth` and this config value is set to `abc`, then the command will execute `aws-sso-manager auth abc`. However, if you explicitly run `aws-sso-manager auth xyz`, then the command will execute that.
 
 ### %.rename.prefix
 

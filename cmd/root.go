@@ -30,7 +30,6 @@ import (
 	"github.com/spf13/viper"
 
 	clihelpers "github.com/northwood-labs/cli-helpers"
-	"github.com/northwood-labs/debug"
 )
 
 var (
@@ -45,14 +44,13 @@ var (
 	logger            *log.Logger
 	err               error
 
-	pp  = debug.GetSpew()
 	ctx = context.Background()
 
 	rootCmd = &cobra.Command{
-		Use:   "aws-sso-vault",
+		Use:   "aws-sso-manager",
 		Short: "Sets up your AWS SSO credentials into your AWS CLI config.",
 		Long: clihelpers.LongHelpText(`
-		AWS SSO Vault sets up your AWS Identity Center (née SSO) credentials into
+		AWS SSO Manager sets up your AWS Identity Center (née SSO) credentials into
 		your AWS CLI config.
 
 		This allows you to use the AWS CLI with your SSO accounts seamlessly. It
@@ -88,7 +86,7 @@ func init() {
 	awsConfigFilePath = config.DefaultSharedConfigFilename()
 
 	rootCmd.PersistentFlags().StringVarP(
-		&fConfigFile, "config", "c", path.Join(userHomeDir, ".aws-sso-vault.toml"),
+		&fConfigFile, "config", "c", path.Join(userHomeDir, ".aws-sso-manager.toml"),
 		"configuration file",
 	)
 	rootCmd.PersistentFlags().CountVarP(
@@ -111,19 +109,19 @@ func Root() *cobra.Command {
 }
 
 func initializeConfig(cmd *cobra.Command) error {
-	asvConfig.SetEnvPrefix("ASV") // AWS SSO Vault
+	asvConfig.SetEnvPrefix("ASV") // AWS SSO Manager
 	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "*", "-", "*"))
 	asvConfig.AutomaticEnv()
 
-	if fConfigFile != path.Join(userHomeDir, ".aws-sso-vault.toml") {
-		logger.Infof("Config file (.aws-sso-vault.toml) is set via flag to %s.", fConfigFile)
+	if fConfigFile != path.Join(userHomeDir, ".aws-sso-manager.toml") {
+		logger.Infof("Config file (.aws-sso-manager.toml) is set via flag to %s.", fConfigFile)
 
 		// Use config file from the flag.
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
-			logger.Infof("Config file (.aws-sso-vault.toml) does not exist at %s.", fConfigFile)
+			logger.Infof("Config file (.aws-sso-manager.toml) does not exist at %s.", fConfigFile)
 
-			return fmt.Errorf("config file (.aws-sso-vault.toml) does not exist at %s", fConfigFile)
+			return fmt.Errorf("config file (.aws-sso-manager.toml) does not exist at %s", fConfigFile)
 		}
 
 		asvConfig.SetConfigFile(fConfigFile)
@@ -137,10 +135,10 @@ func initializeConfig(cmd *cobra.Command) error {
 			cobra.CheckErr(err)
 
 			asvConfig.AddConfigPath(userHomeDir)
-			asvConfig.SetConfigName(".aws-sso-vault")
+			asvConfig.SetConfigName(".aws-sso-manager")
 			asvConfig.SetConfigType("toml")
 
-			err = asvConfig.WriteConfigAs(path.Join(userHomeDir, ".aws-sso-vault.toml"))
+			err = asvConfig.WriteConfigAs(path.Join(userHomeDir, ".aws-sso-manager.toml"))
 			if err != nil {
 				logger.Info("!!!!!! This should not happen !!!!!!")
 

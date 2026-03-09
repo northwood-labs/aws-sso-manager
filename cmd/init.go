@@ -30,15 +30,15 @@ import (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes AWS SSO Vault configuration.",
+	Short: "Initializes AWS SSO Manager configuration.",
 	Long: clihelpers.LongHelpText(`
-	Initializes AWS SSO Vault configuration by setting up the SSO config for
+	Initializes AWS SSO Manager configuration by setting up the SSO config for
 	AWS CLI and/or AWS Vault.
 	`),
 	Args: cobra.RangeArgs(0, 1),
 	Example: strings.TrimSpace(dedent.Dedent(`
-	aws-sso-vault init
-	aws-sso-vault init <sso-profile>
+	aws-sso-manager init
+	aws-sso-manager init <sso-profile>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -178,13 +178,13 @@ var initCmd = &cobra.Command{
 		}()
 
 		// Start with a linebreak.
-		_, err = f.WriteString("\n; -------- aws-sso-vault: start " + profileName + " --------\n")
+		_, err = f.WriteString("\n; -------- aws-sso-manager: start " + profileName + " --------\n")
 		cobra.CheckErr(err)
 
 		_, err = f.WriteString(strings.TrimSpace(generateSingleAWSConfig(section)) + "\n")
 		cobra.CheckErr(err)
 
-		_, err = f.WriteString("; -------- aws-sso-vault: end " + profileName + " --------\n")
+		_, err = f.WriteString("; -------- aws-sso-manager: end " + profileName + " --------\n")
 		cobra.CheckErr(err)
 
 		fmt.Printf("Successfully initialized SSO configuration in %s\n", awsConfigFilePath)

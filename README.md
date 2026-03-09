@@ -1,10 +1,10 @@
-# Adding AWS Identity Center accounts
+# AWS SSO Manager
 
 Logging into a user interface to grab credentials that you copy-paste into your shell session is both **cumbersome** and **insecure**.
 
 This tool will help you manage your AWS Organizations and [AWS Identity Center] (née AWS SSO) profiles stored in `~/.aws/config`.
 
-These SSO profiles can be used with `$AWS_PROFILE` or [AWS Vault], allowing you to pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
+These SSO profiles can be used with `$AWS_PROFILE`, [AWS Vault], or other tools, allowing you to pull credentials _easily_ and keep them secure by passing them exclusively to an ephemeral sub-shell.
 
 It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
@@ -16,7 +16,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
     ```bash
-    aws-sso-vault init <ID>
+    aws-sso-manager init <ID>
     ```
 
     The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
@@ -26,12 +26,12 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 1. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
 
     ```text
-    ; -------- aws-sso-vault: start abc --------
+    ; -------- aws-sso-manager: start abc --------
     [sso-session abc]
     sso_region = us-east-1
     sso_registration_scopes = sso:account:access
     sso_start_url = https://abc.awsapps.com/start
-    ; -------- aws-sso-vault: end abc --------
+    ; -------- aws-sso-manager: end abc --------
     ```
 
 ## Authenticate with your AWS Identity Center account
@@ -39,7 +39,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
     ```bash
-    aws-sso-vault auth <ID>
+    aws-sso-manager auth <ID>
     ```
 
 1. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
@@ -53,18 +53,18 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 ## Updating your accounts
 
 > [!NOTE]
-> The `aws-sso-vault: start` and `end` markers are what allows the `update` functionality to work correctly. Removing them will break updates. Please leave these markers in-place.
+> The `aws-sso-manager: start` and `end` markers are what allows the `update` functionality to work correctly. Removing them will break updates. Please leave these markers in-place.
 
 1. If you want to see the list of accounts and roles you have access to via AWS Identity Center, run `list`.
 
     ```bash
-    aws-sso-vault list <ID>
+    aws-sso-manager list <ID>
     ```
 
 1. If you want to update your config file with the current set of accounts and profiles you have available, run the following:
 
     ```bash
-    aws-sso-vault update <ID>
+    aws-sso-manager update <ID>
     ```
 
 1. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
@@ -76,7 +76,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 1. One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
 
     ```bash
-    aws-sso-vault console <ID> <CONSOLE_URL>
+    aws-sso-manager console <ID> <CONSOLE_URL>
     ```
 
     It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
@@ -95,7 +95,7 @@ aws s3 ls --profile {PROFILE}
 AWS_PROFILE={PROFILE} aws s3 ls
 ```
 
-### With [AWS Vault](https://github.com/99designs/aws-vault/blob/master/USAGE.md) (via `exec` or `login`)
+### With [AWS Vault](https://github.com/ByteNess/aws-vault/blob/master/USAGE.md) (via `exec` or `login`)
 
 ```bash
 aws-vault exec {PROFILE} -- aws s3 ls
