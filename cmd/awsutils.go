@@ -107,8 +107,12 @@ func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 
 // loadAWSConfig loads the AWS config file from disk and returns its sections.
 func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
+	logger.Debug("Opening AWS config", "config", awsConfigFilePath)
+
 	sections, err := ini.OpenFile(awsConfigFilePath)
 	if err != nil {
+		logger.Debug("Creating a fresh AWS config", "config", awsConfigFilePath)
+
 		awsConfigFilePath = createAWSConfigFile()
 
 		sections, err = ini.OpenFile(awsConfigFilePath)
@@ -124,6 +128,8 @@ func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
 func createAWSConfigFile() string {
 	userHomeDir, err := os.UserHomeDir()
 	cobra.CheckErr(err)
+
+	logger.Debug("User home directory", "home", userHomeDir)
 
 	err = os.MkdirAll(path.Join(userHomeDir, ".aws"), 0o0755)
 	cobra.CheckErr(err)
@@ -156,7 +162,6 @@ func generateSingleAWSConfig(section ini.Section) string {
 
 	return out.String()
 }
-
 
 // generateAWSConfig generates the AWS config file content from the given sections.
 func generateAWSConfig(sections ini.Sections) string {
@@ -257,6 +262,8 @@ func getCacheFilePath(sessionProfile *ssoProfile) (string, error) {
 		return "", fmt.Errorf("failed to get SSO cache file path: %w", err)
 	}
 
+	logger.Debug("Cached data file", "file", cacheFilePath)
+
 	return cacheFilePath, nil
 }
 
@@ -274,6 +281,8 @@ func authenticateSSOProfile(
 			err,
 		)
 	}
+
+	logger.Debug("Current OS user", "user", currentUser.Username)
 
 	clientName := currentUser.Username + "-" + sessionProfile.Name + "-" + sessionProfile.Region
 	oidcClient := ssooidc.NewFromConfig(*sdkConfig)

@@ -49,7 +49,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
 
-			logger.Infof("Passed %d arguments.", len(args))
+			logger.Info("Passed arguments", "count", len(args))
 
 			if len(args) == 1 {
 				profileName = args[0]
@@ -68,7 +68,7 @@ var (
 				}
 			}
 
-			logger.Infof("Retrieving SSO session profile for %s...", profileName)
+			logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 			// Generate a SSO session profile from the profile name.
 			sessionProfile, err := getSsoSession(profileName)
@@ -85,9 +85,9 @@ var (
 			var cacheData cacheFileData
 
 			// Can we read the cache?
-			_, err = cacheData.read(cacheFilePath)
+			cacheResults, err := cacheData.read(cacheFilePath)
 			if err != nil {
-				logger.Infof("error reading cache file: %s", err.Error())
+				logger.Info("Error reading cache file", "file", err.Error())
 
 				// Generate an AWS SDK config from the SSO session profile.
 				sdkConfig, err := getSDKConfig(sessionProfile)
@@ -95,7 +95,7 @@ var (
 					return err
 				}
 
-				logger.Infof("Authenticating SSO profile '%s'...", profileName)
+				logger.Info("Authenticating SSO profile", "profile", profileName)
 
 				// Perform the SSO authentication flow.
 				authURL, registerClient, deviceAuth, err := authenticateSSOProfile(ctx, &sdkConfig, sessionProfile)
@@ -138,9 +138,19 @@ var (
 				if err != nil {
 					return err
 				}
-			}
 
-			fmt.Printf("Successfully authenticated SSO session '%s'.\n", profileName)
+				fmt.Printf("Successfully authenticated SSO session '%s'.\n", profileName)
+			} else {
+				logger.Info("Cache file is valid; no need to authenticate", "file", cacheFilePath)
+
+				remaining := time.Until(cacheResults.ExpiresAt)
+
+				fmt.Printf(
+					"SSO session '%s' is already authenticated and valid for another %s.\n",
+					profileName,
+					remaining.Round(time.Second),
+				)
+			}
 
 			_, err = cacheData.read(cacheFilePath)
 			if err != nil {

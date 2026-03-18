@@ -69,7 +69,7 @@ var (
 				roleName  = fRole
 			)
 
-			logger.Infof("Passed %d arguments.", len(args))
+			logger.Info("Passed arguments", "count", len(args))
 
 			if len(args) == 1 {
 				switch {
@@ -114,7 +114,7 @@ var (
 				}()))
 			}
 
-			logger.Infof("Retrieving SSO session profile for %s...", profileName)
+			logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 			// profileName should be defined at this point.
 			startHost, err = getStartURL(profileName)

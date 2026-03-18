@@ -48,7 +48,7 @@ var initCmd = &cobra.Command{
 			profileName string
 		)
 
-		logger.Infof("Passed %d arguments.", len(args))
+		logger.Info("Passed arguments", "count", len(args))
 
 		if len(args) == 1 {
 			profileName = args[0]
@@ -79,19 +79,19 @@ var initCmd = &cobra.Command{
 			ssoScopes = asvConfig.Get("sso-scopes").(string)
 		}
 
-		logger.Infof("Read the AWS config file at %s.", awsConfigFilePath)
+		logger.Info("Read the AWS config file", "config", awsConfigFilePath)
 
 		sections, err := loadAWSConfig(awsConfigFilePath)
 		cobra.CheckErr(err)
 
 		sessionName := fmt.Sprintf("sso-session %s", profileName)
 
-		logger.Infof("Load the session section and check for [%s].", sessionName)
+		logger.Info("Load the session section and check for existing section", "section", sessionName)
 
 		_, ok := sections.GetSection(sessionName)
 		if ok {
-			return fmt.Errorf("Config file already contains [%s] section. Delete it from the "+
-				"config file and re-run `init`.", sessionName)
+			return fmt.Errorf("config file already contains [%s] section. Delete it from the "+
+				"config file and re-run `init`", sessionName)
 		}
 
 		// -------------------------------------------------------------------------------------------------------------

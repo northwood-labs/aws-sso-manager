@@ -93,6 +93,8 @@ func getManagedSection(profileName string) (string, error) {
 		return "", err
 	}
 
+	logger.Debugf("Reading from %s...", awsConfigFilePath)
+
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
 		return "", err
@@ -110,11 +112,15 @@ func getManagedSection(profileName string) (string, error) {
 		line := scanner.Text()
 
 		if strings.Contains(line, "aws-sso-manager: start "+profileName) {
+			logger.Debugf(">| %s", line)
+
 			doCopy = true
 			continue
 		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
+			logger.Debugf("<| %s", line)
 			break
 		} else {
+			logger.Debugf(" | %s", line)
 			if doCopy {
 				_, err = tmp.WriteString(line + "\n")
 				if err != nil {
@@ -162,6 +168,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 		confLine := confScanner.Text()
 
 		if strings.Contains(confLine, "aws-sso-manager: start "+profileName) {
+			logger.Debugf(">| %s", confLine)
+
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
 				return "", err
@@ -170,6 +178,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			doInject = true
 			continue
 		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
+			logger.Debugf("<| %s", confLine)
+
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
 				return "", err
@@ -178,6 +188,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			doInject = false
 			continue
 		} else {
+			logger.Debugf(" | %s", confLine)
+
 			if doInject {
 				for tmpScanner.Scan() {
 					tmpLine := tmpScanner.Text()
@@ -210,6 +222,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 func getAllManagedSections() ([]string, error) {
 	var ssoProfiles []string
 
+	logger.Debugf("Reading from %s...", awsConfigFilePath)
+
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {
 		return ssoProfiles, err
@@ -236,6 +250,8 @@ func getAllManagedSections() ([]string, error) {
 }
 
 func truncate(filename string, perm os.FileMode) error {
+	logger.Debugf("Truncating %s...", filename)
+
 	f, err := os.OpenFile(filename, os.O_TRUNC, perm)
 	if err != nil {
 		return fmt.Errorf("could not open file %q for truncation: %w", filename, err)

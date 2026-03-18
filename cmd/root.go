@@ -114,12 +114,12 @@ func initializeConfig(cmd *cobra.Command) error {
 	asvConfig.AutomaticEnv()
 
 	if fConfigFile != path.Join(userHomeDir, ".aws-sso-manager.toml") {
-		logger.Infof("Config file (.aws-sso-manager.toml) is set via flag to %s.", fConfigFile)
+		logger.Info("Config file (.aws-sso-manager.toml) is set via flag", "file", fConfigFile)
 
 		// Use config file from the flag.
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
-			logger.Infof("Config file (.aws-sso-manager.toml) does not exist at %s.", fConfigFile)
+			logger.Info("Config file (.aws-sso-manager.toml) does not exist", "file", fConfigFile)
 
 			return fmt.Errorf("config file (.aws-sso-manager.toml) does not exist at %s", fConfigFile)
 		}
@@ -149,7 +149,7 @@ func initializeConfig(cmd *cobra.Command) error {
 			}
 		}
 
-		logger.Infof("Using the config file at %s.", fConfigFile)
+		logger.Info("Using the config file", "file", fConfigFile)
 		asvConfig.SetConfigFile(fConfigFile)
 	}
 

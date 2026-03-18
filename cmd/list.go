@@ -17,17 +17,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
@@ -35,24 +31,6 @@ import (
 )
 
 type (
-	listModel struct {
-		help     help.Model
-		lastKey  string
-		keys     keyMap
-		table    table.Model
-		quitting bool
-	}
-
-	// keyMap defines a set of keybindings. To work for help it must satisfy
-	// key.Map. It could also very easily be a map[string]key.Binding.
-	keyMap struct {
-		Up    key.Binding
-		Down  key.Binding
-		Help  key.Binding
-		Enter key.Binding
-		Quit  key.Binding
-	}
-
 	listAccounts struct {
 		Accounts []listAccount `json:"accounts"`
 	}
@@ -71,8 +49,6 @@ type (
 	}
 )
 
-const height = 20
-
 var (
 	fAccounts string
 	fRoles    string
@@ -80,32 +56,8 @@ var (
 	accounts listAccounts
 	// profileID string
 
-	baseStyle = lipgloss.NewStyle().
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("240"))
-
-	keys = keyMap{
-		Up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "move up"),
-		),
-		Down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "move down"),
-		),
-		Help: key.NewBinding(
-			key.WithKeys("?"),
-			key.WithHelp("?", "toggle help"),
-		),
-		Enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "make selection"),
-		),
-		Quit: key.NewBinding(
-			key.WithKeys("q", "esc", "ctrl+c"),
-			key.WithHelp("q/esc", "quit"),
-		),
-	}
+	cellStyle   = lipgloss.NewStyle().Padding(0, 1)
+	headerStyle = cellStyle.Bold(true)
 
 	// listCmd represents the list command
 	listCmd = &cobra.Command{
@@ -130,7 +82,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
 
-			logger.Infof("Passed %d arguments.", len(args))
+			logger.Info("Passed arguments", "count", len(args))
 
 			if len(args) == 1 {
 				profileName = args[0]
@@ -149,7 +101,7 @@ var (
 				}
 			}
 
-			logger.Infof("Retrieving SSO session profile for %s...", profileName)
+			logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 			// Generate a SSO session profile from the profile name.
 			sessionProfile, err := getSsoSession(profileName)
@@ -211,71 +163,40 @@ var (
 			}
 
 			// Prepare table for TUI
-			columns := []table.Column{
-				{Title: "ID", Width: 20},           // lint:allow_raw_number
-				{Title: "Account Name", Width: 20}, // lint:allow_raw_number
-				{Title: "Role Name", Width: 35},    // lint:allow_raw_number
-				{Title: "Profile Name", Width: 25}, // lint:allow_raw_number
-			}
-
-			rows := []table.Row{}
-			rowCount := 0
+			t := table.New().
+				Border(lipgloss.RoundedBorder()).
+				Headers("ID", "Account Name", "Role Name", "Profile Name").
+				StyleFunc(func(row, _ int) lipgloss.Style {
+					switch {
+					case row == table.HeaderRow:
+						return headerStyle
+					default:
+						return cellStyle
+					}
+				})
 
 			for i := range accounts.Accounts {
 				for j := range accounts.Accounts[i].Roles {
-					rowCount++
+					// rowCount := 0
+					// rowCount++
 
 					accountName := accounts.Accounts[i].Name
 					roleName := accounts.Accounts[i].Roles[j].Name
 					profile := getProfileName(profileName, accountName, roleName)
 
-					rows = append(
-						rows,
-						table.Row{
-							accounts.Accounts[i].ID,
-							accountName,
-							roleName,
-							profile,
-						},
+					t.Row(
+						accounts.Accounts[i].ID,
+						accountName,
+						roleName,
+						profile,
 					)
 				}
 			}
 
-			t := table.New(
-				table.WithColumns(columns),
-				table.WithRows(rows),
-				table.WithFocused(true),
-				table.WithHeight(
-					int(math.Min(height, float64(rowCount+1))),
-				),
-			)
-
-			s := table.DefaultStyles()
-			s.Header = s.Header.
-				BorderStyle(lipgloss.NormalBorder()).
-				BorderForeground(lipgloss.Color("240")).
-				BorderBottom(true).
-				Bold(false)
-			s.Selected = s.Selected.
-				Foreground(lipgloss.Color("229")).
-				Background(lipgloss.Color("57")).
-				Bold(false)
-			t.SetStyles(s)
-
-			m := listModel{
-				table: t,
-				keys:  keys,
-				help:  help.New(),
+			_, err = lipgloss.Println(t)
+			if err != nil {
+				return fmt.Errorf("could not print table: %w", err)
 			}
-
-			if _, err := tea.NewProgram(m).Run(); err != nil {
-				fmt.Println("Error running program:", err)
-				os.Exit(1)
-			}
-
-			// if profileID != "" {
-			// 	fmt.Println(profileID)
-			// }
 
 			return nil
 		},
@@ -288,82 +209,4 @@ func init() {
 	listCmd.Flags().StringVarP(&fAccounts, "accounts", "a", "", "Filter by account name substring")
 	listCmd.Flags().StringVarP(&fRoles, "roles", "r", "", "Filter by role name substring")
 	listCmd.Flags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
-}
-
-// ShortHelp returns keybindings to be shown in the mini help view. It's part
-// of the key.Map interface.
-func (k keyMap) ShortHelp() []key.Binding { // lint:allow_large_memory // Implementing a model I have no control over.
-	return []key.Binding{
-		k.Help,
-		k.Enter,
-		k.Quit,
-	}
-}
-
-// FullHelp returns keybindings for the expanded help view. It's part of the
-// key.Map interface.
-func (k keyMap) FullHelp() [][]key.Binding { // lint:allow_large_memory // Implementing a model I have no control over.
-	return [][]key.Binding{
-		{ // first column
-			k.Up,
-			k.Down,
-		},
-		{ // second column
-			k.Help,
-			k.Quit,
-		},
-		{ // third column
-			k.Enter,
-		},
-	}
-}
-
-func (m listModel) Init() tea.Cmd { // lint:allow_large_memory // Implementing a model I have no control over.
-	return nil
-}
-
-func (m listModel) Update( // lint:allow_large_memory // Implementing a model I have no control over.
-	msg tea.Msg,
-) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		// If we set a width on the help menu it can gracefully truncate
-		// its view as needed.
-		m.help.Width = msg.Width
-
-	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.Up):
-			m.lastKey = "↑"
-		case key.Matches(msg, m.keys.Down):
-			m.lastKey = "↓"
-		case key.Matches(msg, m.keys.Help):
-			m.help.ShowAll = !m.help.ShowAll
-		case key.Matches(msg, m.keys.Enter):
-			m.quitting = true
-			// profileID = m.table.SelectedRow()[3]
-
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Quit):
-			m.quitting = true
-
-			return m, tea.Quit
-		}
-	}
-
-	m.table, cmd = m.table.Update(msg)
-
-	return m, cmd
-}
-
-func (m listModel) View() string { // lint:allow_large_memory // Implementing a model I have no control over.
-	if m.quitting {
-		return ""
-	}
-
-	helpView := m.help.View(m.keys)
-
-	return baseStyle.Render(m.table.View()) + "\n" + helpView
 }

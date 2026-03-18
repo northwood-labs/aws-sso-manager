@@ -56,7 +56,7 @@ var updateCmd = &cobra.Command{
 			counter           int
 		)
 
-		logger.Infof("Passed %d arguments.", len(args))
+		logger.Info("Passed arguments", "count", len(args))
 
 		if len(args) == 1 {
 			profileName = args[0]
@@ -75,17 +75,17 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
-		logger.Infof("Retrieving SSO session profile for %s...", profileName)
+		logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 		tmpFilename, err := getManagedSection(profileName)
 		cobra.CheckErr(err)
 
-		logger.Infof("Read the AWS config file at %s.", tmpFilename)
+		logger.Info("Read the AWS config file", "config", tmpFilename)
 
 		sections, err := loadAWSConfig(tmpFilename)
 		cobra.CheckErr(err)
 
-		logger.Infof("Retrieving SSO session profile for %s...", profileName)
+		logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 		// Generate a SSO session profile from the profile name.
 		sessionProfile, err := getSsoSession(profileName)
@@ -139,11 +139,11 @@ var updateCmd = &cobra.Command{
 				counter++
 				profileHeaderName = fmt.Sprintf("profile %s", role.Profile)
 
-				logger.Infof("Processing profile [%s]...", profileHeaderName)
+				logger.Info("Processing profile", "profile", profileHeaderName)
 
 				section, ok = sections.GetSection(profileHeaderName)
 				if !ok {
-					logger.Infof("Config file does not have section [%s]; creating new section.", profileHeaderName)
+					logger.Info("Config file does not have section; creating new section", "section", profileHeaderName)
 
 					section = configFile.NewSection(profileHeaderName)
 				}
@@ -167,7 +167,7 @@ var updateCmd = &cobra.Command{
 					}
 				}
 
-				logger.Infof("Get the [%s] section or create it if it does not exist.", profileHeaderName)
+				logger.Info("Get the section or create it if it does not exist", "section", profileHeaderName)
 
 				sections = sections.SetSection(profileHeaderName, section)
 				if _, ok = sections.GetSection(profileHeaderName); !ok {
