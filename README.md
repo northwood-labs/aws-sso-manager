@@ -115,5 +115,25 @@ See the documentation for your specific SDK, but everything supported in the AWS
 
 Make sure you replaced `{PROFILE}` with the actual name of the profile. The use of `{PROFILE}` in the code samples is just a placeholder.
 
+## TODO
+
+* [ ] Cache the `list` results by default (24h, configurable).
+* [ ] Use `list` cache to generate a lookup table (7d, configurable).
+* [ ] `list --csv`.
+* [ ] `list --markdown`.
+* [ ] `get accounts` returns a list for `fzf`.
+* [ ] `get roles --for <ID>` returns a list for `fzf`.
+* [ ] `lookup account <NAME>` returns the account ID for the friendly name.
+* [ ] `lookup role <NAME> --for <NAME>` returns the full role name for the friendly name.
+* [ ] Move the config per the [XDG](https://specifications.freedesktop.org/basedir/latest/) spec.
+* [ ] Save JSON to keychain and delete from disk?
+* [ ] Support awsapps.com subdomain.
+* [ ] `config set default-account`.
+* [ ] Lookup the ARN for all users of an SSO role.
+* [ ] Support `AWS_CONFIG_FILE`.
+* [ ] Table: https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/
+* [ ] Support config keys: https://docs.aws.amazon.com/sdkref/latest/guide/settings-reference.html
+* [ ] https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments
+
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
