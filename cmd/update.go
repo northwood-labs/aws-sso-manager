@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -75,6 +74,16 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
+		configLock, err := acquireAWSConfigLock(cmd.Context())
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if releaseErr := configLock.Release(); releaseErr != nil {
+				logger.Error("Failed to release AWS config lock", "error", releaseErr)
+			}
+		}()
+
 		logger.Info("Retrieving SSO session profile", "profile", profileName)
 
 		tmpFilename, err := getManagedSection(profileName)
@@ -93,7 +102,7 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 
-		sdkConfig, err := getSDKConfig(sessionProfile)
+		sdkConfig, err := getSDKConfig(cmd.Context(), sessionProfile)
 		if err != nil {
 			return err
 		}
@@ -114,7 +123,7 @@ var updateCmd = &cobra.Command{
 
 		ssoSection, ok := sections.GetSection(ssoProfile)
 		if !ok {
-			cobra.CheckErr(fmt.Sprintf("config file does not have section [%s]; need to run init", profileHeaderName))
+			cobra.CheckErr(fmt.Sprintf("config file does not have section [%s]; need to run init", ssoProfile))
 		}
 
 		err = spinner.New().
@@ -201,36 +210,18 @@ var updateCmd = &cobra.Command{
 
 		logger.Debug("", "backup file", backupFilename)
 
-		// Blank out the temp file.
-		err = truncate(tmpFilename, 0o0666)
-		cobra.CheckErr(err)
-
-		logger.Debugf("Open %q for reading.", backupFilename)
-		fBackup, err := os.OpenFile(backupFilename, os.O_RDONLY, 0o0644)
-		cobra.CheckErr(err)
-
-		logger.Debugf("Open %q for writing.", awsConfigFilePath)
-		fConfig, err := os.OpenFile(awsConfigFilePath, os.O_WRONLY, 0o0644)
-		cobra.CheckErr(err)
-
-		logger.Debug("Copying data.")
-		_, err = io.Copy(fConfig, fBackup)
-		cobra.CheckErr(err)
-
-		logger.Debugf("Closed %q for reading.", backupFilename)
-		err = fBackup.Close()
-		cobra.CheckErr(err)
-
-		logger.Debugf("Closed %q for reading.", awsConfigFilePath)
-		err = fConfig.Close()
-		cobra.CheckErr(err)
-
-		logger.Debugf("Deleted %q.", backupFilename)
-		err = os.Remove(backupFilename)
+		// Set permissions to match the expected config file mode before rename.
+		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
 		logger.Debugf("Deleted %q.", tmpFilename)
 		err = os.Remove(tmpFilename)
+		cobra.CheckErr(err)
+
+		// Atomic rename: the config file is replaced in a single OS operation,
+		// eliminating the window where the file would be empty on an interrupted write.
+		logger.Debugf("Rename %q to %q.", backupFilename, awsConfigFilePath)
+		err = os.Rename(backupFilename, awsConfigFilePath)
 		cobra.CheckErr(err)
 
 		fmt.Printf("Updated %d profiles for %q.\n", counter, profileName)

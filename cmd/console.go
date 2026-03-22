@@ -128,7 +128,18 @@ var (
 				return fmt.Errorf("could not get SSO session: %w", err)
 			}
 
-			sdkConfig, err := getSDKConfig(sessionProfile)
+			if fRegion != "" {
+				logger.Info(
+					"Using explicitly-configured region for console AWS calls",
+					"profile",
+					profileName,
+					"region",
+					fRegion,
+				)
+				sessionProfile.Region = fRegion
+			}
+
+			sdkConfig, err := getSDKConfig(cmd.Context(), sessionProfile)
 			if err != nil {
 				return fmt.Errorf("could not get AWS SDK configuration: %w", err)
 			}

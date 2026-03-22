@@ -16,11 +16,178 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 )
+
+const (
+	managedStartMarkerPrefix = "aws-sso-manager: start "
+	managedEndMarkerPrefix   = "aws-sso-manager: end "
+)
+
+type managedMarkerReport struct {
+	profiles    []string
+	startCounts map[string]int
+	endCounts   map[string]int
+	issues      map[string][]string
+}
+
+func appendManagedMarkerIssue(issues map[string][]string, profile, issue string) {
+	if slices.Contains(issues[profile], issue) {
+		return
+	}
+
+	issues[profile] = append(issues[profile], issue)
+}
+
+func parseManagedMarkerProfile(line, prefix string) (string, bool) {
+	idx := strings.Index(line, prefix)
+	if idx < 0 {
+		return "", false
+	}
+
+	rest := strings.TrimSpace(line[idx+len(prefix):])
+	name := strings.TrimRight(strings.TrimSuffix(rest, "--------"), " -")
+	if name == "" {
+		return "", false
+	}
+
+	return name, true
+}
+
+func inspectManagedMarkers() (*managedMarkerReport, error) {
+	f, err := os.Open(awsConfigFilePath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error closing file: %v\n", err)
+		}
+	}()
+
+	report := &managedMarkerReport{
+		startCounts: map[string]int{},
+		endCounts:   map[string]int{},
+		issues:      map[string][]string{},
+	}
+	seenProfiles := map[string]struct{}{}
+	activeProfile := ""
+
+	addProfile := func(profile string) {
+		if _, ok := seenProfiles[profile]; ok {
+			return
+		}
+
+		seenProfiles[profile] = struct{}{}
+		report.profiles = append(report.profiles, profile)
+	}
+
+	scanner := bufio.NewScanner(f)
+	for lineNo := 1; scanner.Scan(); lineNo++ {
+		line := scanner.Text()
+
+		if profile, ok := parseManagedMarkerProfile(line, managedStartMarkerPrefix); ok {
+			addProfile(profile)
+			report.startCounts[profile]++
+
+			if activeProfile != "" {
+				issue := fmt.Sprintf(
+					"overlapping managed block markers at line %d: found start marker for profile %q while profile %q block is still open",
+					lineNo,
+					profile,
+					activeProfile,
+				)
+				appendManagedMarkerIssue(report.issues, activeProfile, issue)
+				appendManagedMarkerIssue(report.issues, profile, issue)
+
+				continue
+			}
+
+			activeProfile = profile
+
+			continue
+		}
+
+		if profile, ok := parseManagedMarkerProfile(line, managedEndMarkerPrefix); ok {
+			addProfile(profile)
+			report.endCounts[profile]++
+
+			if activeProfile == "" {
+				appendManagedMarkerIssue(
+					report.issues,
+					profile,
+					fmt.Sprintf("unmatched managed block end marker at line %d for profile %q", lineNo, profile),
+				)
+
+				continue
+			}
+
+			if activeProfile != profile {
+				issue := fmt.Sprintf(
+					"overlapping managed block markers at line %d: found end marker for profile %q while profile %q block is still open",
+					lineNo,
+					profile,
+					activeProfile,
+				)
+				appendManagedMarkerIssue(report.issues, activeProfile, issue)
+				appendManagedMarkerIssue(report.issues, profile, issue)
+
+				continue
+			}
+
+			activeProfile = ""
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	if activeProfile != "" {
+		appendManagedMarkerIssue(
+			report.issues,
+			activeProfile,
+			fmt.Sprintf("managed block for profile %q is left open at end of file", activeProfile),
+		)
+	}
+
+	for _, profile := range report.profiles {
+		starts := report.startCounts[profile]
+		ends := report.endCounts[profile]
+
+		if starts != ends {
+			appendManagedMarkerIssue(
+				report.issues,
+				profile,
+				fmt.Sprintf(
+					"mismatched managed block markers for profile %q: %d start marker(s), %d end marker(s)",
+					profile, starts, ends,
+				),
+			)
+		}
+
+		if starts > 1 {
+			appendManagedMarkerIssue(
+				report.issues,
+				profile,
+				fmt.Sprintf(
+					"duplicate managed block markers for profile %q: %d blocks found (expected at most 1)",
+					profile, starts,
+				),
+			)
+		}
+	}
+
+	slices.Sort(report.profiles)
+
+	return report, nil
+}
 
 func getProfileName(profileName, account, role string) string {
 	var (
@@ -87,7 +254,62 @@ func getProfileName(profileName, account, role string) string {
 	return strings.Join(orderCopy, delimiter)
 }
 
+// markersExist reports whether the AWS config file already contains any managed
+// block start marker for the given profile name. It is used before writing new
+// markers so that orphaned markers (e.g. after manual section-header deletion)
+// are caught before a duplicate block is appended.
+func markersExist(profileName string) (bool, error) {
+	report, err := inspectManagedMarkers()
+	if err != nil {
+		return false, err
+	}
+
+	return report.startCounts[profileName] > 0, nil
+}
+
+// validateMarkers checks that the managed block for profileName is well-formed:
+// exactly one start/end pair, with no mismatches or duplicates.
+func validateMarkers(profileName string) error {
+	report, err := inspectManagedMarkers()
+	if err != nil {
+		return err
+	}
+
+	var errs []error
+	for _, issue := range report.issues[profileName] {
+		errs = append(errs, errors.New(issue))
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
+}
+
+func validateManagedMarkers() error {
+	report, err := inspectManagedMarkers()
+	if err != nil {
+		return err
+	}
+
+	var errs []error
+	for _, profile := range report.profiles {
+		for _, issue := range report.issues[profile] {
+			errs = append(errs, errors.New(issue))
+		}
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+
+	return nil
+}
+
 func getManagedSection(profileName string) (string, error) {
+	if err := validateManagedMarkers(); err != nil {
+		return "", err
+	}
+
 	tmp, err := os.CreateTemp("", "aws-sso-manager-managed-*.ini")
 	if err != nil {
 		return "", err
@@ -139,12 +361,14 @@ func getManagedSection(profileName string) (string, error) {
 }
 
 func setManagedSection(tmpFile, profileName string) (string, error) {
-	backup, err := os.CreateTemp("", "aws-sso-manager-config-*.ini")
+	// Create the backup in the same directory as the config file so that
+	// os.Rename can atomically swap it in without crossing filesystem boundaries.
+	backup, err := os.CreateTemp(filepath.Dir(awsConfigFilePath), ".aws-sso-manager-*.ini")
 	if err != nil {
 		return "", err
 	}
 
-	tmp, err := os.Open(tmpFile)
+	replacement, err := os.ReadFile(tmpFile)
 	if err != nil {
 		return "", err
 	}
@@ -155,14 +379,13 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	}
 
 	defer func() {
-		_ = tmp.Close()
 		_ = conf.Close()
 		_ = backup.Close()
 	}()
 
-	tmpScanner := bufio.NewScanner(tmp)
 	confScanner := bufio.NewScanner(conf)
-	doInject := false
+	inManagedBlock := false
+	injectedInBlock := false
 
 	for confScanner.Scan() {
 		confLine := confScanner.Text()
@@ -175,7 +398,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 				return "", err
 			}
 
-			doInject = true
+			inManagedBlock = true
+			injectedInBlock = false
 			continue
 		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
 			logger.Debugf("<| %s", confLine)
@@ -185,19 +409,19 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 				return "", err
 			}
 
-			doInject = false
+			inManagedBlock = false
+			injectedInBlock = false
 			continue
 		} else {
 			logger.Debugf(" | %s", confLine)
 
-			if doInject {
-				for tmpScanner.Scan() {
-					tmpLine := tmpScanner.Text()
-
-					_, err = backup.WriteString(tmpLine + "\n")
-					if err != nil {
+			if inManagedBlock {
+				if !injectedInBlock {
+					if _, err = backup.Write(replacement); err != nil {
 						return "", err
 					}
+
+					injectedInBlock = true
 				}
 			} else {
 				_, err = backup.WriteString(confLine + "\n")
@@ -212,11 +436,21 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	if err := confScanner.Err(); err != nil {
 		fmt.Println(err)
 	}
-	if err = tmpScanner.Err(); err != nil {
-		fmt.Println(err)
-	}
 
 	return backup.Name(), nil
+}
+
+// getAllMarkedProfiles returns the profile names for every managed-block start
+// marker found in the AWS config file, regardless of whether a matching
+// [sso-session] section exists. This is used by the validate command to detect
+// orphaned markers.
+func getAllMarkedProfiles() ([]string, error) {
+	report, err := inspectManagedMarkers()
+	if err != nil {
+		return nil, err
+	}
+
+	return report.profiles, nil
 }
 
 func getAllManagedSections() ([]string, error) {
@@ -249,17 +483,17 @@ func getAllManagedSections() ([]string, error) {
 	return ssoProfiles, nil
 }
 
-func truncate(filename string, perm os.FileMode) error {
-	logger.Debugf("Truncating %s...", filename)
+// func truncate(filename string, perm os.FileMode) error {
+// 	logger.Debugf("Truncating %s...", filename)
 
-	f, err := os.OpenFile(filename, os.O_TRUNC, perm)
-	if err != nil {
-		return fmt.Errorf("could not open file %q for truncation: %w", filename, err)
-	}
+// 	f, err := os.OpenFile(filename, os.O_TRUNC, perm)
+// 	if err != nil {
+// 		return fmt.Errorf("could not open file %q for truncation: %w", filename, err)
+// 	}
 
-	if err = f.Close(); err != nil {
-		return fmt.Errorf("could not close file handler for %q after truncation: %w", filename, err)
-	}
+// 	if err = f.Close(); err != nil {
+// 		return fmt.Errorf("could not close file handler for %q after truncation: %w", filename, err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

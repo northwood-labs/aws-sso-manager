@@ -134,15 +134,14 @@ func createAWSConfigFile() string {
 	err = os.MkdirAll(path.Join(userHomeDir, ".aws"), 0o0755)
 	cobra.CheckErr(err)
 
-	_, err = os.Stat(awsConfigFilePath)
-	if os.IsNotExist(err) {
-		awsConfigFile, err := os.Create(awsConfigFilePath)
-		cobra.CheckErr(err)
-
+	awsConfigFile, err := os.OpenFile(awsConfigFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o0644)
+	if err == nil {
 		defer func() {
 			err = awsConfigFile.Close()
 			cobra.CheckErr(err)
 		}()
+	} else if !os.IsExist(err) {
+		cobra.CheckErr(err)
 	}
 
 	return awsConfigFilePath
@@ -186,7 +185,11 @@ func generateAWSConfig(sections ini.Sections) string {
 }
 
 // getAWSConfig generates an SDK config from the SSO session profile.
-func getSDKConfig(sessionProfile ssoProfile) (aws.Config, error) {
+func getSDKConfig(ctx context.Context, sessionProfile ssoProfile) (aws.Config, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	awsConfig, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(sessionProfile.Region),
@@ -323,6 +326,10 @@ func authenticateSSOProfile(
 func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, error) {
 	var err error
 
+	if input.ctx == nil {
+		input.ctx = context.Background()
+	}
+
 	token := new(ssooidc.CreateTokenOutput)
 	sleepPerCycle := 2 * time.Second
 	startTime := time.Now()
@@ -332,7 +339,7 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	for delta < input.loginTimeout {
 		// Keep trying until the user approves the request in the browser
 		token, err = oidcClient.CreateToken(
-			ctx, &ssooidc.CreateTokenInput{
+			input.ctx, &ssooidc.CreateTokenInput{
 				ClientId:     input.registerClient.ClientId,
 				ClientSecret: input.registerClient.ClientSecret,
 				DeviceCode:   input.deviceAuth.DeviceCode,

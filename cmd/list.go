@@ -109,7 +109,7 @@ var (
 				return err
 			}
 
-			sdkConfig, err := getSDKConfig(sessionProfile)
+			sdkConfig, err := getSDKConfig(cmd.Context(), sessionProfile)
 			if err != nil {
 				return err
 			}

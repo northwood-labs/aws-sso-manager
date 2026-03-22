@@ -21,6 +21,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -41,10 +42,18 @@ var (
 
 	awsConfigFilePath string
 	userHomeDir       string
-	logger            *log.Logger
-	err               error
-
-	ctx = context.Background()
+	logger            = log.NewWithOptions(os.Stderr, log.Options{
+		ReportCaller:    true,
+		ReportTimestamp: true,
+		TimeFormat:      time.Kitchen,
+	})
+	// Test seam to verify wrapper behavior without invoking real process exit.
+	fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}
+	fangExecute       = fang.Execute
+	runRootCommand    = func(ctx context.Context, cmd *cobra.Command, signals ...os.Signal) error {
+		return fangExecute(ctx, cmd, fang.WithNotifySignal(signals...))
+	}
+	osExit = os.Exit
 
 	rootCmd = &cobra.Command{
 		Use:   "aws-sso-manager",
@@ -57,12 +66,6 @@ var (
 		also enables the use of AWS Vault with SSO.
 		`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			logger = log.NewWithOptions(os.Stderr, log.Options{
-				ReportCaller:    true,
-				ReportTimestamp: true,
-				TimeFormat:      time.Kitchen,
-			})
-
 			switch fVerbose {
 			case 0:
 				logger.SetLevel(log.WarnLevel)
@@ -78,6 +81,8 @@ var (
 )
 
 func init() {
+	var err error
+
 	userHomeDir, err = os.UserHomeDir()
 	if err != nil {
 		cobra.CheckErr(err)
@@ -97,8 +102,12 @@ func init() {
 
 // Execute configures the Cobra CLI app framework and executes the root command.
 func Execute() {
-	if err := fang.Execute(context.Background(), rootCmd); err != nil {
-		os.Exit(1)
+	if err := runRootCommand(
+		context.Background(),
+		rootCmd,
+		fangNotifySignals...,
+	); err != nil {
+		osExit(1)
 	}
 }
 

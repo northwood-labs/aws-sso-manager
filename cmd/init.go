@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -79,6 +80,16 @@ var initCmd = &cobra.Command{
 			ssoScopes = asvConfig.Get("sso-scopes").(string)
 		}
 
+		configLock, err := acquireAWSConfigLock(cmd.Context())
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if releaseErr := configLock.Release(); releaseErr != nil {
+				logger.Error("Failed to release AWS config lock", "error", releaseErr)
+			}
+		}()
+
 		logger.Info("Read the AWS config file", "config", awsConfigFilePath)
 
 		sections, err := loadAWSConfig(awsConfigFilePath)
@@ -92,6 +103,19 @@ var initCmd = &cobra.Command{
 		if ok {
 			return fmt.Errorf("config file already contains [%s] section. Delete it from the "+
 				"config file and re-run `init`", sessionName)
+		}
+
+		// Guard against orphaned markers: the section header may have been manually
+		// removed while the managed-block markers remain. Appending new markers in
+		// that state would create a duplicate block.
+		if exists, err := markersExist(profileName); err != nil {
+			return err
+		} else if exists {
+			return fmt.Errorf(
+				"config file already contains managed block markers for profile %q; "+
+					"remove the markers and re-run `init`",
+				profileName,
+			)
 		}
 
 		// -------------------------------------------------------------------------------------------------------------
@@ -169,23 +193,54 @@ var initCmd = &cobra.Command{
 
 		logger.Info("Write the configuration to disk.")
 
-		f, err := os.OpenFile(awsConfigFilePath, os.O_APPEND|os.O_WRONLY, 0o0644)
+		existingConfig, err := os.ReadFile(awsConfigFilePath)
 		cobra.CheckErr(err)
+
+		tmpConfig, err := os.CreateTemp(filepath.Dir(awsConfigFilePath), ".aws-sso-manager-init-*.ini")
+		cobra.CheckErr(err)
+		tmpConfigPath := tmpConfig.Name()
 
 		defer func() {
-			err = f.Close()
-			cobra.CheckErr(err)
+			if tmpConfig == nil {
+				return
+			}
+			if closeErr := tmpConfig.Close(); closeErr != nil {
+				logger.Error("Failed to close temporary AWS config file", "error", closeErr)
+			}
 		}()
 
-		// Start with a linebreak.
-		_, err = f.WriteString("\n; -------- aws-sso-manager: start " + profileName + " --------\n")
-		cobra.CheckErr(err)
+		if _, err = tmpConfig.Write(existingConfig); err != nil {
+			return fmt.Errorf("write existing AWS config to temporary file: %w", err)
+		}
 
-		_, err = f.WriteString(strings.TrimSpace(generateSingleAWSConfig(section)) + "\n")
-		cobra.CheckErr(err)
+		if len(existingConfig) > 0 && existingConfig[len(existingConfig)-1] != '\n' {
+			if _, err = tmpConfig.WriteString("\n"); err != nil {
+				return fmt.Errorf("write AWS config separator newline: %w", err)
+			}
+		}
 
-		_, err = f.WriteString("; -------- aws-sso-manager: end " + profileName + " --------\n")
-		cobra.CheckErr(err)
+		managedBlock := strings.Join([]string{
+			"; -------- aws-sso-manager: start " + profileName + " --------",
+			strings.TrimSpace(generateSingleAWSConfig(section)),
+			"; -------- aws-sso-manager: end " + profileName + " --------",
+		}, "\n") + "\n"
+
+		if _, err = tmpConfig.WriteString(managedBlock); err != nil {
+			return fmt.Errorf("write managed AWS config block: %w", err)
+		}
+
+		if err = tmpConfig.Chmod(0o0644); err != nil {
+			return fmt.Errorf("set permissions on temporary AWS config file: %w", err)
+		}
+
+		if err = tmpConfig.Close(); err != nil {
+			return fmt.Errorf("close temporary AWS config file: %w", err)
+		}
+		tmpConfig = nil
+
+		if err = os.Rename(tmpConfigPath, awsConfigFilePath); err != nil {
+			return fmt.Errorf("replace AWS config with initialized config: %w", err)
+		}
 
 		fmt.Printf("Successfully initialized SSO configuration in %s\n", awsConfigFilePath)
 

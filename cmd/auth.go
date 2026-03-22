@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -48,6 +49,10 @@ var (
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
+			requestCtx := cmd.Context()
+			if requestCtx == nil {
+				requestCtx = context.Background()
+			}
 
 			logger.Info("Passed arguments", "count", len(args))
 
@@ -90,7 +95,7 @@ var (
 				logger.Info("Error reading cache file", "file", err.Error())
 
 				// Generate an AWS SDK config from the SSO session profile.
-				sdkConfig, err := getSDKConfig(sessionProfile)
+				sdkConfig, err := getSDKConfig(requestCtx, sessionProfile)
 				if err != nil {
 					return err
 				}
@@ -98,7 +103,11 @@ var (
 				logger.Info("Authenticating SSO profile", "profile", profileName)
 
 				// Perform the SSO authentication flow.
-				authURL, registerClient, deviceAuth, err := authenticateSSOProfile(ctx, &sdkConfig, sessionProfile)
+				authURL, registerClient, deviceAuth, err := authenticateSSOProfile(
+					requestCtx,
+					&sdkConfig,
+					sessionProfile,
+				)
 				if err != nil {
 					return err
 				}
@@ -123,7 +132,7 @@ var (
 				}
 
 				cacheData, err = waitForCustomerToAuthenticate(customerAuthInput{
-					ctx:            ctx,
+					ctx:            requestCtx,
 					sdkConfig:      &sdkConfig,
 					registerClient: registerClient,
 					deviceAuth:     deviceAuth,
