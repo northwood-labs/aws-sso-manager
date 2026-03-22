@@ -131,9 +131,9 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 * [ ] `config set default-account`.
 * [ ] Lookup the ARN for all users of an SSO role.
 * [ ] Support `AWS_CONFIG_FILE`.
-* [ ] Table: https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/
-* [ ] Support config keys: https://docs.aws.amazon.com/sdkref/latest/guide/settings-reference.html
-* [ ] https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments
+* [ ] Table: <https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/>
+* [ ] Support config keys: <https://docs.aws.amazon.com/sdkref/latest/guide/settings-reference.html>
+* [ ] <https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments>
 
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
