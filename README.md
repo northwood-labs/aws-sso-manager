@@ -117,7 +117,7 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## TODO
 
-* [ ] Cache the `list` results by default (24h, configurable).
+* [X] Cache the `list` results by default (24h, configurable).
 * [ ] Use `list` cache to generate a lookup table (7d, configurable).
 * [ ] `list --csv`.
 * [ ] `list --markdown`.

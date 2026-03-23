@@ -114,18 +114,9 @@ var (
 				return err
 			}
 
-			// Where does the cache file live?
-			cacheFilePath, err := getCacheFilePath(&sessionProfile)
+			cache, err := getOrRefreshAuthenticatedCache(cmd.Context(), profileName, sessionProfile)
 			if err != nil {
-				return err
-			}
-
-			var cacheData cacheFileData
-
-			// Can we read the cache?
-			cache, err := cacheData.read(cacheFilePath)
-			if err != nil {
-				return fmt.Errorf("not authenticated: %w", err)
+				return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 			}
 
 			err = spinner.New().
@@ -134,7 +125,15 @@ var (
 				Type(spinner.Dots).
 				Action(func(accounts *listAccounts) func() {
 					return func() {
-						accts, err := listAWSAccounts(cmd, &sdkConfig, cache, profileName, fAccounts, fRoles)
+						accts, err := listAWSAccounts(listAWSAccountsInput{
+							Cmd:           cmd,
+							SDKConfig:     &sdkConfig,
+							Cache:         cache,
+							Logger:        logger,
+							ProfileName:   profileName,
+							AccountFilter: fAccounts,
+							RoleFilter:    fRoles,
+						})
 						cobra.CheckErr(err)
 
 						*accounts = accts

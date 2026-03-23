@@ -16,12 +16,15 @@ package cmd
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -32,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sso"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc/types"
+	charmlog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
 	"github.com/northwood-labs/aws-config-parser/ini"
@@ -63,7 +67,25 @@ type (
 		ClientId              string    `json:"clientId"`
 		ClientSecret          string    `json:"clientSecret"`
 	}
+
+	listAWSAccountsInput struct {
+		Cmd           *cobra.Command
+		SDKConfig     *aws.Config
+		Cache         *cacheFileData
+		Logger        *charmlog.Logger
+		ProfileName   string
+		AccountFilter string
+		RoleFilter    string
+	}
+
+	listAWSAccountsCacheData struct {
+		CachedAt  time.Time    `json:"cached_at,omitempty"`
+		ExpiresAt time.Time    `json:"expires_at,omitempty"`
+		Accounts  listAccounts `json:"accounts"`
+	}
 )
+
+var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
 
 func (c *cacheFileData) save(cacheFilePath string) error {
 	marshaledJson, err := json.Marshal(c)
@@ -103,6 +125,119 @@ func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 	}
 
 	return &cache, nil
+}
+
+func ensureAWSManagerCacheDir() (string, error) {
+	cacheDir := awsManagerCacheDir
+	if cacheDir == "" {
+		homeDir := userHomeDir
+		if homeDir == "" {
+			var err error
+			homeDir, err = os.UserHomeDir()
+			if err != nil {
+				return "", fmt.Errorf("could not determine user home directory: %w", err)
+			}
+		}
+
+		cacheDir = filepath.Join(homeDir, ".config", "aws-sso-manager", "cache")
+	}
+
+	if err := os.MkdirAll(cacheDir, 0o0755); err != nil {
+		return "", fmt.Errorf("could not create AWS manager cache directory: %w", err)
+	}
+
+	return cacheDir, nil
+}
+
+func (input listAWSAccountsInput) getLogger() *charmlog.Logger {
+	if input.Logger != nil {
+		return input.Logger
+	}
+
+	return logger
+}
+
+func (input listAWSAccountsInput) cacheFilePath() string {
+	cacheKey := strings.Join([]string{
+		"listAWSAccounts.v1",
+		input.ProfileName,
+		input.AccountFilter,
+		input.RoleFilter,
+	}, "\x00")
+	hash := sha256.Sum256([]byte(cacheKey))
+	cacheDir, err := ensureAWSManagerCacheDir()
+	if err != nil {
+		input.getLogger().Error("Failed to ensure AWS accounts cache directory", "error", err)
+		return ""
+	}
+
+	return filepath.Join(cacheDir, "accounts-"+hex.EncodeToString(hash[:])+".json")
+}
+
+func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) {
+	data, err := os.ReadFile(cacheFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return listAccounts{}, false, nil
+		}
+
+		return listAccounts{}, false, fmt.Errorf("could not read accounts cache file: %w", err)
+	}
+
+	var cached listAWSAccountsCacheData
+	if err := json.Unmarshal(data, &cached); err != nil {
+		return listAccounts{}, false, fmt.Errorf("could not unmarshal accounts cache file: %w", err)
+	}
+
+	cacheTTL := cacheDuration
+	if cacheTTL <= 0 {
+		cacheTTL = 24 * time.Hour
+	}
+
+	var expiresAt time.Time
+	if !cached.CachedAt.IsZero() {
+		expiresAt = cached.CachedAt.Add(cacheTTL)
+	} else {
+		expiresAt = cached.ExpiresAt
+	}
+
+	if expiresAt.IsZero() || time.Now().After(expiresAt) {
+		if err := os.Remove(cacheFilePath); err != nil && !os.IsNotExist(err) {
+			return listAccounts{}, false, fmt.Errorf("could not remove expired accounts cache file: %w", err)
+		}
+
+		return listAccounts{}, false, nil
+	}
+
+	return cached.Accounts, true, nil
+}
+
+func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) error {
+	cacheData := listAWSAccountsCacheData{
+		CachedAt: time.Now().UTC(),
+		Accounts: accounts,
+	}
+
+	data, err := json.Marshal(cacheData)
+	if err != nil {
+		return fmt.Errorf("could not marshal accounts cache file: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
+		return fmt.Errorf("could not create accounts cache directory: %w", err)
+	}
+
+	tmpPath := cacheFilePath + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
+		return fmt.Errorf("could not write temporary accounts cache file: %w", err)
+	}
+
+	if err := os.Rename(tmpPath, cacheFilePath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("could not replace accounts cache file: %w", err)
+	}
+
+	return nil
 }
 
 // loadAWSConfig loads the AWS config file from disk and returns its sections.
@@ -418,30 +553,69 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	return cacheFile, nil
 }
 
-func listAWSAccounts(
-	cmd *cobra.Command,
-	sdkConfig *aws.Config,
-	cache *cacheFileData,
-	profileName, fAccounts, fRoles string,
-) (listAccounts, error) {
+func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
+	cacheFilePath := input.cacheFilePath()
+	inputLogger := input.getLogger()
+
+	if cacheFilePath != "" {
+		inputLogger.Debug("Checking AWS accounts cache", "file", cacheFilePath)
+
+		cachedAccounts, ok, err := readListAWSAccountsCache(cacheFilePath)
+		if err != nil {
+			inputLogger.Error("Failed to read AWS accounts cache", "file", cacheFilePath, "error", err)
+		} else if ok {
+			inputLogger.Debug("Using cached AWS accounts", "file", cacheFilePath)
+			return cachedAccounts, nil
+		}
+	}
+
+	accounts, err := listAWSAccountsFetcher(input)
+	if err != nil {
+		return accounts, err
+	}
+
+	if cacheFilePath != "" {
+		if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
+			inputLogger.Error("Failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
+		} else {
+			inputLogger.Debug("Wrote AWS accounts cache", "file", cacheFilePath)
+		}
+	}
+
+	return accounts, nil
+}
+
+func fetchListAWSAccountsFromSSO(input listAWSAccountsInput) (listAccounts, error) {
 	var accts listAccounts
-	ssoClient := sso.NewFromConfig(*sdkConfig)
+	if input.Cmd == nil {
+		return accts, errors.New("command is required")
+	}
+
+	if input.SDKConfig == nil {
+		return accts, errors.New("AWS SDK config is required")
+	}
+
+	if input.Cache == nil {
+		return accts, errors.New("SSO cache data is required")
+	}
+
+	ssoClient := sso.NewFromConfig(*input.SDKConfig)
 
 	paginator := sso.NewListAccountsPaginator(ssoClient, &sso.ListAccountsInput{
-		AccessToken: &cache.AccessToken,
+		AccessToken: &input.Cache.AccessToken,
 		MaxResults:  aws.Int32(100),
 	})
 
 	for paginator.HasMorePages() {
-		output, err := paginator.NextPage(cmd.Context())
+		output, err := paginator.NextPage(input.Cmd.Context())
 		if err != nil {
 			return accts, fmt.Errorf("could not list SSO accounts: %w", err)
 		}
 
 		for _, account := range output.AccountList {
-			if fAccounts != "" && !strings.Contains(
+			if input.AccountFilter != "" && !strings.Contains(
 				strings.ToLower(aws.ToString(account.AccountName)),
-				strings.ToLower(fAccounts),
+				strings.ToLower(input.AccountFilter),
 			) {
 				continue
 			}
@@ -453,13 +627,13 @@ func listAWSAccounts(
 			}
 
 			rolePaginator := sso.NewListAccountRolesPaginator(ssoClient, &sso.ListAccountRolesInput{
-				AccessToken: &cache.AccessToken,
+				AccessToken: &input.Cache.AccessToken,
 				AccountId:   account.AccountId,
 				MaxResults:  aws.Int32(100),
 			})
 
 			for rolePaginator.HasMorePages() {
-				roleOutput, err := rolePaginator.NextPage(cmd.Context())
+				roleOutput, err := rolePaginator.NextPage(input.Cmd.Context())
 				if err != nil {
 					return accts, fmt.Errorf(
 						"could not list roles for account %s: %w",
@@ -469,9 +643,9 @@ func listAWSAccounts(
 				}
 
 				for _, role := range roleOutput.RoleList {
-					if fRoles != "" && !strings.Contains(
+					if input.RoleFilter != "" && !strings.Contains(
 						strings.ToLower(aws.ToString(role.RoleName)),
-						strings.ToLower(fRoles),
+						strings.ToLower(input.RoleFilter),
 					) {
 						continue
 					}
@@ -480,7 +654,7 @@ func listAWSAccounts(
 						AccountID: aws.ToString(account.AccountId),
 						Name:      aws.ToString(role.RoleName),
 						Profile: getProfileName(
-							profileName,
+							input.ProfileName,
 							aws.ToString(account.AccountName),
 							aws.ToString(role.RoleName),
 						),

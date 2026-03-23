@@ -21,6 +21,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -35,15 +37,18 @@ import (
 )
 
 var (
-	fConfigFile string
-	fVerbose    int
-	fJSON       bool
+	fConfigFile    string
+	fCacheDuration string
+	fVerbose       int
+	fJSON          bool
 
 	asvConfig = viper.New()
 
-	awsConfigFilePath string
-	userHomeDir       string
-	logger            = log.NewWithOptions(os.Stderr, log.Options{
+	awsConfigFilePath  string
+	awsManagerCacheDir string
+	cacheDuration      = 24 * time.Hour
+	userHomeDir        string
+	logger             = log.NewWithOptions(os.Stderr, log.Options{
 		ReportCaller:    true,
 		ReportTimestamp: true,
 		TimeFormat:      time.Kitchen,
@@ -76,10 +81,47 @@ var (
 				logger.SetLevel(log.DebugLevel)
 			}
 
+			parsedCacheDuration, err := parseCacheDurationFlag(fCacheDuration)
+			if err != nil {
+				return err
+			}
+
+			cacheDuration = parsedCacheDuration
+
 			return initializeConfig(cmd)
 		},
 	}
 )
+
+func parseCacheDurationFlag(raw string) (time.Duration, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return 0, errors.New("cache duration cannot be empty")
+	}
+
+	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
+	normalized := trimmed
+	matches := dayTokenPattern.FindAllStringSubmatch(trimmed, -1)
+	for _, match := range matches {
+		days, err := strconv.Atoi(match[1])
+		if err != nil {
+			return 0, fmt.Errorf("invalid day token in cache duration %q: %w", raw, err)
+		}
+
+		normalized = strings.Replace(normalized, match[0], fmt.Sprintf("%dh", days*24), 1)
+	}
+
+	parsed, err := time.ParseDuration(normalized)
+	if err != nil {
+		return 0, fmt.Errorf("invalid cache duration %q: %w", raw, err)
+	}
+
+	if parsed <= 0 {
+		return 0, fmt.Errorf("cache duration must be greater than zero: %q", raw)
+	}
+
+	return parsed, nil
+}
 
 func init() {
 	var err error
@@ -90,10 +132,16 @@ func init() {
 	}
 
 	awsConfigFilePath = config.DefaultSharedConfigFilename()
+	awsManagerCacheDir = path.Join(userHomeDir, ".config", "aws-sso-manager", "cache")
+	fCacheDuration = "24h"
 
 	rootCmd.PersistentFlags().StringVarP(
 		&fConfigFile, "config", "c", path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml"),
 		"configuration file",
+	)
+	rootCmd.PersistentFlags().StringVarP(
+		&fCacheDuration, "cache-duration", "D", fCacheDuration,
+		"duration to keep AWS account list cache entries (supports Go durations plus 'd', e.g. 24h, 1d, 6h30m)",
 	)
 	rootCmd.PersistentFlags().CountVarP(
 		&fVerbose, "verbose", "v",

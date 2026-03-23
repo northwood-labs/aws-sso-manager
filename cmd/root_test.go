@@ -6,10 +6,47 @@ import (
 	"os"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
+
+func TestParseCacheDurationFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected time.Duration
+		wantErr  bool
+	}{
+		{name: "go duration", input: "24h", expected: 24 * time.Hour},
+		{name: "days only", input: "1d", expected: 24 * time.Hour},
+		{name: "days and hours and minutes", input: "1d6h30m", expected: 30*time.Hour + 30*time.Minute},
+		{name: "invalid", input: "abc", wantErr: true},
+		{name: "zero", input: "0h", wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseCacheDurationFlag(tc.input)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for %q", tc.input)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("parseCacheDurationFlag(%q): %v", tc.input, err)
+			}
+
+			if got != tc.expected {
+				t.Fatalf("expected %s for %q, got %s", tc.expected, tc.input, got)
+			}
+		})
+	}
+}
 
 func TestExecutePassesFangNotifyOption(t *testing.T) {
 	oldRunRootCommand := runRootCommand

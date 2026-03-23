@@ -48,7 +48,6 @@ var updateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			ok          bool
-			cacheData   cacheFileData
 			profileName string
 			counter     int
 		)
@@ -105,16 +104,9 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 
-		// Where does the cache file live?
-		cacheFilePath, err := getCacheFilePath(&sessionProfile)
+		cache, err := getOrRefreshAuthenticatedCache(cmd.Context(), profileName, sessionProfile)
 		if err != nil {
-			return err
-		}
-
-		// Can we read the cache?
-		cache, err := cacheData.read(cacheFilePath)
-		if err != nil {
-			return fmt.Errorf("not authenticated: %w", err)
+			return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 		}
 
 		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
@@ -130,7 +122,15 @@ var updateCmd = &cobra.Command{
 			Type(spinner.Dots).
 			Action(func(accounts *listAccounts) func() {
 				return func() {
-					accts, err := listAWSAccounts(cmd, &sdkConfig, cache, profileName, fAccounts, fRoles)
+					accts, err := listAWSAccounts(listAWSAccountsInput{
+						Cmd:           cmd,
+						SDKConfig:     &sdkConfig,
+						Cache:         cache,
+						Logger:        logger,
+						ProfileName:   profileName,
+						AccountFilter: fAccounts,
+						RoleFilter:    fRoles,
+					})
 					cobra.CheckErr(err)
 
 					*accounts = accts

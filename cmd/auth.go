@@ -73,100 +73,7 @@ var (
 				}
 			}
 
-			logger.Info("Retrieving SSO session profile", "profile", profileName)
-
-			// Generate a SSO session profile from the profile name.
-			sessionProfile, err := getSsoSession(profileName)
-			if err != nil {
-				return err
-			}
-
-			// Where does the cache file live?
-			cacheFilePath, err := getCacheFilePath(&sessionProfile)
-			if err != nil {
-				return err
-			}
-
-			var cacheData cacheFileData
-
-			// Can we read the cache?
-			cacheResults, err := cacheData.read(cacheFilePath)
-			if err != nil {
-				logger.Info("Error reading cache file", "file", err.Error())
-
-				// Generate an AWS SDK config from the SSO session profile.
-				sdkConfig, err := getSDKConfig(requestCtx, sessionProfile)
-				if err != nil {
-					return err
-				}
-
-				logger.Info("Authenticating SSO profile", "profile", profileName)
-
-				// Perform the SSO authentication flow.
-				authURL, registerClient, deviceAuth, err := authenticateSSOProfile(
-					requestCtx,
-					&sdkConfig,
-					sessionProfile,
-				)
-				if err != nil {
-					return err
-				}
-
-				u, err := url.Parse(authURL)
-				if err != nil {
-					return err
-				}
-
-				u, err = url.Parse(u.Fragment)
-				if err != nil {
-					return err
-				}
-
-				fmt.Printf("Ensure the code matches: %s\n", u.Query().Get("user_code"))
-
-				if fBrowser {
-					err = browser.OpenURL(authURL)
-					cobra.CheckErr(err)
-				} else {
-					fmt.Println("Confirm: " + authURL + "\n")
-				}
-
-				cacheData, err = waitForCustomerToAuthenticate(customerAuthInput{
-					ctx:            requestCtx,
-					sdkConfig:      &sdkConfig,
-					registerClient: registerClient,
-					deviceAuth:     deviceAuth,
-					sessionProfile: sessionProfile,
-					loginTimeout:   60 * time.Second,
-				})
-				if err != nil {
-					return err
-				}
-
-				err = cacheData.save(cacheFilePath)
-				if err != nil {
-					return err
-				}
-
-				fmt.Printf("Successfully authenticated SSO session '%s'.\n", profileName)
-			} else {
-				logger.Info("Cache file is valid; no need to authenticate", "file", cacheFilePath)
-
-				remaining := time.Until(cacheResults.ExpiresAt)
-
-				fmt.Printf(
-					"SSO session '%s' is already authenticated and valid for another %s.\n",
-					profileName,
-					remaining.Round(time.Second),
-				)
-			}
-
-			_, err = cacheData.read(cacheFilePath)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return ensureAuthenticatedSSOSession(requestCtx, profileName)
 		},
 	}
 )
@@ -181,4 +88,156 @@ func init() {
 		true,
 		"Open the SSO authentication URL in the default web browser.",
 	)
+}
+
+func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName string) error {
+	logger.Info("Retrieving SSO session profile", "profile", profileName)
+
+	// Generate a SSO session profile from the profile name.
+	sessionProfile, err := getSsoSession(profileName)
+	if err != nil {
+		return err
+	}
+
+	// Where does the cache file live?
+	cacheFilePath, err := getCacheFilePath(&sessionProfile)
+	if err != nil {
+		return err
+	}
+
+	var cacheData cacheFileData
+
+	// Can we read the cache?
+	cacheResults, err := cacheData.read(cacheFilePath)
+	if err != nil {
+		if err := authenticateAndCacheSSOSession(requestCtx, profileName, sessionProfile, cacheFilePath); err != nil {
+			return err
+		}
+	} else {
+		reportValidCachedSSOSession(profileName, cacheFilePath, cacheResults)
+	}
+
+	_, err = cacheData.read(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func authenticateAndCacheSSOSession(
+	requestCtx context.Context,
+	profileName string,
+	sessionProfile ssoProfile,
+	cacheFilePath string,
+) error {
+	logger.Info("Authenticating SSO profile", "profile", profileName)
+
+	// Generate an AWS SDK config from the SSO session profile.
+	sdkConfig, err := getSDKConfig(requestCtx, sessionProfile)
+	if err != nil {
+		return err
+	}
+
+	// Perform the SSO authentication flow.
+	authURL, registerClient, deviceAuth, err := authenticateSSOProfile(
+		requestCtx,
+		&sdkConfig,
+		sessionProfile,
+	)
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(authURL)
+	if err != nil {
+		return err
+	}
+
+	u, err = url.Parse(u.Fragment)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Ensure the code matches: %s\n", u.Query().Get("user_code"))
+
+	if fBrowser {
+		err = browser.OpenURL(authURL)
+		cobra.CheckErr(err)
+	} else {
+		fmt.Println("Confirm: " + authURL + "\n")
+	}
+
+	cacheData, err := waitForCustomerToAuthenticate(customerAuthInput{
+		ctx:            requestCtx,
+		sdkConfig:      &sdkConfig,
+		registerClient: registerClient,
+		deviceAuth:     deviceAuth,
+		sessionProfile: sessionProfile,
+		loginTimeout:   60 * time.Second,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = cacheData.save(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully authenticated SSO session '%s'.\n", profileName)
+
+	return nil
+}
+
+func reportValidCachedSSOSession(profileName, cacheFilePath string, cacheResults *cacheFileData) {
+	logger.Info("Cache file is valid; no need to authenticate", "file", cacheFilePath)
+
+	remaining := time.Until(cacheResults.ExpiresAt)
+
+	fmt.Printf(
+		"SSO session '%s' is already authenticated and valid for another %s.\n",
+		profileName,
+		remaining.Round(time.Second),
+	)
+}
+
+func getOrRefreshAuthenticatedCache(
+	requestCtx context.Context,
+	profileName string,
+	sessionProfile ssoProfile,
+) (*cacheFileData, error) {
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+
+	cacheFilePath, err := getCacheFilePath(&sessionProfile)
+	if err != nil {
+		return nil, err
+	}
+
+	var cacheData cacheFileData
+	cache, err := cacheData.read(cacheFilePath)
+	if err == nil {
+		return cache, nil
+	}
+
+	logger.Info(
+		"Session cache is missing or expired; attempting automatic authentication",
+		"profile",
+		profileName,
+		"error",
+		err,
+	)
+
+	if err := ensureAuthenticatedSSOSession(requestCtx, profileName); err != nil {
+		return nil, err
+	}
+
+	cache, err = cacheData.read(cacheFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read session cache after authentication: %w", err)
+	}
+
+	return cache, nil
 }
