@@ -39,9 +39,10 @@ var validateCmd = &cobra.Command{
 	    ; -------- aws-sso-manager: end <profile> --------
 
 	This command checks that every managed profile has:
-	  - Exactly one start marker and one matching end marker (no mismatches).
-	  - No duplicate blocks for the same profile name.
-	  - A corresponding [sso-session <profile>] section in the config file.
+
+	* Exactly one start marker and one matching end marker (no mismatches).
+	* No duplicate blocks for the same profile name.
+	* A corresponding [sso-session <profile>] section in the config file.
 
 	It also reports any markers that exist without a corresponding [sso-session]
 	section (orphaned markers left behind by manual edits).

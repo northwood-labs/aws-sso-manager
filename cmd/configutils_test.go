@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/log"
+	"github.com/spf13/viper"
 )
 
 func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
@@ -428,5 +429,31 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 
 	if string(content) != string(original) {
 		t.Fatalf("expected existing config to remain unchanged, got %q", string(content))
+	}
+}
+
+func TestGetProfileNameFallsBackWhenRenameConfigMissing(t *testing.T) {
+	oldConfig := asvConfig
+	asvConfig = viper.New()
+	t.Cleanup(func() { asvConfig = oldConfig })
+
+	got := getProfileName("nwl2", "Sandbox", "ReadOnlyAccess")
+	if got != "sandbox-readonlyaccess" {
+		t.Fatalf("expected fallback profile name sandbox-readonlyaccess, got %q", got)
+	}
+}
+
+func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
+	oldConfig := asvConfig
+	asvConfig = viper.New()
+	t.Cleanup(func() { asvConfig = oldConfig })
+
+	asvConfig.Set("nwl2.rename.pattern.order", []string{"PREFIX", "SUFFIX"})
+	asvConfig.Set("nwl2.rename.prefix", "")
+	asvConfig.Set("nwl2.rename.suffix", "")
+
+	got := getProfileName("nwl2", "Prod Account", "AdministratorAccess")
+	if got != "prod-account-administratoraccess" {
+		t.Fatalf("expected fallback profile name prod-account-administratoraccess, got %q", got)
 	}
 }

@@ -47,12 +47,10 @@ var updateCmd = &cobra.Command{
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			ok                bool
-			cacheData         cacheFileData
-			section           configFile.Section
-			profileName       string
-			profileHeaderName string
-			counter           int
+			ok          bool
+			cacheData   cacheFileData
+			profileName string
+			counter     int
 		)
 
 		logger.Info("Passed arguments", "count", len(args))
@@ -121,7 +119,7 @@ var updateCmd = &cobra.Command{
 
 		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
 
-		ssoSection, ok := sections.GetSection(ssoProfile)
+		_, ok = sections.GetSection(ssoProfile)
 		if !ok {
 			cobra.CheckErr(fmt.Sprintf("config file does not have section [%s]; need to run init", ssoProfile))
 		}
@@ -143,53 +141,9 @@ var updateCmd = &cobra.Command{
 			logger.Fatal(err)
 		}
 
-		for _, account := range accounts.Accounts {
-			for _, role := range account.Roles {
-				counter++
-				profileHeaderName = fmt.Sprintf("profile %s", role.Profile)
-
-				logger.Info("Processing profile", "profile", profileHeaderName)
-
-				section, ok = sections.GetSection(profileHeaderName)
-				if !ok {
-					logger.Info("Config file does not have section; creating new section", "section", profileHeaderName)
-
-					section = configFile.NewSection(profileHeaderName)
-				}
-
-				m := map[string]string{}
-
-				m["sso_session"] = profileName
-				m["sso_account_id"] = role.AccountID
-				m["sso_role_name"] = role.Name
-				m["region"] = ssoSection.String("sso_region")
-				m["output"] = "json"
-
-				for iniKey, iniValue := range m {
-					if v, err := configFile.NewStringValue(iniValue); err != nil {
-						return fmt.Errorf("failed to create '%s' value: %w", iniKey, err)
-					} else {
-						err = section.UpdateValue(iniKey, v)
-						if err != nil {
-							return fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
-						}
-					}
-				}
-
-				logger.Info("Get the section or create it if it does not exist", "section", profileHeaderName)
-
-				sections = sections.SetSection(profileHeaderName, section)
-				if _, ok = sections.GetSection(profileHeaderName); !ok {
-					return fmt.Errorf("failed to create or get section [%s]", profileHeaderName)
-				}
-
-				defer func() {
-					if r := recover(); r != nil {
-						fmt.Println("Recovered:", r)
-					}
-				}()
-
-			}
+		nextSections, counter, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			return err
 		}
 
 		f, err := os.OpenFile(tmpFilename, os.O_TRUNC|os.O_WRONLY, 0o0644)
@@ -200,7 +154,7 @@ var updateCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}()
 
-		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(sections)) + "\n")
+		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(nextSections)) + "\n")
 		cobra.CheckErr(err)
 
 		logger.Debug("", "temp file", tmpFilename)
@@ -228,6 +182,76 @@ var updateCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func buildUpdatedManagedSections(
+	sections configFile.Sections,
+	ssoProfile,
+	profileName string,
+	accounts listAccounts,
+) (configFile.Sections, int, error) {
+	ssoSection, ok := sections.GetSection(ssoProfile)
+	if !ok {
+		return configFile.NewSections(), 0, fmt.Errorf(
+			"config file does not have section [%s]; need to run init",
+			ssoProfile,
+		)
+	}
+
+	// Rebuild the managed block from scratch on each update so that the
+	// output reflects the complete current account/role list (stale profiles
+	// from previous runs are intentionally dropped).
+	nextSections := configFile.NewSections()
+	nextSections = nextSections.SetSection(ssoProfile, ssoSection)
+
+	counter := 0
+
+	for _, account := range accounts.Accounts {
+		for _, role := range account.Roles {
+			counter++
+			profileHeaderName := fmt.Sprintf("profile %s", role.Profile)
+
+			logger.Info("Processing profile", "profile", profileHeaderName)
+
+			section, ok := nextSections.GetSection(profileHeaderName)
+			if !ok {
+				logger.Info("Config file does not have section; creating new section", "section", profileHeaderName)
+
+				section = configFile.NewSection(profileHeaderName)
+			}
+
+			m := map[string]string{}
+
+			m["sso_session"] = profileName
+			m["sso_account_id"] = role.AccountID
+			m["sso_role_name"] = role.Name
+			m["region"] = ssoSection.String("sso_region")
+			m["output"] = "json"
+
+			for iniKey, iniValue := range m {
+				if v, err := configFile.NewStringValue(iniValue); err != nil {
+					return configFile.NewSections(), 0, fmt.Errorf("failed to create '%s' value: %w", iniKey, err)
+				} else {
+					err = section.UpdateValue(iniKey, v)
+					if err != nil {
+						return configFile.NewSections(), 0, fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
+					}
+				}
+			}
+
+			logger.Info("Get the section or create it if it does not exist", "section", profileHeaderName)
+
+			nextSections = nextSections.SetSection(profileHeaderName, section)
+			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
+				return configFile.NewSections(), 0, fmt.Errorf(
+					"failed to create or get section [%s]",
+					profileHeaderName,
+				)
+			}
+		}
+	}
+
+	return nextSections, counter, nil
 }
 
 func init() {

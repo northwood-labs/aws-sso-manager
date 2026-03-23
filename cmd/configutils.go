@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -202,6 +203,14 @@ func getProfileName(profileName, account, role string) string {
 		roleSubstr = asvConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
 	)
 
+	if len(order) == 0 {
+		return buildDefaultProfileName(account, role)
+	}
+
+	if delimiter == "" {
+		delimiter = "-"
+	}
+
 	orderCopy := []string{}
 
 	for _, o := range order {
@@ -251,7 +260,54 @@ func getProfileName(profileName, account, role string) string {
 		}
 	}
 
-	return strings.Join(orderCopy, delimiter)
+	generatedName := strings.TrimSpace(strings.Join(orderCopy, delimiter))
+	if generatedName == "" {
+		return buildDefaultProfileName(account, role)
+	}
+
+	return generatedName
+}
+
+func buildDefaultProfileName(account, role string) string {
+	accountToken := toProfileToken(account)
+	roleToken := toProfileToken(role)
+
+	switch {
+	case accountToken != "" && roleToken != "":
+		return accountToken + "-" + roleToken
+	case accountToken != "":
+		return accountToken
+	case roleToken != "":
+		return roleToken
+	default:
+		return "profile"
+	}
+}
+
+func toProfileToken(input string) string {
+	input = strings.TrimSpace(strings.ToLower(input))
+	if input == "" {
+		return ""
+	}
+
+	b := strings.Builder{}
+	lastDash := false
+
+	for _, r := range input {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			b.WriteRune(r)
+			lastDash = false
+
+			continue
+		}
+
+		if !lastDash {
+			b.WriteRune('-')
+			lastDash = true
+		}
+	}
+
+	return strings.Trim(b.String(), "-")
 }
 
 // markersExist reports whether the AWS config file already contains any managed

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -91,7 +92,7 @@ func init() {
 	awsConfigFilePath = config.DefaultSharedConfigFilename()
 
 	rootCmd.PersistentFlags().StringVarP(
-		&fConfigFile, "config", "c", path.Join(userHomeDir, ".aws-sso-manager.toml"),
+		&fConfigFile, "config", "c", path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml"),
 		"configuration file",
 	)
 	rootCmd.PersistentFlags().CountVarP(
@@ -122,15 +123,17 @@ func initializeConfig(cmd *cobra.Command) error {
 	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "*", "-", "*"))
 	asvConfig.AutomaticEnv()
 
-	if fConfigFile != path.Join(userHomeDir, ".aws-sso-manager.toml") {
-		logger.Info("Config file (.aws-sso-manager.toml) is set via flag", "file", fConfigFile)
+	defaultConfigFile := path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml")
+
+	if fConfigFile != defaultConfigFile {
+		logger.Info("Config file is set via flag", "file", fConfigFile)
 
 		// Use config file from the flag.
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
-			logger.Info("Config file (.aws-sso-manager.toml) does not exist", "file", fConfigFile)
+			logger.Info("Config file does not exist", "file", fConfigFile)
 
-			return fmt.Errorf("config file (.aws-sso-manager.toml) does not exist at %s", fConfigFile)
+			return fmt.Errorf("config file does not exist at %s", fConfigFile)
 		}
 
 		asvConfig.SetConfigFile(fConfigFile)
@@ -139,15 +142,14 @@ func initializeConfig(cmd *cobra.Command) error {
 		if os.IsNotExist(err) {
 			logger.Info("Config file does not exist. Create a new one.")
 
-			// Find a valid config file path.
-			userHomeDir, err := os.UserHomeDir()
-			cobra.CheckErr(err)
+			err = os.MkdirAll(filepath.Dir(defaultConfigFile), 0o0755)
+			if err != nil {
+				return fmt.Errorf("could not create config directory: %w", err)
+			}
 
-			asvConfig.AddConfigPath(userHomeDir)
-			asvConfig.SetConfigName(".aws-sso-manager")
 			asvConfig.SetConfigType("toml")
 
-			err = asvConfig.WriteConfigAs(path.Join(userHomeDir, ".aws-sso-manager.toml"))
+			err = asvConfig.WriteConfigAs(defaultConfigFile)
 			if err != nil {
 				logger.Info("!!!!!! This should not happen !!!!!!")
 
