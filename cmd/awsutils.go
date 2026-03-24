@@ -83,6 +83,25 @@ type (
 		ExpiresAt time.Time    `json:"expires_at,omitempty"`
 		Accounts  listAccounts `json:"accounts"`
 	}
+
+	listAWSAccountsLookupAccount struct {
+		Name     string   `json:"name"`
+		Profiles []string `json:"profiles"`
+		Roles    []string `json:"roles"`
+	}
+
+	listAWSAccountsLookupIndex struct {
+		ProfileName           string                                  `json:"profile_name"`
+		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`
+		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`
+		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"`
+	}
+
+	listAWSAccountsLookupCacheData struct {
+		CachedAt  time.Time                  `json:"cached_at,omitempty"`
+		ExpiresAt time.Time                  `json:"expires_at,omitempty"`
+		Index     listAWSAccountsLookupIndex `json:"index"`
+	}
 )
 
 var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
@@ -174,18 +193,225 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 	return filepath.Join(cacheDir, "accounts-"+hex.EncodeToString(hash[:])+".json")
 }
 
+func (input listAWSAccountsInput) lookupCacheFilePath() string {
+	cacheFilePath := input.cacheFilePath()
+	if cacheFilePath == "" {
+		return ""
+	}
+
+	return strings.TrimSuffix(cacheFilePath, ".json") + "-lookup.json"
+}
+
+func shouldWriteLookupCache(input listAWSAccountsInput) bool {
+	return strings.TrimSpace(input.AccountFilter) == "" && strings.TrimSpace(input.RoleFilter) == ""
+}
+
+func appendUnique(values []string, value string) []string {
+	if value == "" {
+		return values
+	}
+
+	for _, existing := range values {
+		if existing == value {
+			return values
+		}
+	}
+
+	return append(values, value)
+}
+
+func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) listAWSAccountsLookupIndex {
+	index := listAWSAccountsLookupIndex{
+		ProfileName:           profileName,
+		AccountsByID:          map[string]listAWSAccountsLookupAccount{},
+		AccountIDsByNameCI:    map[string][]string{},
+		AccountIDsByProfileCI: map[string][]string{},
+	}
+
+	for _, account := range accounts.Accounts {
+		if account.ID == "" {
+			continue
+		}
+
+		entry := index.AccountsByID[account.ID]
+		entry.Name = account.Name
+
+		nameKey := strings.ToLower(strings.TrimSpace(account.Name))
+		if nameKey != "" {
+			index.AccountIDsByNameCI[nameKey] = appendUnique(index.AccountIDsByNameCI[nameKey], account.ID)
+		}
+
+		for _, role := range account.Roles {
+			entry.Roles = appendUnique(entry.Roles, role.Name)
+
+			profileKey := strings.ToLower(strings.TrimSpace(role.Profile))
+			if profileKey != "" {
+				entry.Profiles = appendUnique(entry.Profiles, role.Profile)
+				index.AccountIDsByProfileCI[profileKey] = appendUnique(
+					index.AccountIDsByProfileCI[profileKey],
+					account.ID,
+				)
+			}
+		}
+
+		sort.SliceStable(entry.Roles, func(i, j int) bool {
+			return strings.ToLower(entry.Roles[i]) < strings.ToLower(entry.Roles[j])
+		})
+		sort.SliceStable(entry.Profiles, func(i, j int) bool {
+			return strings.ToLower(entry.Profiles[i]) < strings.ToLower(entry.Profiles[j])
+		})
+
+		index.AccountsByID[account.ID] = entry
+	}
+
+	for nameKey, accountIDs := range index.AccountIDsByNameCI {
+		sort.Strings(accountIDs)
+		index.AccountIDsByNameCI[nameKey] = accountIDs
+	}
+
+	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
+		sort.Strings(accountIDs)
+		index.AccountIDsByProfileCI[profileKey] = accountIDs
+	}
+
+	return index
+}
+
+func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookupIndex, bool, error) {
+	data, err := os.ReadFile(cacheFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return listAWSAccountsLookupIndex{}, false, nil
+		}
+
+		return listAWSAccountsLookupIndex{}, false, fmt.Errorf("could not read accounts lookup cache file: %w", err)
+	}
+
+	var cached listAWSAccountsLookupCacheData
+	if err := json.Unmarshal(data, &cached); err != nil {
+		return listAWSAccountsLookupIndex{}, false, fmt.Errorf(
+			"could not unmarshal accounts lookup cache file: %w",
+			err,
+		)
+	}
+
+	cacheTTL := cacheDuration
+	if cacheTTL <= 0 {
+		cacheTTL = 24 * time.Hour
+	}
+
+	var expiresAt time.Time
+	if !cached.CachedAt.IsZero() {
+		expiresAt = cached.CachedAt.Add(cacheTTL)
+	} else {
+		expiresAt = cached.ExpiresAt
+	}
+
+	if expiresAt.IsZero() || time.Now().After(expiresAt) {
+		if err := os.Remove(cacheFilePath); err != nil && !os.IsNotExist(err) {
+			return listAWSAccountsLookupIndex{}, false, fmt.Errorf(
+				"could not remove expired accounts lookup cache file: %w",
+				err,
+			)
+		}
+
+		return listAWSAccountsLookupIndex{}, false, nil
+	}
+
+	return cached.Index, true, nil
+}
+
+func writeListAWSAccountsLookupCache(cacheFilePath string, index listAWSAccountsLookupIndex) error {
+	cacheData := listAWSAccountsLookupCacheData{
+		CachedAt: time.Now().UTC(),
+		Index:    index,
+	}
+
+	data, err := json.Marshal(cacheData)
+	if err != nil {
+		return fmt.Errorf("could not marshal accounts lookup cache file: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
+		return fmt.Errorf("could not create accounts lookup cache directory: %w", err)
+	}
+
+	tmpPath := cacheFilePath + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
+		return fmt.Errorf("could not write temporary accounts lookup cache file: %w", err)
+	}
+
+	if err := os.Rename(tmpPath, cacheFilePath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("could not replace accounts lookup cache file: %w", err)
+	}
+
+	return nil
+}
+
+func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSAccountsLookupIndex, error) {
+	lookupCachePath := input.lookupCacheFilePath()
+	if lookupCachePath == "" {
+		return listAWSAccountsLookupIndex{}, errors.New("could not determine lookup cache file path")
+	}
+
+	index, ok, err := readListAWSAccountsLookupCache(lookupCachePath)
+	if err != nil {
+		return listAWSAccountsLookupIndex{}, err
+	}
+	if ok {
+		return index, nil
+	}
+
+	accountsCachePath := input.cacheFilePath()
+	if accountsCachePath == "" {
+		return listAWSAccountsLookupIndex{}, errors.New("could not determine accounts cache file path")
+	}
+
+	accounts, ok, err := readListAWSAccountsCache(accountsCachePath)
+	if err != nil {
+		return listAWSAccountsLookupIndex{}, err
+	}
+	if !ok {
+		return listAWSAccountsLookupIndex{}, fmt.Errorf(
+			"lookup cache is missing and no accounts cache exists for profile %q",
+			input.ProfileName,
+		)
+	}
+
+	index = buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
+	if err := writeListAWSAccountsLookupCache(lookupCachePath, index); err != nil {
+		input.getLogger().Error("Failed to write accounts lookup cache", "file", lookupCachePath, "error", err)
+	}
+
+	return index, nil
+}
+
 func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
 	cacheFilePath := input.cacheFilePath()
 	if cacheFilePath == "" {
 		return errors.New("could not determine the cache file path")
 	}
+	lookupCachePath := input.lookupCacheFilePath()
 
 	if err := os.Remove(cacheFilePath); err != nil {
+		if os.IsNotExist(err) {
+			// no-op
+		} else {
+			return fmt.Errorf("could not remove cache file %s: %w", cacheFilePath, err)
+		}
+	}
+
+	if lookupCachePath == "" {
+		return nil
+	}
+
+	if err := os.Remove(lookupCachePath); err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
 
-		return fmt.Errorf("could not remove cache file %s: %w", cacheFilePath, err)
+		return fmt.Errorf("could not remove lookup cache file %s: %w", lookupCachePath, err)
 	}
 
 	return nil
@@ -572,6 +798,7 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 
 func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 	cacheFilePath := input.cacheFilePath()
+	lookupCacheFilePath := input.lookupCacheFilePath()
 	inputLogger := input.getLogger()
 
 	if cacheFilePath != "" {
@@ -581,6 +808,19 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 		if err != nil {
 			inputLogger.Error("Failed to read AWS accounts cache", "file", cacheFilePath, "error", err)
 		} else if ok {
+			if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
+				lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, cachedAccounts)
+				if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
+					inputLogger.Error(
+						"Failed to write AWS accounts lookup cache",
+						"file",
+						lookupCacheFilePath,
+						"error",
+						err,
+					)
+				}
+			}
+
 			inputLogger.Debug("Using cached AWS accounts", "file", cacheFilePath)
 			return cachedAccounts, nil
 		}
@@ -596,6 +836,21 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 			inputLogger.Error("Failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
 		} else {
 			inputLogger.Debug("Wrote AWS accounts cache", "file", cacheFilePath)
+		}
+
+		if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
+			lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
+			if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
+				inputLogger.Error(
+					"Failed to write AWS accounts lookup cache",
+					"file",
+					lookupCacheFilePath,
+					"error",
+					err,
+				)
+			} else {
+				inputLogger.Debug("Wrote AWS accounts lookup cache", "file", lookupCacheFilePath)
+			}
 		}
 	}
 
