@@ -121,8 +121,8 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 * [X] Use `list` cache to generate a lookup table (24h, configurable).
 * [ ] `list --csv`.
 * [ ] `list --markdown`.
-* [ ] `get accounts` returns a list for `fzf`.
-* [ ] `get roles --for <ID>` returns a list for `fzf`.
+* [X] `get accounts` returns a list for `fzf`.
+* [X] `get roles --for <ID>` returns a list for `fzf`.
 * [X] `lookup account <NAME>` returns the account ID for the friendly name.
 * [X] `lookup role <NAME> --for <NAME>` returns the full role name for the friendly name.
 * [X] Move the config per the [XDG](https://specifications.freedesktop.org/basedir/latest/) spec.
