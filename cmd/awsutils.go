@@ -1,4 +1,4 @@
-// Copyright 2025, Northwood Labs
+// Copyright 2025-2026, Northwood Labs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -172,6 +172,23 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 	}
 
 	return filepath.Join(cacheDir, "accounts-"+hex.EncodeToString(hash[:])+".json")
+}
+
+func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
+	cacheFilePath := input.cacheFilePath()
+	if cacheFilePath == "" {
+		return errors.New("could not determine the cache file path")
+	}
+
+	if err := os.Remove(cacheFilePath); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+
+		return fmt.Errorf("could not remove cache file %s: %w", cacheFilePath, err)
+	}
+
+	return nil
 }
 
 func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) {
@@ -587,6 +604,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 
 func fetchListAWSAccountsFromSSO(input listAWSAccountsInput) (listAccounts, error) {
 	var accts listAccounts
+
 	if input.Cmd == nil {
 		return accts, errors.New("command is required")
 	}

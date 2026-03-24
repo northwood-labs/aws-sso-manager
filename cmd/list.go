@@ -52,6 +52,7 @@ type (
 var (
 	fAccounts string
 	fRoles    string
+	fNoCache  bool
 
 	accounts listAccounts
 	// profileID string
@@ -76,6 +77,7 @@ var (
 		aws-sso-manager list
 		aws-sso-manager list <sso-profile>
 		aws-sso-manager list <sso-profile> --json
+		aws-sso-manager list <sso-profile> --no-cache
 		aws-sso-manager list <sso-profile> --accounts <substring>
 		aws-sso-manager list <sso-profile> --roles <substring>
 		`)),
@@ -119,21 +121,29 @@ var (
 				return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 			}
 
+			listInput := listAWSAccountsInput{
+				Cmd:           cmd,
+				SDKConfig:     &sdkConfig,
+				Cache:         cache,
+				Logger:        logger,
+				ProfileName:   profileName,
+				AccountFilter: fAccounts,
+				RoleFilter:    fRoles,
+			}
+
+			if fNoCache {
+				if err := deleteListAWSAccountsCache(listInput); err != nil {
+					return fmt.Errorf("could not clear accounts cache: %w", err)
+				}
+			}
+
 			err = spinner.New().
 				Output(os.Stderr).
 				Title("Looking up accounts and roles...").
 				Type(spinner.Dots).
 				Action(func(accounts *listAccounts) func() {
 					return func() {
-						accts, err := listAWSAccounts(listAWSAccountsInput{
-							Cmd:           cmd,
-							SDKConfig:     &sdkConfig,
-							Cache:         cache,
-							Logger:        logger,
-							ProfileName:   profileName,
-							AccountFilter: fAccounts,
-							RoleFilter:    fRoles,
-						})
+						accts, err := listAWSAccounts(listInput)
 						cobra.CheckErr(err)
 
 						*accounts = accts
@@ -207,5 +217,7 @@ func init() {
 
 	listCmd.Flags().StringVarP(&fAccounts, "accounts", "a", "", "Filter by account name substring")
 	listCmd.Flags().StringVarP(&fRoles, "roles", "r", "", "Filter by role name substring")
+	listCmd.Flags().
+		BoolVarP(&fNoCache, "no-cache", "n", false, "Delete list cache first, then fetch and cache fresh account data")
 	listCmd.Flags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
 }
