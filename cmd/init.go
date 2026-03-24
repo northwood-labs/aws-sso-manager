@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -127,18 +128,24 @@ var initCmd = &cobra.Command{
 		if ssoStartURL == "" {
 			def := section.String("sso_start_url")
 			if def == "" {
-				def = "https://*.awsapps.com/start"
+				def = "my-organization"
 			}
 
 			err := huh.NewInput().
 				Title("SSO start URL?").
-				Description("e.g., " + def).
+				Description("e.g., https://my-organization.awsapps.com/start or just 'my-organization'").
 				Value(&ssoStartURL).
 				Suggestions([]string{def}).
 				Placeholder(def).
 				Run()
 			cobra.CheckErr(err)
 		}
+
+		normalizedStartURL, err := normalizeSSOStartURL(ssoStartURL)
+		if err != nil {
+			return fmt.Errorf("invalid SSO start URL: %w", err)
+		}
+		ssoStartURL = normalizedStartURL
 
 		logger.Info("Ask for SSO region if not provided already.")
 
@@ -252,8 +259,46 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 
 	initCmd.Flags().
-		StringP("sso-start-url", "u", "", "The start URL for the AWS SSO portal (e.g., https://*.awsapps.com/start)")
+		StringP("sso-start-url", "u", "", "The start URL for the AWS SSO portal, or just the awsapps subdomain (e.g., https://northwood-labs.awsapps.com/start or northwood-labs)")
 	initCmd.Flags().StringP("sso-region", "r", "", "The AWS region where AWS SSO is configured (e.g., us-east-1)")
 	initCmd.Flags().
 		StringP("sso-scopes", "s", "sso:account:access", "The AWS SSO scope to request during authentication")
+}
+
+func normalizeSSOStartURL(raw string) (string, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return "", fmt.Errorf("value cannot be empty")
+	}
+
+	if strings.Contains(trimmed, "://") {
+		parsed, err := url.Parse(trimmed)
+		if err != nil {
+			return "", fmt.Errorf("could not parse %q: %w", raw, err)
+		}
+		if parsed.Scheme == "" || parsed.Host == "" {
+			return "", fmt.Errorf("expected a full URL with scheme and host, got %q", raw)
+		}
+
+		return trimmed, nil
+	}
+
+	if strings.Contains(trimmed, "/") {
+		candidate := "https://" + trimmed
+		parsed, err := url.Parse(candidate)
+		if err != nil {
+			return "", fmt.Errorf("could not parse %q: %w", raw, err)
+		}
+		if parsed.Host == "" {
+			return "", fmt.Errorf("expected a host or subdomain, got %q", raw)
+		}
+
+		return candidate, nil
+	}
+
+	if strings.Contains(trimmed, ".") {
+		return "https://" + trimmed + "/start", nil
+	}
+
+	return fmt.Sprintf("https://%s.awsapps.com/start", trimmed), nil
 }

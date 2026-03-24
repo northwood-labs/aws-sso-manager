@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -53,12 +54,16 @@ var (
 	fAccounts string
 	fRoles    string
 	fNoCache  bool
+	fCSV      bool
+	fMarkdown bool
 
 	accounts listAccounts
 	// profileID string
 
 	cellStyle   = lipgloss.NewStyle().Padding(0, 1)
 	headerStyle = cellStyle.Bold(true)
+
+	listOutputHeaders = []string{"ID", "Account Name", "Role Name", "Profile Name"}
 
 	// listCmd represents the list command
 	listCmd = &cobra.Command{
@@ -77,12 +82,28 @@ var (
 		aws-sso-manager list
 		aws-sso-manager list <sso-profile>
 		aws-sso-manager list <sso-profile> --json
+		aws-sso-manager list <sso-profile> --csv
+		aws-sso-manager list <sso-profile> --markdown
 		aws-sso-manager list <sso-profile> --no-cache
 		aws-sso-manager list <sso-profile> --accounts <substring>
 		aws-sso-manager list <sso-profile> --roles <substring>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
+
+			selectedOutputs := 0
+			if fJSON {
+				selectedOutputs++
+			}
+			if fCSV {
+				selectedOutputs++
+			}
+			if fMarkdown {
+				selectedOutputs++
+			}
+			if selectedOutputs > 1 {
+				return fmt.Errorf("choose only one output format flag: --json, --csv, or --markdown")
+			}
 
 			logger.Info("Passed arguments", "count", len(args))
 
@@ -171,10 +192,22 @@ var (
 				os.Exit(0)
 			}
 
+			rows := buildListOutputRows(profileName, accounts)
+
+			if fCSV {
+				fmt.Print(renderCSVTable(listOutputHeaders, rows))
+				return nil
+			}
+
+			if fMarkdown {
+				fmt.Print(renderMarkdownTable(listOutputHeaders, rows))
+				return nil
+			}
+
 			// Prepare table for TUI
 			t := table.New().
 				Border(lipgloss.RoundedBorder()).
-				Headers("ID", "Account Name", "Role Name", "Profile Name").
+				Headers(listOutputHeaders...).
 				StyleFunc(func(row, _ int) lipgloss.Style {
 					switch {
 					case row == table.HeaderRow:
@@ -184,22 +217,8 @@ var (
 					}
 				})
 
-			for i := range accounts.Accounts {
-				for j := range accounts.Accounts[i].Roles {
-					// rowCount := 0
-					// rowCount++
-
-					accountName := accounts.Accounts[i].Name
-					roleName := accounts.Accounts[i].Roles[j].Name
-					profile := getProfileName(profileName, accountName, roleName)
-
-					t.Row(
-						accounts.Accounts[i].ID,
-						accountName,
-						roleName,
-						profile,
-					)
-				}
+			for _, row := range rows {
+				t.Row(row...)
 			}
 
 			_, err = lipgloss.Println(t)
@@ -220,4 +239,101 @@ func init() {
 	listCmd.Flags().
 		BoolVarP(&fNoCache, "no-cache", "n", false, "Delete list cache first, then fetch and cache fresh account data")
 	listCmd.Flags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
+	listCmd.Flags().BoolVarP(&fCSV, "csv", "C", false, "output in CSV format")
+	listCmd.Flags().BoolVarP(&fMarkdown, "markdown", "M", false, "output in GitHub-Flavored Markdown table format")
+}
+
+func buildListOutputRows(profileName string, accounts listAccounts) [][]string {
+	rows := make([][]string, 0)
+
+	for i := range accounts.Accounts {
+		for j := range accounts.Accounts[i].Roles {
+			accountName := accounts.Accounts[i].Name
+			roleName := accounts.Accounts[i].Roles[j].Name
+			profile := getProfileName(profileName, accountName, roleName)
+
+			rows = append(rows, []string{
+				accounts.Accounts[i].ID,
+				accountName,
+				roleName,
+				profile,
+			})
+		}
+	}
+
+	return rows
+}
+
+func quoteCSVCell(value string) string {
+	return `"` + strings.ReplaceAll(value, `"`, `""`) + `"`
+}
+
+func renderCSVTable(headers []string, rows [][]string) string {
+	var buffer bytes.Buffer
+
+	for _, row := range append([][]string{headers}, rows...) {
+		quoted := make([]string, len(row))
+		for i := range row {
+			quoted[i] = quoteCSVCell(row[i])
+		}
+
+		buffer.WriteString(strings.Join(quoted, ","))
+		buffer.WriteByte('\n')
+	}
+
+	return buffer.String()
+}
+
+func padRight(value string, width int) string {
+	return value + strings.Repeat(" ", width-len(value))
+}
+
+func renderMarkdownTable(headers []string, rows [][]string) string {
+	widths := make([]int, len(headers))
+	for i, header := range headers {
+		widths[i] = len(header)
+	}
+
+	for _, row := range rows {
+		for i, cell := range row {
+			if len(cell) > widths[i] {
+				widths[i] = len(cell)
+			}
+		}
+	}
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("|")
+	for i, header := range headers {
+		buffer.WriteString(" ")
+		buffer.WriteString(padRight(header, widths[i]))
+		buffer.WriteString(" |")
+	}
+	buffer.WriteByte('\n')
+
+	buffer.WriteString("|")
+	for i := range headers {
+		separatorWidth := widths[i]
+		if separatorWidth < 3 {
+			separatorWidth = 3
+		}
+
+		buffer.WriteString(" ")
+		buffer.WriteString(strings.Repeat("-", separatorWidth))
+		buffer.WriteString(" |")
+	}
+	buffer.WriteByte('\n')
+
+	for _, row := range rows {
+		buffer.WriteString("|")
+		for i, cell := range row {
+			buffer.WriteString(" ")
+			buffer.WriteString(padRight(cell, widths[i]))
+			buffer.WriteString(" |")
+		}
+		buffer.WriteByte('\n')
+	}
+
+	return buffer.String()
 }
