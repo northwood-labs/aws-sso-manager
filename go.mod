@@ -1,6 +1,6 @@
 module github.com/northwood-labs/aws-sso-manager
 
-go 1.25.4
+go 1.26.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.2

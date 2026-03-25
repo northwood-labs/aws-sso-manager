@@ -39,7 +39,7 @@ var (
 
 	// consoleCmd represents the diff command
 	consoleCmd = &cobra.Command{
-		Use:   "console",
+		Use:   "console [sso-profile-name] [url]",
 		Short: "Generate an AWS Console URL for an AWS Account ID and role.",
 		Long: clihelpers.LongHelpText(`
 		Generate an AWS Console URL for an AWS Account ID and role.

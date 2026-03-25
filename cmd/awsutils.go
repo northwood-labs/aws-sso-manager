@@ -25,6 +25,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -79,8 +80,8 @@ type (
 	}
 
 	listAWSAccountsCacheData struct {
-		CachedAt  time.Time    `json:"cached_at,omitempty"`
-		ExpiresAt time.Time    `json:"expires_at,omitempty"`
+		CachedAt  time.Time    `json:"cached_at"`
+		ExpiresAt time.Time    `json:"expires_at"`
 		Accounts  listAccounts `json:"accounts"`
 	}
 
@@ -98,8 +99,8 @@ type (
 	}
 
 	listAWSAccountsLookupCacheData struct {
-		CachedAt  time.Time                  `json:"cached_at,omitempty"`
-		ExpiresAt time.Time                  `json:"expires_at,omitempty"`
+		CachedAt  time.Time                  `json:"cached_at"`
+		ExpiresAt time.Time                  `json:"expires_at"`
 		Index     listAWSAccountsLookupIndex `json:"index"`
 	}
 )
@@ -211,10 +212,8 @@ func appendUnique(values []string, value string) []string {
 		return values
 	}
 
-	for _, existing := range values {
-		if existing == value {
-			return values
-		}
+	if slices.Contains(values, value) {
+		return values
 	}
 
 	return append(values, value)

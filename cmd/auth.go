@@ -34,7 +34,7 @@ var (
 
 	// authCmd represents the auth command
 	authCmd = &cobra.Command{
-		Use:   "auth",
+		Use:   "auth [sso-profile-name]",
 		Short: "Authenticates with AWS SSO and retrieves temporary credentials.",
 		Long: clihelpers.LongHelpText(`
 		Authenticates with AWS SSO and retrieves temporary credentials. This command
@@ -45,7 +45,7 @@ var (
 		Aliases: []string{"login"},
 		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-manager auth
-		aws-sso-manager auth <sso-profile>
+		aws-sso-manager auth <sso-profile-name>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string

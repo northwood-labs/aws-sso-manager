@@ -46,12 +46,12 @@ func appendManagedMarkerIssue(issues map[string][]string, profile, issue string)
 }
 
 func parseManagedMarkerProfile(line, prefix string) (string, bool) {
-	idx := strings.Index(line, prefix)
-	if idx < 0 {
+	_, after, ok := strings.Cut(line, prefix)
+	if !ok {
 		return "", false
 	}
 
-	rest := strings.TrimSpace(line[idx+len(prefix):])
+	rest := strings.TrimSpace(after)
 	name := strings.TrimRight(strings.TrimSuffix(rest, "--------"), " -")
 	if name == "" {
 		return "", false

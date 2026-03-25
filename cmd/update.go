@@ -30,7 +30,7 @@ import (
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
-	Use:   "update",
+	Use:   "update [sso-profile-name]",
 	Short: "Simplifies updating accounts and roles in the AWS config.",
 	Long: clihelpers.LongHelpText(`
 	Simplifies updating accounts and roles in the AWS config.
@@ -43,7 +43,7 @@ var updateCmd = &cobra.Command{
 	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
 	aws-sso-manager update
-	aws-sso-manager update <sso-profile>
+	aws-sso-manager update <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (

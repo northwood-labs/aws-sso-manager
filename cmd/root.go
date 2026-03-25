@@ -62,7 +62,7 @@ var (
 	osExit = os.Exit
 
 	rootCmd = &cobra.Command{
-		Use:   "aws-sso-manager",
+		Use:   "aws-sso-manager [subcommand]",
 		Short: "Sets up your AWS SSO credentials into your AWS CLI config.",
 		Long: clihelpers.LongHelpText(`
 		AWS SSO Manager sets up your AWS Identity Center (née SSO) credentials into
@@ -70,6 +70,12 @@ var (
 
 		This allows you to use the AWS CLI with your SSO accounts seamlessly. It
 		also enables the use of AWS Vault with SSO.
+		`),
+		Example: clihelpers.LongHelpText(`
+		aws-sso-manager init [sso-profile-name]
+		aws-sso-manager auth [sso-profile-name]
+		aws-sso-manager list [sso-profile-name]
+		aws-sso-manager update [sso-profile-name]
 		`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			switch fVerbose {

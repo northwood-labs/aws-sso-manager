@@ -31,7 +31,7 @@ import (
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use:   "init",
+	Use:   "init [sso-profile-name]",
 	Short: "Initializes AWS SSO Manager configuration.",
 	Long: clihelpers.LongHelpText(`
 	Initializes AWS SSO Manager configuration by setting up the SSO config for
@@ -40,7 +40,7 @@ var initCmd = &cobra.Command{
 	Args: cobra.RangeArgs(0, 1),
 	Example: strings.TrimSpace(dedent.Dedent(`
 	aws-sso-manager init
-	aws-sso-manager init <sso-profile>
+	aws-sso-manager init <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -258,11 +258,19 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().
-		StringP("sso-start-url", "u", "", "The start URL for the AWS SSO portal, or just the awsapps subdomain (e.g., https://northwood-labs.awsapps.com/start or northwood-labs)")
-	initCmd.Flags().StringP("sso-region", "r", "", "The AWS region where AWS SSO is configured (e.g., us-east-1)")
-	initCmd.Flags().
-		StringP("sso-scopes", "s", "sso:account:access", "The AWS SSO scope to request during authentication")
+	initCmd.Flags().StringP(
+		"sso-start-url",
+		"u",
+		"",
+		"The start URL for the AWS SSO portal, or just the awsapps subdomain "+
+			"(e.g., https://northwood-labs.awsapps.com/start or northwood-labs)",
+	)
+	initCmd.Flags().StringP(
+		"sso-region", "r", "", "The AWS region where AWS SSO is configured (e.g., us-east-1)",
+	)
+	initCmd.Flags().StringP(
+		"sso-scopes", "s", "sso:account:access", "The AWS SSO scope to request during authentication",
+	)
 }
 
 func normalizeSSOStartURL(raw string) (string, error) {

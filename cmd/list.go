@@ -67,7 +67,7 @@ var (
 
 	// listCmd represents the list command
 	listCmd = &cobra.Command{
-		Use:   "list",
+		Use:   "list [sso-profile-name]",
 		Short: "Lists all configured AWS SSO accounts and their associated roles.",
 		Long: clihelpers.LongHelpText(`
 		Lists all configured AWS SSO accounts and their associated roles.
@@ -80,13 +80,13 @@ var (
 		Aliases: []string{"ls"},
 		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-manager list
-		aws-sso-manager list <sso-profile>
-		aws-sso-manager list <sso-profile> --json
-		aws-sso-manager list <sso-profile> --csv
-		aws-sso-manager list <sso-profile> --markdown
-		aws-sso-manager list <sso-profile> --no-cache
-		aws-sso-manager list <sso-profile> --accounts <substring>
-		aws-sso-manager list <sso-profile> --roles <substring>
+		aws-sso-manager list <sso-profile-name>
+		aws-sso-manager list <sso-profile-name> --json
+		aws-sso-manager list <sso-profile-name> --csv
+		aws-sso-manager list <sso-profile-name> --markdown
+		aws-sso-manager list <sso-profile-name> --no-cache
+		aws-sso-manager list <sso-profile-name> --accounts <substring>
+		aws-sso-manager list <sso-profile-name> --roles <substring>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
@@ -314,10 +314,7 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 
 	buffer.WriteString("|")
 	for i := range headers {
-		separatorWidth := widths[i]
-		if separatorWidth < 3 {
-			separatorWidth = 3
-		}
+		separatorWidth := max(widths[i], 3)
 
 		buffer.WriteString(" ")
 		buffer.WriteString(strings.Repeat("-", separatorWidth))

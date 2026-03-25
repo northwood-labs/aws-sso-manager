@@ -79,7 +79,7 @@ var (
 	}
 
 	getRolesCmd = &cobra.Command{
-		Use:   "roles",
+		Use:   "roles --for [account]",
 		Short: "Returns linebreak-delimited role names for one AWS account ID.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

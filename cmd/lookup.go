@@ -30,7 +30,7 @@ import (
 
 type (
 	lookupAccountResponse struct {
-		SSOProfile string   `json:"sso_profile,omitempty"`
+		SSOProfile string   `json:"sso_profile,omitzero"`
 		AccountID  string   `json:"account_id"`
 		Name       string   `json:"name"`
 		Profiles   []string `json:"profiles"`
@@ -38,7 +38,7 @@ type (
 	}
 
 	lookupRoleResponse struct {
-		SSOProfile string   `json:"sso_profile,omitempty"`
+		SSOProfile string   `json:"sso_profile,omitzero"`
 		AccountID  string   `json:"account_id"`
 		Name       string   `json:"name"`
 		Query      string   `json:"query"`
@@ -69,7 +69,7 @@ var (
 	}
 
 	lookupAccountCmd = &cobra.Command{
-		Use:   "account <account-identifier>",
+		Use:   "account [account]",
 		Short: "Resolve an account identifier to account details and valid roles.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -117,7 +117,7 @@ var (
 	}
 
 	lookupRoleCmd = &cobra.Command{
-		Use:   "role <role-substring>",
+		Use:   "role [role] --for [account]",
 		Short: "Lookup roles by case-insensitive substring within one account.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
