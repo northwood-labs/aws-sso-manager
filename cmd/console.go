@@ -23,6 +23,7 @@ import (
 	"regexp"
 	"strings"
 
+	nativeclipboard "github.com/aymanbagabas/go-nativeclipboard"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/lithammer/dedent"
@@ -36,6 +37,7 @@ var (
 	fAccountID string
 	fRegion    string
 	fRole      string
+	fClipboard bool
 
 	// consoleCmd represents the diff command
 	consoleCmd = &cobra.Command{
@@ -53,6 +55,7 @@ var (
 		Args: cobra.RangeArgs(0, 2),
 		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-manager console
+		aws-sso-manager console --clipboard=false
 		aws-sso-manager console <url>
 		aws-sso-manager console <sso-profile>
 		aws-sso-manager console <sso-profile> <url>
@@ -89,6 +92,21 @@ var (
 
 			if consoleURL == "" {
 				logger.Debugf("AWS Console URL is undefined. Collect it from user.")
+
+				if fClipboard {
+					// Set the default value to whatever's on the clipboard.
+					clipboardBytes, err := nativeclipboard.Text.Read()
+					if err != nil {
+						logger.Debug("could not read from the clipboard", "error", err)
+					}
+
+					clipboardString := string(clipboardBytes)
+
+					// But only if it's a valid console URL.
+					if strings.Contains(clipboardString, "console.aws.amazon.com") {
+						consoleURL = clipboardString
+					}
+				}
 
 				groups = append(groups, huh.NewGroup(func() *huh.Input {
 					return huh.NewInput().
@@ -251,6 +269,13 @@ var (
 				destinationURL,
 			)
 
+			if fClipboard {
+				_, err = nativeclipboard.Text.Write([]byte(finalURL))
+				if err != nil {
+					logger.Debug("could not write URL to clipboard", "error", err)
+				}
+			}
+
 			fmt.Println(finalURL)
 
 			return nil
@@ -265,6 +290,14 @@ func init() {
 		"a",
 		"",
 		"The AWS Account ID to authenticate with",
+	)
+
+	consoleCmd.Flags().BoolVarP(
+		&fClipboard,
+		"clipboard",
+		"C",
+		true,
+		"Whether or not to read from, or write to, the clipboard",
 	)
 
 	consoleCmd.Flags().StringVarP(
@@ -332,7 +365,7 @@ func getStartURL(profileName string) (string, error) {
 
 func stripAccountFromURL(consoleURL string) string {
 	reConsole := regexp.MustCompile(`https://([0-9a-zA-Z-]+)\.([0-9a-zA-Z-]+)\.console\.aws\.amazon\.com`)
-	consoleURL = reConsole.ReplaceAllString(consoleURL, `https://\2.console.aws.amazon.com`)
+	consoleURL = reConsole.ReplaceAllString(consoleURL, `https://${2}.console.aws.amazon.com`)
 
 	return consoleURL
 }
