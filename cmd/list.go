@@ -153,26 +153,60 @@ var (
 			}
 
 			if fNoCache {
+				// Fetch fresh data first, bypassing cache
+				err = spinner.New().
+					Output(os.Stderr).
+					Title("Looking up accounts and roles...").
+					Type(spinner.Dots).
+					Action(func(accounts *listAccounts) func() {
+						return func() {
+							accts, err := listAWSAccountsFetcher(listInput)
+							cobra.CheckErr(err)
+							*accounts = accts
+						}
+					}(&accounts)).
+					Run()
+				if err != nil {
+					logger.Fatal("failed to fetch fresh data", "error", err)
+				}
+
+				// Delete old cache after successful fetch
 				if err := deleteListAWSAccountsCache(listInput); err != nil {
 					return fmt.Errorf("could not clear accounts cache: %w", err)
 				}
-			}
 
-			err = spinner.New().
-				Output(os.Stderr).
-				Title("Looking up accounts and roles...").
-				Type(spinner.Dots).
-				Action(func(accounts *listAccounts) func() {
-					return func() {
-						accts, err := listAWSAccounts(listInput)
-						cobra.CheckErr(err)
-
-						*accounts = accts
+				// Write fresh data to cache
+				cacheFilePath := listInput.cacheFilePath()
+				if cacheFilePath != "" {
+					if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
+						logger.Error("failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
 					}
-				}(&accounts)).
-				Run()
-			if err != nil {
-				logger.Fatal(err)
+					if shouldWriteLookupCache(listInput) {
+						lookupCachePath := listInput.lookupCacheFilePath()
+						if lookupCachePath != "" {
+							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
+							if err := writeListAWSAccountsLookupCache(lookupCachePath, lookupIndex); err != nil {
+								logger.Error("failed to write lookup cache", "file", lookupCachePath, "error", err)
+							}
+						}
+					}
+				}
+			} else {
+				err = spinner.New().
+					Output(os.Stderr).
+					Title("Looking up accounts and roles...").
+					Type(spinner.Dots).
+					Action(func(accounts *listAccounts) func() {
+						return func() {
+							accts, err := listAWSAccounts(listInput)
+							cobra.CheckErr(err)
+							*accounts = accts
+						}
+					}(&accounts)).
+					Run()
+				if err != nil {
+					logger.Fatal(err)
+				}
 			}
 
 			if fJSON {
@@ -187,7 +221,7 @@ var (
 			}
 
 			if len(accounts.Accounts) == 0 {
-				fmt.Println("No AWS accounts are assigned to this user.")
+				fmt.Println("no AWS accounts are assigned to this user.")
 
 				os.Exit(0)
 			}

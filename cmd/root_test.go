@@ -15,15 +15,22 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/charmbracelet/fang"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"pgregory.net/rapid"
 )
 
 func TestParseCacheDurationFlag(t *testing.T) {
@@ -38,6 +45,11 @@ func TestParseCacheDurationFlag(t *testing.T) {
 		{name: "days and hours and minutes", input: "1d6h30m", expected: 30*time.Hour + 30*time.Minute},
 		{name: "invalid", input: "abc", wantErr: true},
 		{name: "zero", input: "0h", wantErr: true},
+		{name: "empty string", input: "", wantErr: true},
+		{name: "negative duration", input: "-1h", wantErr: true},
+		{name: "multi-day token", input: "2d12h", expected: 60 * time.Hour},
+		{name: "whitespace only", input: "   ", wantErr: true},
+		{name: "uppercase D suffix", input: "1D", expected: 24 * time.Hour},
 	}
 
 	for _, tc := range tests {
@@ -159,5 +171,223 @@ func TestRunRootCommandUsesFangExecute(t *testing.T) {
 
 	if !called {
 		t.Fatal("expected fangExecute to be called")
+	}
+}
+
+func TestVerboseLevels(t *testing.T) {
+	oldLogger := logger
+	oldVerbose := fVerbose
+	oldCacheDuration := fCacheDuration
+	oldConfigFile := fConfigFile
+	oldConfig := asvConfig
+	t.Cleanup(func() {
+		logger = oldLogger
+		fVerbose = oldVerbose
+		fCacheDuration = oldCacheDuration
+		fConfigFile = oldConfigFile
+		asvConfig = oldConfig
+	})
+
+	tmpDir := t.TempDir()
+	tmpConfig := filepath.Join(tmpDir, "config.toml")
+	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
+		t.Fatalf("failed to write temp config: %v", err)
+	}
+
+	fConfigFile = tmpConfig
+	fCacheDuration = "24h"
+
+	tests := []struct {
+		name          string
+		verbose       int
+		expectedLevel log.Level
+		reportCaller  bool
+	}{
+		{name: "no verbose", verbose: 0, expectedLevel: log.WarnLevel, reportCaller: false},
+		{name: "-v", verbose: 1, expectedLevel: log.InfoLevel, reportCaller: false},
+		{name: "-vv", verbose: 2, expectedLevel: log.DebugLevel, reportCaller: false},
+		{name: "-vvv", verbose: 3, expectedLevel: log.DebugLevel, reportCaller: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			asvConfig = viper.New()
+
+			var buf bytes.Buffer
+			logger = log.NewWithOptions(&buf, log.Options{
+				ReportTimestamp: false,
+			})
+			fVerbose = tc.verbose
+
+			cmd := &cobra.Command{Use: "test"}
+			err := rootCmd.PersistentPreRunE(cmd, nil)
+			if err != nil {
+				t.Fatalf("PersistentPreRunE: %v", err)
+			}
+
+			if logger.GetLevel() != tc.expectedLevel {
+				t.Errorf("expected level %v, got %v", tc.expectedLevel, logger.GetLevel())
+			}
+
+			// Test ReportCaller indirectly by emitting a log line and
+			// checking whether the output contains a caller reference
+			// (e.g. "root_test.go").
+			buf.Reset()
+			logger.Debug("probe")
+
+			output := buf.String()
+			hasCaller := strings.Contains(output, ".go:")
+
+			if tc.reportCaller && !hasCaller {
+				t.Errorf("expected ReportCaller=true output to contain caller info, got %q", output)
+			}
+			if !tc.reportCaller && hasCaller {
+				t.Errorf("expected ReportCaller=false output to NOT contain caller info, got %q", output)
+			}
+		})
+	}
+}
+
+func TestEnvPrefixASM(t *testing.T) {
+	// Save and restore the global asvConfig on cleanup.
+	oldConfig := asvConfig
+	oldConfigFile := fConfigFile
+	t.Cleanup(func() {
+		asvConfig = oldConfig
+		fConfigFile = oldConfigFile
+	})
+
+	// Create a minimal temp config file so initializeConfig doesn't fail.
+	tmpDir := t.TempDir()
+	tmpConfig := filepath.Join(tmpDir, "config.toml")
+	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
+		t.Fatalf("failed to write temp config: %v", err)
+	}
+
+	t.Run("ASM prefix is read", func(t *testing.T) {
+		asvConfig = viper.New()
+		fConfigFile = tmpConfig
+
+		// The env key replacer maps "-" to "_", so for key "profile-name"
+		// Viper looks up env var ASM_PROFILE_NAME.
+		t.Setenv("ASM_PROFILE_NAME", "test-profile-from-env")
+
+		cmd := &cobra.Command{Use: "test"}
+		if err := initializeConfig(cmd); err != nil {
+			t.Fatalf("initializeConfig: %v", err)
+		}
+
+		got := asvConfig.GetString("profile-name")
+		if got != "test-profile-from-env" {
+			t.Fatalf("expected %q, got %q", "test-profile-from-env", got)
+		}
+	})
+
+	t.Run("old ASV prefix is not read", func(t *testing.T) {
+		asvConfig = viper.New()
+		fConfigFile = tmpConfig
+
+		// Set the old ASV_ prefix env var — should NOT be picked up.
+		t.Setenv("ASV_PROFILE_NAME", "old-prefix-value")
+
+		cmd := &cobra.Command{Use: "test"}
+		if err := initializeConfig(cmd); err != nil {
+			t.Fatalf("initializeConfig: %v", err)
+		}
+
+		got := asvConfig.GetString("profile-name")
+		if got == "old-prefix-value" {
+			t.Fatal("ASV_ prefix should no longer be read, but got old-prefix-value")
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 12: Cache Duration Parsing
+func TestPropertyCacheDurationParsing(t *testing.T) {
+	// **Validates: Requirements 10.6, 10.8**
+
+	t.Run("valid_go_durations", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			hours := rapid.IntRange(1, 100).Draw(t, "hours")
+			minutes := rapid.IntRange(0, 59).Draw(t, "minutes")
+			input := fmt.Sprintf("%dh%dm", hours, minutes)
+
+			got, err := parseCacheDurationFlag(input)
+			if err != nil {
+				t.Fatalf("parseCacheDurationFlag(%q): %v", input, err)
+			}
+			if got <= 0 {
+				t.Fatalf("expected positive duration for %q, got %s", input, got)
+			}
+		})
+	})
+
+	t.Run("day_tokens", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			days := rapid.IntRange(1, 30).Draw(t, "days")
+			extraHours := rapid.IntRange(0, 23).Draw(t, "extraHours")
+
+			var input string
+			if extraHours > 0 {
+				input = fmt.Sprintf("%dd%dh", days, extraHours)
+			} else {
+				input = fmt.Sprintf("%dd", days)
+			}
+
+			got, err := parseCacheDurationFlag(input)
+			if err != nil {
+				t.Fatalf("parseCacheDurationFlag(%q): %v", input, err)
+			}
+
+			expected := time.Duration(days*24+extraHours) * time.Hour
+			if got != expected {
+				t.Fatalf("expected %s for %q, got %s", expected, input, got)
+			}
+		})
+	})
+
+	t.Run("invalid_inputs", func(t *testing.T) {
+		// Empty string
+		if _, err := parseCacheDurationFlag(""); err == nil {
+			t.Fatal("expected error for empty string")
+		}
+		// Zero
+		if _, err := parseCacheDurationFlag("0h"); err == nil {
+			t.Fatal("expected error for zero duration")
+		}
+		// Negative
+		if _, err := parseCacheDurationFlag("-1h"); err == nil {
+			t.Fatal("expected error for negative duration")
+		}
+	})
+}
+
+func TestCommandAliases(t *testing.T) {
+	tests := []struct {
+		name    string
+		cmd     *cobra.Command
+		aliases []string
+	}{
+		{name: "auth has login alias", cmd: authCmd, aliases: []string{"login"}},
+		{name: "list has ls alias", cmd: listCmd, aliases: []string{"ls"}},
+		{name: "update has upgrade and sync aliases", cmd: updateCmd, aliases: []string{"upgrade", "sync"}},
+		{name: "validate has check and lint aliases", cmd: validateCmd, aliases: []string{"check", "lint"}},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, alias := range tc.aliases {
+				found := false
+				for _, a := range tc.cmd.Aliases {
+					if a == alias {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected alias %q on command %q, got aliases %v", alias, tc.cmd.Use, tc.cmd.Aliases)
+				}
+			}
+		})
 	}
 }

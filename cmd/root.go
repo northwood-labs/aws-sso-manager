@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/log"
+	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -71,20 +72,26 @@ var (
 		This allows you to use the AWS CLI with your SSO accounts seamlessly. It
 		also enables the use of AWS Vault with SSO.
 		`),
-		Example: clihelpers.LongHelpText(`
+		Example: strings.TrimSpace(dedent.Dedent(`
 		aws-sso-manager init [sso-profile-name]
 		aws-sso-manager auth [sso-profile-name]
 		aws-sso-manager list [sso-profile-name]
 		aws-sso-manager update [sso-profile-name]
-		`),
+		`)),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			switch fVerbose {
-			case 0:
+			switch {
+			case fVerbose == 0:
 				logger.SetLevel(log.WarnLevel)
-			case 1:
+				logger.SetReportCaller(false)
+			case fVerbose == 1:
 				logger.SetLevel(log.InfoLevel)
+				logger.SetReportCaller(false)
+			case fVerbose == 2:
+				logger.SetLevel(log.DebugLevel)
+				logger.SetReportCaller(false)
 			default:
 				logger.SetLevel(log.DebugLevel)
+				logger.SetReportCaller(true)
 			}
 
 			parsedCacheDuration, err := parseCacheDurationFlag(fCacheDuration)
@@ -173,8 +180,8 @@ func Root() *cobra.Command {
 }
 
 func initializeConfig(cmd *cobra.Command) error {
-	asvConfig.SetEnvPrefix("ASV") // AWS SSO Manager
-	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "*", "-", "*"))
+	asvConfig.SetEnvPrefix("ASM") // AWS SSO Manager
+	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	asvConfig.AutomaticEnv()
 
 	defaultConfigFile := path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml")

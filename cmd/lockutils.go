@@ -16,11 +16,9 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
@@ -41,19 +39,19 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	lockCtx, cancel := context.WithTimeout(ctx, awsConfigLockTimeout)
 	defer cancel()
 
-	lockDir := filepath.Dir(awsConfigFilePath)
+	lockDir := filepath.Join(userHomeDir, ".config", ".aws-sso-manager")
 	if err := os.MkdirAll(lockDir, 0o0755); err != nil {
 		return nil, fmt.Errorf("create AWS config directory %q for locking: %w", lockDir, err)
 	}
 
-	lockPath := filepath.Join(lockDir, ".aws-sso-manager.config.lock")
+	lockPath := filepath.Join(lockDir, ".config.lock")
 	lockFile, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0o0600)
 	if err != nil {
 		return nil, fmt.Errorf("open AWS config lock file %q: %w", lockPath, err)
 	}
 
 	for {
-		err = syscall.Flock(int(lockFile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+		err = lockFileNB(lockFile.Fd())
 		if err == nil {
 			if truncateErr := lockFile.Truncate(0); truncateErr != nil {
 				_ = lockFile.Close()
@@ -71,7 +69,7 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			return &awsConfigLock{file: lockFile}, nil
 		}
 
-		if !errors.Is(err, syscall.EWOULDBLOCK) && !errors.Is(err, syscall.EAGAIN) && !errors.Is(err, syscall.EINTR) {
+		if !isLockBusy(err) {
 			_ = lockFile.Close()
 			return nil, fmt.Errorf("acquire AWS config lock %q: %w", lockPath, err)
 		}
@@ -90,7 +88,7 @@ func (l *awsConfigLock) Release() error {
 		return nil
 	}
 
-	unlockErr := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
+	unlockErr := unlockFile(l.file.Fd())
 	closeErr := l.file.Close()
 
 	l.file = nil

@@ -15,14 +15,17 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/charmbracelet/log"
 	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	"pgregory.net/rapid"
 )
 
 func mustSetStringValue(t *testing.T, section configFile.Section, key, value string) configFile.Section {
@@ -291,4 +294,92 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 	if got != got2 {
 		t.Fatalf("expected deterministic output across repeated rewrites\nfirst:\n%s\nsecond:\n%s", got, got2)
 	}
+}
+
+// Feature: aws-sso-manager, Property 17: Update Managed Section Generation
+func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
+	logger = log.New(io.Discard)
+
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 5).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		ssoRegion := rapid.SampledFrom([]string{
+			"us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1",
+		}).Draw(t, "ssoRegion")
+
+		// Build a valid SSO session section with sso_region set.
+		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoSection := configFile.NewSection(ssoProfile)
+
+		regionVal, err := configFile.NewStringValue(ssoRegion)
+		if err != nil {
+			t.Fatalf("new string value for sso_region: %v", err)
+		}
+		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
+			t.Fatalf("update sso_region: %v", err)
+		}
+
+		sections := configFile.NewSections()
+		sections = sections.SetSection(ssoProfile, ssoSection)
+
+		// Call buildUpdatedManagedSections.
+		nextSections, count, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("buildUpdatedManagedSections: %v", err)
+		}
+
+		// Count total account-role combinations.
+		totalRoles := 0
+		for _, acct := range accounts.Accounts {
+			totalRoles += len(acct.Roles)
+		}
+
+		// Verify count equals total account-role combinations.
+		if count != totalRoles {
+			t.Fatalf("expected count=%d, got %d", totalRoles, count)
+		}
+
+		expectedKeys := []string{"sso_session", "sso_account_id", "sso_role_name", "region", "output"}
+		sort.Strings(expectedKeys)
+
+		// For each account-role, verify a [profile <name>] section exists with exactly the right keys.
+		for _, acct := range accounts.Accounts {
+			for _, role := range acct.Roles {
+				profileHeader := fmt.Sprintf("profile %s", role.Profile)
+				section, ok := nextSections.GetSection(profileHeader)
+				if !ok {
+					t.Fatalf("expected section [%s] to exist", profileHeader)
+				}
+
+				gotKeys := section.List()
+				sort.Strings(gotKeys)
+
+				if len(gotKeys) != len(expectedKeys) {
+					t.Fatalf("section [%s]: expected keys %v, got %v", profileHeader, expectedKeys, gotKeys)
+				}
+				for i, k := range expectedKeys {
+					if gotKeys[i] != k {
+						t.Fatalf("section [%s]: expected keys %v, got %v", profileHeader, expectedKeys, gotKeys)
+					}
+				}
+
+				// Verify key values.
+				if got := section.String("sso_session"); got != profileName {
+					t.Fatalf("section [%s]: expected sso_session=%q, got %q", profileHeader, profileName, got)
+				}
+				if got := section.String("sso_account_id"); got != role.AccountID {
+					t.Fatalf("section [%s]: expected sso_account_id=%q, got %q", profileHeader, role.AccountID, got)
+				}
+				if got := section.String("sso_role_name"); got != role.Name {
+					t.Fatalf("section [%s]: expected sso_role_name=%q, got %q", profileHeader, role.Name, got)
+				}
+				if got := section.String("region"); got != ssoRegion {
+					t.Fatalf("section [%s]: expected region=%q, got %q", profileHeader, ssoRegion, got)
+				}
+				if got := section.String("output"); got != "json" {
+					t.Fatalf("section [%s]: expected output=json, got %q", profileHeader, got)
+				}
+			}
+		}
+	})
 }

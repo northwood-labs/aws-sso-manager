@@ -15,8 +15,13 @@
 package cmd
 
 import (
+	"fmt"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
+
+	"pgregory.net/rapid"
 )
 
 func TestGetAccountIDsFromLookupIndexSorted(t *testing.T) {
@@ -88,4 +93,66 @@ func TestGetRoleNamesForAccountID(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Feature: aws-sso-manager, Property 14: Account ID Validation
+// **Validates: Requirements 6.3**
+func TestPropertyAccountIDValidation(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		// Build a lookup index with known accounts
+		index := genLookupIndex().Draw(t, "index")
+
+		// --- Part 1: Invalid account IDs must return an error ---
+		// Generate a string that is NOT a valid 12-digit numeric string.
+		invalidKind := rapid.IntRange(0, 4).Draw(t, "invalidKind")
+		var invalidID string
+		switch invalidKind {
+		case 0:
+			// Empty string
+			invalidID = ""
+		case 1:
+			// Too short: 1-11 digits
+			length := rapid.IntRange(1, 11).Draw(t, "shortLen")
+			invalidID = rapid.StringMatching(fmt.Sprintf(`[0-9]{%d}`, length)).Draw(t, "shortID")
+		case 2:
+			// Too long: 13-20 digits
+			length := rapid.IntRange(13, 20).Draw(t, "longLen")
+			invalidID = rapid.StringMatching(fmt.Sprintf(`[0-9]{%d}`, length)).Draw(t, "longID")
+		case 3:
+			// Contains letters (12 chars but not all digits)
+			invalidID = rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{11}`).Draw(t, "alphaID")
+		case 4:
+			// Has whitespace or special characters
+			invalidID = rapid.StringMatching(`[!@#$%^& ]{1,12}`).Draw(t, "specialID")
+		}
+
+		_, err := getRoleNamesForAccountID(index, invalidID)
+		if err == nil {
+			t.Fatalf("expected error for invalid account ID %q, got nil", invalidID)
+		}
+
+		// --- Part 2: Valid 12-digit IDs present in the index must return roles ---
+		for accountID, account := range index.AccountsByID {
+			roles, err := getRoleNamesForAccountID(index, accountID)
+			if err != nil {
+				t.Fatalf("unexpected error for valid account ID %q: %v", accountID, err)
+			}
+
+			// Roles should be sorted case-insensitively
+			if !sort.SliceIsSorted(roles, func(i, j int) bool {
+				return strings.ToLower(roles[i]) < strings.ToLower(roles[j])
+			}) {
+				t.Fatalf("roles for account %q are not sorted: %v", accountID, roles)
+			}
+
+			// Roles should match the account's roles (sorted)
+			expectedRoles := append([]string(nil), account.Roles...)
+			sort.SliceStable(expectedRoles, func(i, j int) bool {
+				return strings.ToLower(expectedRoles[i]) < strings.ToLower(expectedRoles[j])
+			})
+			if !reflect.DeepEqual(roles, expectedRoles) {
+				t.Fatalf("roles mismatch for account %q: got %v, want %v", accountID, roles, expectedRoles)
+			}
+		}
+	})
 }

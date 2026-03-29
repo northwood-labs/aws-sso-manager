@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
+	"pgregory.net/rapid"
 )
 
 func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
@@ -391,11 +393,11 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	logger = log.New(io.Discard)
 
-	oldConfigPath := awsConfigFilePath
-	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
+	oldHomeDir := userHomeDir
+	t.Cleanup(func() { userHomeDir = oldHomeDir })
 
 	dir := t.TempDir()
-	awsConfigFilePath = filepath.Join(dir, ".aws", "config")
+	userHomeDir = dir
 
 	lock, err := acquireAWSConfigLock(context.Background())
 	if err != nil {
@@ -407,9 +409,27 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 		}
 	})
 
-	lockPath := filepath.Join(filepath.Dir(awsConfigFilePath), ".aws-sso-manager.config.lock")
-	if _, err := os.Stat(lockPath); err != nil {
+	lockDir := filepath.Join(dir, ".config", ".aws-sso-manager")
+	lockPath := filepath.Join(lockDir, ".config.lock")
+
+	// Verify the lock file exists at the new path.
+	lockInfo, err := os.Stat(lockPath)
+	if err != nil {
 		t.Fatalf("expected lock file at %s: %v", lockPath, err)
+	}
+
+	// Verify lock file permissions are 0600.
+	if perm := lockInfo.Mode().Perm(); perm != 0o0600 {
+		t.Fatalf("expected lock file permissions 0600, got %04o", perm)
+	}
+
+	// Verify lock directory permissions are 0755.
+	dirInfo, err := os.Stat(lockDir)
+	if err != nil {
+		t.Fatalf("expected lock directory at %s: %v", lockDir, err)
+	}
+	if perm := dirInfo.Mode().Perm(); perm != 0o0755 {
+		t.Fatalf("expected lock directory permissions 0755, got %04o", perm)
 	}
 }
 
@@ -470,4 +490,260 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 	if got != "prod-account-administratoraccess" {
 		t.Fatalf("expected fallback profile name prod-account-administratoraccess, got %q", got)
 	}
+}
+
+// Feature: aws-sso-manager, Property 7: Profile Name Generation with Pattern
+// **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
+func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
+	rapid.Check(t, func(rt *rapid.T) {
+		oldConfig := asvConfig
+		asvConfig = viper.New()
+		defer func() { asvConfig = oldConfig }()
+
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
+		account := rapid.StringMatching(`[A-Za-z][A-Za-z0-9 ]{2,19}`).Draw(rt, "account")
+		role := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "role")
+
+		config := genProfilePatternConfig().Draw(rt, "patternConfig")
+
+		// Extract pattern config values
+		patternMap := config["pattern"].(map[string]interface{})
+		order := patternMap["order"].([]string)
+		delimiter := patternMap["delimiter"].(string)
+		prefix := config["prefix"].(string)
+		suffix := config["suffix"].(string)
+
+		// Set up asvConfig with the pattern config (skip substr_match_replace for this test)
+		asvConfig.Set(profileName+".rename.pattern.order", order)
+		asvConfig.Set(profileName+".rename.pattern.delimiter", delimiter)
+		asvConfig.Set(profileName+".rename.prefix", prefix)
+		asvConfig.Set(profileName+".rename.suffix", suffix)
+
+		got := getProfileName(profileName, account, role)
+
+		// Property: output should be lowercased
+		if got != strings.ToLower(got) {
+			rt.Fatalf("expected lowercased output, got %q", got)
+		}
+
+		// Property: output should not be empty
+		if got == "" {
+			rt.Fatal("expected non-empty output")
+		}
+
+		// Build expected tokens to verify the output matches the expected
+		// pattern-based join. Empty prefix/suffix are omitted from the output.
+		// The final result is TrimSpace'd by getProfileName.
+		var expectedTokens []string
+		for _, token := range order {
+			switch strings.ToLower(token) {
+			case "prefix":
+				if prefix != "" {
+					expectedTokens = append(expectedTokens, strings.ToLower(prefix))
+				}
+			case "suffix":
+				if suffix != "" {
+					expectedTokens = append(expectedTokens, strings.ToLower(suffix))
+				}
+			case "account":
+				expectedTokens = append(expectedTokens, strings.ToLower(account))
+			case "role":
+				expectedTokens = append(expectedTokens, strings.ToLower(role))
+			}
+		}
+
+		if len(expectedTokens) > 0 {
+			expected := strings.TrimSpace(strings.Join(expectedTokens, delimiter))
+			if expected == "" {
+				// When all tokens produce empty after trim, getProfileName falls back
+				// to buildDefaultProfileName — just verify it's non-empty and lowercased
+				return
+			}
+			if got != expected {
+				rt.Fatalf("expected %q, got %q (order=%v, delimiter=%q, prefix=%q, suffix=%q, account=%q, role=%q)",
+					expected, got, order, delimiter, prefix, suffix, account, role)
+			}
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 6: Managed Block Marker Validation
+func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
+	t.Run("well-formed configs produce no issues", func(t *testing.T) {
+		rapid.Check(t, func(rt *rapid.T) {
+			logger = log.New(io.Discard)
+
+			oldConfigPath := awsConfigFilePath
+			defer func() { awsConfigFilePath = oldConfigPath }()
+
+			// Generate 1-3 unique profile names
+			numProfiles := rapid.IntRange(1, 3).Draw(rt, "numProfiles")
+			profiles := make([]string, numProfiles)
+			seen := map[string]bool{}
+			for i := range numProfiles {
+				for {
+					p := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, fmt.Sprintf("profile%d", i))
+					if !seen[p] {
+						seen[p] = true
+						profiles[i] = p
+						break
+					}
+				}
+			}
+
+			content := genManagedBlockConfig(profiles).Draw(rt, "config")
+
+			dir := t.TempDir()
+			tmpFile := filepath.Join(dir, "config")
+			if err := os.WriteFile(tmpFile, []byte(content), 0o0644); err != nil {
+				rt.Fatalf("write config: %v", err)
+			}
+
+			awsConfigFilePath = tmpFile
+
+			report, err := inspectManagedMarkers()
+			if err != nil {
+				rt.Fatalf("inspectManagedMarkers: %v", err)
+			}
+
+			if len(report.issues) != 0 {
+				rt.Fatalf("expected no issues for well-formed config, got %v", report.issues)
+			}
+		})
+	})
+
+	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
+	t.Run("malformed configs produce issues", func(t *testing.T) {
+		rapid.Check(t, func(rt *rapid.T) {
+			logger = log.New(io.Discard)
+
+			oldConfigPath := awsConfigFilePath
+			defer func() { awsConfigFilePath = oldConfigPath }()
+
+			profile := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profile")
+
+			// Pick an anomaly type: 0=missing end (unclosed), 1=extra end (unmatched), 2=duplicate start
+			anomaly := rapid.IntRange(0, 2).Draw(rt, "anomaly")
+
+			var sb strings.Builder
+			switch anomaly {
+			case 0: // Missing end marker (unclosed block)
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
+				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
+				sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
+			case 1: // Extra end marker (unmatched end)
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+			case 2: // Duplicate start markers
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
+				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
+				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
+				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+			}
+
+			dir := t.TempDir()
+			tmpFile := filepath.Join(dir, "config")
+			if err := os.WriteFile(tmpFile, []byte(sb.String()), 0o0644); err != nil {
+				rt.Fatalf("write config: %v", err)
+			}
+
+			awsConfigFilePath = tmpFile
+
+			report, err := inspectManagedMarkers()
+			if err != nil {
+				rt.Fatalf("inspectManagedMarkers: %v", err)
+			}
+
+			if len(report.issues) == 0 {
+				rt.Fatalf("expected issues for malformed config (anomaly=%d), got none", anomaly)
+			}
+
+			// Verify the profile with the anomaly has issues
+			if _, ok := report.issues[profile]; !ok {
+				rt.Fatalf("expected issues for profile %q, got issues for: %v", profile, report.issues)
+			}
+		})
+	})
+}
+
+// Feature: aws-sso-manager, Property 8: Substring Match Replacement in Profile Names
+// **Validates: Requirements 9.6, 9.8**
+func TestPropertySubstringMatchReplacement(t *testing.T) {
+	rapid.Check(t, func(rt *rapid.T) {
+		oldConfig := asvConfig
+		asvConfig = viper.New()
+		defer func() { asvConfig = oldConfig }()
+
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
+
+		// Generate a random account name (3-15 alphanumeric chars)
+		account := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "account")
+
+		// Pick a random substring of the account name as the match key.
+		// We need at least 1 char for the substring.
+		accountLower := strings.ToLower(account)
+		startIdx := rapid.IntRange(0, len(accountLower)-1).Draw(rt, "startIdx")
+		endIdx := rapid.IntRange(startIdx+1, len(accountLower)).Draw(rt, "endIdx")
+		matchKey := accountLower[startIdx:endIdx]
+
+		// Generate a random replacement value (1-6 lowercase chars)
+		replacement := rapid.StringMatching(`[a-z]{1,6}`).Draw(rt, "replacement")
+
+		role := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "role")
+
+		// Set up asvConfig with pattern order ["ACCOUNT", "ROLE"], delimiter "-",
+		// and the substr_match_replace map
+		asvConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
+		asvConfig.Set(profileName+".rename.pattern.delimiter", "-")
+		asvConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]interface{}{
+			matchKey: replacement,
+		})
+
+		got := getProfileName(profileName, account, role)
+
+		// The output should contain the lowercased replacement value instead of
+		// the account name, joined with the role by "-".
+		expected := strings.ToLower(replacement) + "-" + strings.ToLower(role)
+		if got != expected {
+			rt.Fatalf(
+				"expected %q, got %q (account=%q, matchKey=%q, replacement=%q, role=%q)",
+				expected, got, account, matchKey, replacement, role,
+			)
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 9: Default Profile Name Generation
+func TestPropertyDefaultProfileNameGeneration(t *testing.T) {
+	// **Validates: Requirements 9.10**
+
+	t.Run("toProfileToken_idempotence", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			input := rapid.String().Draw(t, "input")
+			once := toProfileToken(input)
+			twice := toProfileToken(once)
+			if once != twice {
+				t.Fatalf("toProfileToken is not idempotent: toProfileToken(%q)=%q, toProfileToken(%q)=%q",
+					input, once, once, twice)
+			}
+		})
+	})
+
+	t.Run("buildDefaultProfileName_lowercased", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			account := rapid.StringMatching(`[A-Za-z0-9 _.-]{1,20}`).Draw(t, "account")
+			role := rapid.StringMatching(`[A-Za-z0-9 _.-]{1,20}`).Draw(t, "role")
+
+			got := buildDefaultProfileName(account, role)
+
+			if got != strings.ToLower(got) {
+				t.Fatalf("expected lowercased output, got %q", got)
+			}
+
+			if got == "" {
+				t.Fatal("expected non-empty output")
+			}
+		})
+	})
 }

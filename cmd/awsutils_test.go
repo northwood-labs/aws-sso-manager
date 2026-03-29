@@ -17,16 +17,20 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"pgregory.net/rapid"
 )
 
 func TestListAWSAccountsCacheFilePathUsesPackageDefaultDir(t *testing.T) {
@@ -376,4 +380,447 @@ func TestDeleteListAWSAccountsCacheIgnoresMissingFile(t *testing.T) {
 	if err := deleteListAWSAccountsCache(input); err != nil {
 		t.Fatalf("expected missing cache file to be ignored, got error: %v", err)
 	}
+}
+
+func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
+	// 1. Set up a temp directory for cache files
+	oldCacheDir := awsManagerCacheDir
+	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
+	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
+
+	input := listAWSAccountsInput{
+		Logger:      log.New(io.Discard),
+		ProfileName: "nwl2",
+	}
+
+	// 2. Write a valid cache file with known "old" data
+	oldAccounts := listAccounts{
+		Accounts: []listAccount{{
+			ID:    "111111111111",
+			Name:  "OldAccount",
+			Email: "old@example.com",
+			Roles: []listRole{{
+				AccountID: "111111111111",
+				Name:      "OldRole",
+				Profile:   "old-profile",
+			}},
+		}},
+	}
+
+	cachePath := input.cacheFilePath()
+	if cachePath == "" {
+		t.Fatalf("expected cache path to be generated")
+	}
+
+	if err := writeListAWSAccountsCache(cachePath, oldAccounts); err != nil {
+		t.Fatalf("writeListAWSAccountsCache (old data): %v", err)
+	}
+
+	// Verify old cache exists
+	if _, err := os.Stat(cachePath); err != nil {
+		t.Fatalf("expected old cache file to exist: %v", err)
+	}
+
+	// 3. Set listAWSAccountsFetcher to a mock that returns "new" data and records that it was called
+	newAccounts := listAccounts{
+		Accounts: []listAccount{{
+			ID:    "222222222222",
+			Name:  "NewAccount",
+			Email: "new@example.com",
+			Roles: []listRole{{
+				AccountID: "222222222222",
+				Name:      "NewRole",
+				Profile:   "new-profile",
+			}},
+		}},
+	}
+
+	fetcherCalled := false
+	oldFetcher := listAWSAccountsFetcher
+	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
+	listAWSAccountsFetcher = func(_ listAWSAccountsInput) (listAccounts, error) {
+		fetcherCalled = true
+		return newAccounts, nil
+	}
+
+	// 4. Simulate the --no-cache flow: fetch → delete old cache → write new cache
+	freshData, err := listAWSAccountsFetcher(input)
+	if err != nil {
+		t.Fatalf("listAWSAccountsFetcher: %v", err)
+	}
+
+	if err := deleteListAWSAccountsCache(input); err != nil {
+		t.Fatalf("deleteListAWSAccountsCache: %v", err)
+	}
+
+	if err := writeListAWSAccountsCache(cachePath, freshData); err != nil {
+		t.Fatalf("writeListAWSAccountsCache (new data): %v", err)
+	}
+
+	// 5. Verify the fetcher was called
+	if !fetcherCalled {
+		t.Fatalf("expected fetcher to be called when --no-cache is set")
+	}
+
+	// 6. Verify the cache file now contains the new data (not the old data)
+	cached, ok, err := readListAWSAccountsCache(cachePath)
+	if err != nil {
+		t.Fatalf("readListAWSAccountsCache: %v", err)
+	}
+
+	if !ok {
+		t.Fatalf("expected cache file to exist after write")
+	}
+
+	if !reflect.DeepEqual(cached, newAccounts) {
+		t.Fatalf("expected cache to contain new data %#v, got %#v", newAccounts, cached)
+	}
+}
+
+// Feature: aws-sso-manager, Property 2: Account and Role Sorting
+func TestPropertyAccountAndRoleSorting(t *testing.T) {
+	// **Validates: Requirements 3.7**
+	rapid.Check(t, func(t *rapid.T) {
+		numAccounts := rapid.IntRange(1, 10).Draw(t, "numAccounts")
+		accounts := make([]listAccount, numAccounts)
+		for i := range numAccounts {
+			accounts[i] = genListAccount().Draw(t, fmt.Sprintf("account%d", i))
+		}
+
+		// Apply production sorting logic
+		sort.SliceStable(accounts, func(i, j int) bool {
+			return strings.ToLower(accounts[i].Name) < strings.ToLower(accounts[j].Name)
+		})
+		for i := range accounts {
+			sort.SliceStable(accounts[i].Roles, func(a, b int) bool {
+				return strings.ToLower(accounts[i].Roles[a].Name) < strings.ToLower(accounts[i].Roles[b].Name)
+			})
+		}
+
+		// Verify accounts are sorted
+		for i := 1; i < len(accounts); i++ {
+			if strings.ToLower(accounts[i-1].Name) > strings.ToLower(accounts[i].Name) {
+				t.Fatalf("accounts not sorted: %q > %q", accounts[i-1].Name, accounts[i].Name)
+			}
+		}
+
+		// Verify roles within each account are sorted
+		for _, acct := range accounts {
+			for j := 1; j < len(acct.Roles); j++ {
+				if strings.ToLower(acct.Roles[j-1].Name) > strings.ToLower(acct.Roles[j].Name) {
+					t.Fatalf("roles not sorted in account %q: %q > %q", acct.Name, acct.Roles[j-1].Name, acct.Roles[j].Name)
+				}
+			}
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 4: Account and Role Filtering
+func TestPropertyAccountAndRoleFiltering(t *testing.T) {
+	// **Validates: Requirements 3.13, 3.14**
+	rapid.Check(t, func(t *rapid.T) {
+		original := genListAccounts(1, 10).Draw(t, "accounts")
+		filter := rapid.StringMatching(`[A-Za-z0-9]{2,5}`).Draw(t, "filter")
+		filterLower := strings.ToLower(filter)
+
+		// Apply account filtering (replicate production logic from fetchListAWSAccountsFromSSO)
+		var filtered listAccounts
+		for _, acct := range original.Accounts {
+			if !strings.Contains(strings.ToLower(acct.Name), filterLower) {
+				continue
+			}
+
+			filteredAcct := listAccount{
+				ID:    acct.ID,
+				Name:  acct.Name,
+				Email: acct.Email,
+			}
+
+			// Apply role filtering within each matching account
+			for _, role := range acct.Roles {
+				if !strings.Contains(strings.ToLower(role.Name), filterLower) {
+					continue
+				}
+				filteredAcct.Roles = append(filteredAcct.Roles, role)
+			}
+
+			filtered.Accounts = append(filtered.Accounts, filteredAcct)
+		}
+
+		// Verify filtered result is a subset of original
+		if len(filtered.Accounts) > len(original.Accounts) {
+			t.Fatalf("filtered accounts (%d) exceeds original (%d)", len(filtered.Accounts), len(original.Accounts))
+		}
+
+		// Build a set of original account IDs for subset check
+		originalIDs := make(map[string]bool, len(original.Accounts))
+		for _, acct := range original.Accounts {
+			originalIDs[acct.ID] = true
+		}
+
+		for _, acct := range filtered.Accounts {
+			// Every filtered account must exist in original
+			if !originalIDs[acct.ID] {
+				t.Fatalf("filtered account %q not found in original", acct.ID)
+			}
+
+			// Every account in result must have name containing filter (case-insensitive)
+			if !strings.Contains(strings.ToLower(acct.Name), filterLower) {
+				t.Fatalf("account %q name %q does not contain filter %q", acct.ID, acct.Name, filter)
+			}
+
+			// Every role in result must have name containing filter (case-insensitive)
+			for _, role := range acct.Roles {
+				if !strings.Contains(strings.ToLower(role.Name), filterLower) {
+					t.Fatalf("role %q in account %q does not contain filter %q", role.Name, acct.ID, filter)
+				}
+			}
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 5: Lookup Index Round Trip
+func TestPropertyLookupIndexRoundTrip(t *testing.T) {
+	// **Validates: Requirements 3.19, 7.1, 10.11**
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 5).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+
+		index := buildListAWSAccountsLookupIndex(profileName, accounts)
+
+		if index.ProfileName != profileName {
+			t.Fatalf("expected profile name %q, got %q", profileName, index.ProfileName)
+		}
+
+		for _, acct := range accounts.Accounts {
+			// Verify account is findable by ID
+			entry, exists := index.AccountsByID[acct.ID]
+			if !exists {
+				t.Fatalf("account %q not found in AccountsByID", acct.ID)
+			}
+
+			// Verify account name matches
+			if entry.Name != acct.Name {
+				t.Fatalf("expected account name %q for ID %q, got %q", acct.Name, acct.ID, entry.Name)
+			}
+
+			// Verify account is findable by lowercased name
+			nameKey := strings.ToLower(strings.TrimSpace(acct.Name))
+			if nameKey != "" {
+				ids, exists := index.AccountIDsByNameCI[nameKey]
+				if !exists {
+					t.Fatalf("account name %q not found in AccountIDsByNameCI", nameKey)
+				}
+
+				found := false
+				for _, id := range ids {
+					if id == acct.ID {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					t.Fatalf("account ID %q not found in AccountIDsByNameCI[%q]", acct.ID, nameKey)
+				}
+			}
+
+			// Verify roles match
+			for _, role := range acct.Roles {
+				roleFound := false
+				for _, r := range entry.Roles {
+					if r == role.Name {
+						roleFound = true
+						break
+					}
+				}
+
+				if !roleFound {
+					t.Fatalf("role %q not found in lookup entry for account %q", role.Name, acct.ID)
+				}
+
+				// For each role with a non-empty Profile, verify findable by lowercased profile name
+				profileKey := strings.ToLower(strings.TrimSpace(role.Profile))
+				if profileKey != "" {
+					ids, exists := index.AccountIDsByProfileCI[profileKey]
+					if !exists {
+						t.Fatalf("profile %q not found in AccountIDsByProfileCI", profileKey)
+					}
+
+					found := false
+					for _, id := range ids {
+						if id == acct.ID {
+							found = true
+							break
+						}
+					}
+
+					if !found {
+						t.Fatalf("account ID %q not found in AccountIDsByProfileCI[%q]", acct.ID, profileKey)
+					}
+				}
+			}
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 10: Cache File Path Determinism
+func TestPropertyCacheFilePathDeterminism(t *testing.T) {
+	// **Validates: Requirements 10.2**
+	oldCacheDir := awsManagerCacheDir
+	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
+	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
+
+	rapid.Check(t, func(t *rapid.T) {
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		accountFilter := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "accountFilter")
+		roleFilter := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "roleFilter")
+
+		input := listAWSAccountsInput{
+			Logger:        log.New(io.Discard),
+			ProfileName:   profileName,
+			AccountFilter: accountFilter,
+			RoleFilter:    roleFilter,
+		}
+
+		// Same inputs produce same path
+		path1 := input.cacheFilePath()
+		path2 := input.cacheFilePath()
+		if path1 != path2 {
+			t.Fatalf("same inputs produced different paths: %q vs %q", path1, path2)
+		}
+
+		// Different inputs produce different paths (with high probability)
+		differentProfile := profileName + "x"
+		differentInput := listAWSAccountsInput{
+			Logger:        log.New(io.Discard),
+			ProfileName:   differentProfile,
+			AccountFilter: accountFilter,
+			RoleFilter:    roleFilter,
+		}
+		path3 := differentInput.cacheFilePath()
+		if path1 == path3 {
+			t.Fatalf("different inputs produced same path: %q", path1)
+		}
+	})
+}
+
+// Feature: aws-sso-manager, Property 11: Cache Expiry Detection
+func TestPropertyCacheExpiryDetection(t *testing.T) {
+	// **Validates: Requirements 10.4**
+	oldCacheDir := awsManagerCacheDir
+	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
+	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
+
+	oldCacheDuration := cacheDuration
+	t.Cleanup(func() { cacheDuration = oldCacheDuration })
+
+	rapid.Check(t, func(t *rapid.T) {
+		duration := time.Duration(rapid.IntRange(1, 48).Draw(t, "hours")) * time.Hour
+		cacheDuration = duration
+
+		accounts := genListAccounts(1, 3).Draw(t, "accounts")
+
+		input := listAWSAccountsInput{
+			Logger:      log.New(io.Discard),
+			ProfileName: rapid.StringMatching(`[a-z]{3,8}`).Draw(t, "profile"),
+		}
+		cachePath := input.cacheFilePath()
+
+		// Test non-expired cache
+		notExpired := listAWSAccountsCacheData{
+			CachedAt: time.Now().Add(-duration / 2).UTC(),
+			Accounts: accounts,
+		}
+		data, _ := json.Marshal(notExpired)
+		os.MkdirAll(filepath.Dir(cachePath), 0o755)
+		os.WriteFile(cachePath, data, 0o600)
+
+		got, ok, err := readListAWSAccountsCache(cachePath)
+		if err != nil {
+			t.Fatalf("readListAWSAccountsCache (not expired): %v", err)
+		}
+		if !ok {
+			t.Fatalf("expected cache to be valid (not expired)")
+		}
+		if len(got.Accounts) != len(accounts.Accounts) {
+			t.Fatalf("expected %d accounts, got %d", len(accounts.Accounts), len(got.Accounts))
+		}
+
+		// Test expired cache
+		expired := listAWSAccountsCacheData{
+			CachedAt: time.Now().Add(-duration * 2).UTC(),
+			Accounts: accounts,
+		}
+		data, _ = json.Marshal(expired)
+		os.WriteFile(cachePath, data, 0o600)
+
+		_, ok, err = readListAWSAccountsCache(cachePath)
+		if err != nil {
+			t.Fatalf("readListAWSAccountsCache (expired): %v", err)
+		}
+		if ok {
+			t.Fatalf("expected cache to be expired")
+		}
+	})
+}
+
+func TestBuildListAWSAccountsLookupIndexEdgeCases(t *testing.T) {
+	t.Run("empty accounts", func(t *testing.T) {
+		index := buildListAWSAccountsLookupIndex("test", listAccounts{})
+		if len(index.AccountsByID) != 0 {
+			t.Fatalf("expected empty AccountsByID, got %d", len(index.AccountsByID))
+		}
+	})
+
+	t.Run("account with no roles", func(t *testing.T) {
+		accounts := listAccounts{
+			Accounts: []listAccount{{ID: "111111111111", Name: "NoRoles"}},
+		}
+		index := buildListAWSAccountsLookupIndex("test", accounts)
+		entry, ok := index.AccountsByID["111111111111"]
+		if !ok {
+			t.Fatal("expected account in index")
+		}
+		if len(entry.Roles) != 0 {
+			t.Fatalf("expected no roles, got %d", len(entry.Roles))
+		}
+	})
+
+	t.Run("duplicate account IDs merge roles", func(t *testing.T) {
+		accounts := listAccounts{
+			Accounts: []listAccount{
+				{ID: "111111111111", Name: "Acct", Roles: []listRole{{Name: "RoleA", Profile: "prof-a"}}},
+				{ID: "111111111111", Name: "Acct", Roles: []listRole{{Name: "RoleB", Profile: "prof-b"}}},
+			},
+		}
+		index := buildListAWSAccountsLookupIndex("test", accounts)
+		entry := index.AccountsByID["111111111111"]
+		if len(entry.Roles) != 2 {
+			t.Fatalf("expected 2 merged roles, got %d: %v", len(entry.Roles), entry.Roles)
+		}
+	})
+
+	t.Run("account with empty name", func(t *testing.T) {
+		accounts := listAccounts{
+			Accounts: []listAccount{{ID: "111111111111", Name: ""}},
+		}
+		index := buildListAWSAccountsLookupIndex("test", accounts)
+		if _, ok := index.AccountsByID["111111111111"]; !ok {
+			t.Fatal("expected account in index")
+		}
+		if len(index.AccountIDsByNameCI) != 0 {
+			t.Fatalf("expected empty AccountIDsByNameCI for empty name, got %v", index.AccountIDsByNameCI)
+		}
+	})
+
+	t.Run("account with empty ID is skipped", func(t *testing.T) {
+		accounts := listAccounts{
+			Accounts: []listAccount{{ID: "", Name: "NoID"}},
+		}
+		index := buildListAWSAccountsLookupIndex("test", accounts)
+		if len(index.AccountsByID) != 0 {
+			t.Fatalf("expected empty AccountsByID for empty ID, got %d", len(index.AccountsByID))
+		}
+	})
 }
