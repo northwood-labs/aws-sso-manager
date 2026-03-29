@@ -17,11 +17,11 @@ Requirements:
 Output sections:
 
 1. Entry Points
-1. CLI Startup and Initialization Flow
-1. Command-Specific Flows
-1. File and Module Responsibilities
-1. Decision Points and Side Effects
-1. Risks, Gaps, and Follow-up Inspections
+2. CLI Startup and Initialization Flow
+3. Command-Specific Flows
+4. File and Module Responsibilities
+5. Decision Points and Side Effects
+6. Risks, Gaps, and Follow-up Inspections
 
 Depth target:
 

@@ -9,13 +9,13 @@
 ## 2. Primary flow
 
 1. Process starts in `main` ([main.go](../main.go)) and enters the root `Execute` function.
-1. `runRootCommand` calls `fangExecute` with `rootCmd`, which resolves which subcommand to run.
-1. Shared pre-run initialization executes via `PersistentPreRunE`: logger level selection (0=warn, 1=info, 2=debug, 3+=debug with source locations) and config file/env binding via `initializeConfig`.
-1. For the highest-impact operational path, the `update` command handler runs.
-1. `update` acquires an exclusive file lock via `acquireAWSConfigLock` (platform-specific: `flock` on Unix, `LockFileEx` on Windows), then extracts the managed block from AWS config via `getManagedSection`, which first calls `validateManagedMarkers` to verify structural integrity.
-1. After parsing managed sections via `loadAWSConfig`, it retrieves SSO session details with `getSsoSession`, builds an AWS SDK config with `getSDKConfig`, then ensures authentication via `getOrRefreshAuthenticatedCache`.
-1. It fetches accounts/roles through `listAWSAccounts` (cache-aside: reads cache first, falls back to AWS SSO API on miss), then rebuilds profile sections from scratch via `buildUpdatedManagedSections` and injects them back via `setManagedSection`.
-1. The rewritten config is atomically committed via `os.Rename`, then the temporary files and lock are released. A note is printed to stderr reminding the user that cached data was used.
+2. `runRootCommand` calls `fangExecute` with `rootCmd`, which resolves which subcommand to run.
+3. Shared pre-run initialization executes via `PersistentPreRunE`: logger level selection (0=warn, 1=info, 2=debug, 3+=debug with source locations) and config file/env binding via `initializeConfig`.
+4. For the highest-impact operational path, the `update` command handler runs.
+5. `update` acquires an exclusive file lock via `acquireAWSConfigLock` (platform-specific: `flock` on Unix, `LockFileEx` on Windows), then extracts the managed block from AWS config via `getManagedSection`, which first calls `validateManagedMarkers` to verify structural integrity.
+6. After parsing managed sections via `loadAWSConfig`, it retrieves SSO session details with `getSsoSession`, builds an AWS SDK config with `getSDKConfig`, then ensures authentication via `getOrRefreshAuthenticatedCache`.
+7. It fetches accounts/roles through `listAWSAccounts` (cache-aside: reads cache first, falls back to AWS SSO API on miss), then rebuilds profile sections from scratch via `buildUpdatedManagedSections` and injects them back via `setManagedSection`.
+8. The rewritten config is atomically committed via `os.Rename`, then the temporary files and lock are released. A note is printed to stderr reminding the user that cached data was used.
 
 ## 3. Module roles (short bullets)
 

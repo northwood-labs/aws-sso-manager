@@ -1,8 +1,7 @@
 ---
-name: Review Output Format
+name: Review Output Format Standards
 description: "Use when producing code reviews, architecture walkthroughs, call-flow analyses, or execution-path documentation to standardize file references and flow diagrams."
 ---
-# Review Output Standards
 
 Use this format whenever you produce review or flow-analysis output.
 
@@ -11,8 +10,8 @@ Use this format whenever you produce review or flow-analysis output.
 * Use markdown links for every concrete file mention.
 * Include line anchors when citing specific logic.
 * Preferred style:
-    * File only: `[cmd/root.go](cmd/root.go)`
-    * File with line: `[cmd/root.go#L12](cmd/root.go#L12)`
+  * File only: `[cmd/root.go](cmd/root.go)`
+  * File with line: `[cmd/root.go#L12](cmd/root.go#L12)`
 * Do not cite line numbers without links.
 * Keep references precise and tied to specific claims.
 

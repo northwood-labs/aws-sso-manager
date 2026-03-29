@@ -24,10 +24,10 @@ Default behavior:
 ## Approach
 
 1. Identify CLI startup entrypoints first (main files, root command setup, command registration).
-1. Trace startup invocation chains into root behavior, then into command-specific handlers.
-1. Group files by responsibility and summarize each group's role.
-1. Highlight key control-flow branches, configuration loading, and side effects.
-1. Note unknowns explicitly where dynamic behavior prevents certainty.
+2. Trace startup invocation chains into root behavior, then into command-specific handlers.
+3. Group files by responsibility and summarize each group's role.
+4. Highlight key control-flow branches, configuration loading, and side effects.
+5. Note unknowns explicitly where dynamic behavior prevents certainty.
 
 ## Output Format
 
@@ -37,21 +37,21 @@ Return sections in this order:
 
     * List concrete start locations and why they are entrypoints.
 
-1. End-to-End Flow
+2. End-to-End Flow
 
     * Step-by-step call flow from startup through major stages.
     * Subsection A: CLI startup and initialization flow.
     * Subsection B: Command-specific flows and branch-specific behavior.
 
-1. File and Module Responsibilities
+3. File and Module Responsibilities
 
     * File/group summary with role in the system.
 
-1. Decision Points and Side Effects
+4. Decision Points and Side Effects
 
     * Branches, external calls, I/O, state changes, and error handling pivots.
 
-1. Open Questions
+5. Open Questions
 
     * Gaps, assumptions, and what to inspect next for full certainty.
 

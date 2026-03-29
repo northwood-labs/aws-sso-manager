@@ -16,8 +16,8 @@ Requirements:
 Output sections:
 
 1. Entry Point
-1. Primary Flow (5-10 steps)
-1. Module Roles (short bullets)
-1. Risks or Unknowns
+2. Primary Flow (5-10 steps)
+3. Module Roles (short bullets)
+4. Risks or Unknowns
 
 Keep the answer concise and practical for quick onboarding.

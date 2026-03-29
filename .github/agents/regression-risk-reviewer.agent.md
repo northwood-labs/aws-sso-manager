@@ -19,10 +19,10 @@ Your job is to inspect changed or targeted code and identify potential regressio
 ## Review Priorities
 
 1. Behavioral regressions against intended or prior flow.
-1. Broken edge-case handling and error propagation.
-1. Risky control-flow or state transitions.
-1. Backward compatibility risks.
-1. Missing or insufficient tests for changed behavior.
+2. Broken edge-case handling and error propagation.
+3. Risky control-flow or state transitions.
+4. Backward compatibility risks.
+5. Missing or insufficient tests for changed behavior.
 
 ## Output Format
 
@@ -32,15 +32,15 @@ Return sections in this order:
 
     * For each finding: severity, impact, why it is risky, and concrete file/symbol references.
 
-1. Open Questions and Assumptions
+2. Open Questions and Assumptions
 
     * Clarifications needed to confirm behavior.
 
-1. Test Coverage Gaps
+3. Test Coverage Gaps
 
     * Missing tests tied directly to identified risk areas.
 
-1. Brief Change Summary
+4. Brief Change Summary
 
     * 2-5 bullets only after findings.
 

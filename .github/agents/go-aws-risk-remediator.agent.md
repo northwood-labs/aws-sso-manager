@@ -24,11 +24,11 @@ Default behavior:
 ## Approach
 
 1. Read the risk description and identify the implicated Go package, function, or AWS integration boundary.
-1. Trace the relevant control flow, data flow, and side effects in the current code.
-1. Confirm, narrow, or reject the flagged risk using concrete code evidence.
-1. If the risk is real and the fix is low-ambiguity, implement the smallest correct change immediately.
-1. Run focused validation such as targeted tests, builds, or static checks when practical.
-1. If the risk cannot be safely fixed without product or behavior decisions, provide precise remediation options and tradeoffs instead of guessing.
+2. Trace the relevant control flow, data flow, and side effects in the current code.
+3. Confirm, narrow, or reject the flagged risk using concrete code evidence.
+4. If the risk is real and the fix is low-ambiguity, implement the smallest correct change immediately.
+5. Run focused validation such as targeted tests, builds, or static checks when practical.
+6. If the risk cannot be safely fixed without product or behavior decisions, provide precise remediation options and tradeoffs instead of guessing.
 
 ## Output Format
 
@@ -40,20 +40,20 @@ Return sections in this order:
     * Why the risk was flagged.
     * Concrete code references.
 
-1. Root Cause
+2. Root Cause
 
     * The specific code path or assumption creating the risk.
 
-1. Action Taken
+3. Action Taken
 
     * Fix implemented, no code change required, or remediation options only.
     * If no fix was applied, state why immediate remediation was not safe.
 
-1. Validation
+4. Validation
 
     * What was checked and what remains unverified.
 
-1. Residual Risks
+5. Residual Risks
 
     * Any remaining edge cases or follow-up checks.
 

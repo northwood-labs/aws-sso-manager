@@ -23,7 +23,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
     You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
-1. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
+2. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
 
     ```text
     ; -------- aws-sso-manager: start abc --------
@@ -42,11 +42,11 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager auth <ID>
     ```
 
-1. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
+2. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
 
     <div><img src="docs/auth@2x.png" alt="Match the authorization code" width="50%"></div>
 
-1. You will be asked to grant permission to a client. Choose _Allow_.
+3. You will be asked to grant permission to a client. Choose _Allow_.
 
     <div><img src="docs/approve@2x.png" alt="Grant permission to botocore" width="50%"></div>
 
@@ -61,13 +61,13 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager list <ID>
     ```
 
-1. If you want to update your config file with the current set of accounts and profiles you have available, run the following:
+2. If you want to update your config file with the current set of accounts and profiles you have available, run the following:
 
     ```bash
     aws-sso-manager update <ID>
     ```
 
-1. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
+3. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
 
     See `docs/config_file.md` for more information.
 

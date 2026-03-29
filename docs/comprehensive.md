@@ -3,10 +3,10 @@
 ## 1. Entry points
 
 1. Primary binary entrypoint is [main.go](../main.go), where `main` calls `cmd.Execute`.
-1. CLI runtime entrypoint is in [cmd/root.go](../cmd/root.go), where `Execute` calls `runRootCommand`, which delegates to `fangExecute` with `rootCmd`.
-1. Root command lifecycle starts in `rootCmd` in [cmd/root.go](../cmd/root.go): the `PersistentPreRunE` hook initializes logging and calls `initializeConfig` before any subcommand `RunE`.
-1. Command entry registrations occur during package `init` functions in [cmd/init.go](../cmd/init.go), [cmd/auth.go](../cmd/auth.go), [cmd/list.go](../cmd/list.go), [cmd/update.go](../cmd/update.go), [cmd/console.go](../cmd/console.go), [cmd/validate.go](../cmd/validate.go), and [cmd/version.go](../cmd/version.go).
-1. Tooling/docs entrypoint exposure exists via `Root()` in [cmd/root.go](../cmd/root.go), returning `rootCmd` for external doc generators.
+2. CLI runtime entrypoint is in [cmd/root.go](../cmd/root.go), where `Execute` calls `runRootCommand`, which delegates to `fangExecute` with `rootCmd`.
+3. Root command lifecycle starts in `rootCmd` in [cmd/root.go](../cmd/root.go): the `PersistentPreRunE` hook initializes logging and calls `initializeConfig` before any subcommand `RunE`.
+4. Command entry registrations occur during package `init` functions in [cmd/init.go](../cmd/init.go), [cmd/auth.go](../cmd/auth.go), [cmd/list.go](../cmd/list.go), [cmd/update.go](../cmd/update.go), [cmd/console.go](../cmd/console.go), [cmd/validate.go](../cmd/validate.go), and [cmd/version.go](../cmd/version.go).
+5. Tooling/docs entrypoint exposure exists via `Root()` in [cmd/root.go](../cmd/root.go), returning `rootCmd` for external doc generators.
 
 Confidence: High for concrete startup path and command registration points.
 
@@ -15,19 +15,19 @@ Confidence: High for concrete startup path and command registration points.
 ### A. Startup flow from process launch to command execution
 
 1. Process starts in `main` ([main.go](../main.go)) and immediately invokes `cmd.Execute`.
-1. `Execute` calls `runRootCommand` (a test-seam variable), which calls `fangExecute` with `rootCmd` and exits non-zero on error via `osExit`.
-1. Root-level `init` has already run at package load time: sets `userHomeDir`, resolves `awsConfigFilePath`, and defines persistent flags (`--config`, `--verbose`, `--json`).
-1. Before any subcommand logic, `PersistentPreRunE` executes: `logger` is already a package-level var; the hook sets log level by verbosity count, then calls `initializeConfig`.
+2. `Execute` calls `runRootCommand` (a test-seam variable), which calls `fangExecute` with `rootCmd` and exits non-zero on error via `osExit`.
+3. Root-level `init` has already run at package load time: sets `userHomeDir`, resolves `awsConfigFilePath`, and defines persistent flags (`--config`, `--verbose`, `--json`).
+4. Before any subcommand logic, `PersistentPreRunE` executes: `logger` is already a package-level var; the hook sets log level by verbosity count, then calls `initializeConfig`.
 
 ### B. Configuration bootstrap and precedence
 
 1. `asvConfig` is a package-level Viper instance in [cmd/root.go](../cmd/root.go).
-1. `initializeConfig` enables environment variable support with prefix `ASM` and maps hyphens/dots to underscores for env var lookup (e.g., `profile-name` → `ASM_PROFILE_NAME`).
-1. If the user passed a non-default config path, the file must exist or initialization fails.
-1. If using the default path and the file is absent, the program creates `~/.config/aws-sso-manager/config.toml` automatically.
-1. Config is read with tolerant handling for file-not-found errors.
-1. Flags are bound to Viper with `BindPFlags` on the command-local flag set.
-1. Precedence order: CLI flags > environment variables (`ASM_` prefix) > config file > defaults.
+2. `initializeConfig` enables environment variable support with prefix `ASM` and maps hyphens/dots to underscores for env var lookup (e.g., `profile-name` → `ASM_PROFILE_NAME`).
+3. If the user passed a non-default config path, the file must exist or initialization fails.
+4. If using the default path and the file is absent, the program creates `~/.config/aws-sso-manager/config.toml` automatically.
+5. Config is read with tolerant handling for file-not-found errors.
+6. Flags are bound to Viper with `BindPFlags` on the command-local flag set.
+7. Precedence order: CLI flags > environment variables (`ASM_` prefix) > config file > defaults.
 
 Mermaid startup diagram:
 
@@ -54,116 +54,116 @@ Confidence: High for order and control transfer; medium for exact Fang internals
 ### A. `init` command
 
 1. Declared and registered in [cmd/init.go](../cmd/init.go) via its `init` function.
-1. Resolves profile name from positional arg, `profile-name` config key, or interactive prompt.
-1. Reads optional SSO fields (`sso_start_url`, `sso_region`) from the TOML config.
-1. Acquires an exclusive file lock via `acquireAWSConfigLock` before any writes.
-1. Loads AWS config sections via `loadAWSConfig`; aborts if `[sso-session <profile>]` already exists.
-1. Guards against orphaned markers: if `markersExist` returns true, aborts before attempting writes.
-1. Prompts interactively for any missing SSO URL or region values.
-1. Writes new `sso_start_url`, `sso_region`, and `sso_registration_scopes` into the in-memory section map.
-1. Appends managed block markers and section text to a temp file via `os.CreateTemp`, then atomically replaces the real AWS config using `os.Rename`.
+2. Resolves profile name from positional arg, `profile-name` config key, or interactive prompt.
+3. Reads optional SSO fields (`sso_start_url`, `sso_region`) from the TOML config.
+4. Acquires an exclusive file lock via `acquireAWSConfigLock` before any writes.
+5. Loads AWS config sections via `loadAWSConfig`; aborts if `[sso-session <profile>]` already exists.
+6. Guards against orphaned markers: if `markersExist` returns true, aborts before attempting writes.
+7. Prompts interactively for any missing SSO URL or region values.
+8. Writes new `sso_start_url`, `sso_region`, and `sso_registration_scopes` into the in-memory section map.
+9. Appends managed block markers and section text to a temp file via `os.CreateTemp`, then atomically replaces the real AWS config using `os.Rename`.
 
 Branch behavior:
 
 1. Existing session section branch stops with actionable error.
-1. Orphaned marker branch stops with actionable error before writing.
-1. Missing inputs branch enters interactive mode.
-1. Failure points use `cobra.CheckErr` in several places, causing immediate process termination.
+2. Orphaned marker branch stops with actionable error before writing.
+3. Missing inputs branch enters interactive mode.
+4. Failure points use `cobra.CheckErr` in several places, causing immediate process termination.
 
 ### B. `auth` command
 
 1. Declared and registered in [cmd/auth.go](../cmd/auth.go).
-1. Resolves profile similarly to `init` (arg / config / prompt).
-1. Gets SSO session profile from AWS config via `getSsoSession`; finds cache file path via `getCacheFilePath`.
-1. If `cacheData.read` succeeds and the token is still valid, reports remaining validity and exits.
-1. If cache read fails or is expired, triggers device authorization flow:
-   * builds SDK config with `getSDKConfig(requestCtx, ...)`,
-   * starts auth via `authenticateSSOProfile`,
-   * extracts user code,
-   * optionally opens browser,
-   * polls token endpoint via `waitForCustomerToAuthenticate`,
-   * saves result via `cacheData.save`.
+2. Resolves profile similarly to `init` (arg / config / prompt).
+3. Gets SSO session profile from AWS config via `getSsoSession`; finds cache file path via `getCacheFilePath`.
+4. If `cacheData.read` succeeds and the token is still valid, reports remaining validity and exits.
+5. If cache read fails or is expired, triggers device authorization flow:
+    * builds SDK config with `getSDKConfig(requestCtx, ...)`,
+    * starts auth via `authenticateSSOProfile`,
+    * extracts user code,
+    * optionally opens browser,
+    * polls token endpoint via `waitForCustomerToAuthenticate`,
+    * saves result via `cacheData.save`.
 
 Branch behavior:
 
 1. Valid cache short-circuits login.
-1. Expired/missing cache enters OIDC device flow.
-1. Browser flag controls side effect: launch browser vs print URL.
+2. Expired/missing cache enters OIDC device flow.
+3. Browser flag controls side effect: launch browser vs print URL.
 
 ### C. `list` command
 
 1. Declared and registered in [cmd/list.go](../cmd/list.go).
-1. Resolves profile (arg / config / prompt), then retrieves SSO session and AWS SDK config via `getSsoSession` and `getSDKConfig`.
-1. Ensures authentication via `getOrRefreshAuthenticatedCache`; triggers auth flow if needed.
-1. Uses spinner-wrapped account and role discovery via `listAWSAccounts`.
-1. Supports `--no-cache` flag: fetches fresh data first (bypassing cache), then deletes old cache, then writes new cache. This ordering ensures the user retains old data if the fresh fetch fails.
-1. Output branch: JSON (`--json`), CSV (`--csv`), Markdown (`--markdown`), or styled TUI table (default). Only one format flag may be set at a time.
-1. Supports `--accounts` and `--roles` flags for case-insensitive substring filtering.
-1. Empty accounts list exits process with code 0.
-1. Builds and persists a lookup index alongside the accounts cache when no filters are active, enabling fast offline lookups by `get` and `lookup` commands.
+2. Resolves profile (arg / config / prompt), then retrieves SSO session and AWS SDK config via `getSsoSession` and `getSDKConfig`.
+3. Ensures authentication via `getOrRefreshAuthenticatedCache`; triggers auth flow if needed.
+4. Uses spinner-wrapped account and role discovery via `listAWSAccounts`.
+5. Supports `--no-cache` flag: fetches fresh data first (bypassing cache), then deletes old cache, then writes new cache. This ordering ensures the user retains old data if the fresh fetch fails.
+6. Output branch: JSON (`--json`), CSV (`--csv`), Markdown (`--markdown`), or styled TUI table (default). Only one format flag may be set at a time.
+7. Supports `--accounts` and `--roles` flags for case-insensitive substring filtering.
+8. Empty accounts list exits process with code 0.
+9. Builds and persists a lookup index alongside the accounts cache when no filters are active, enabling fast offline lookups by `get` and `lookup` commands.
 
 ### D. `update` command
 
 1. Declared and registered in [cmd/update.go](../cmd/update.go).
-1. Resolves profile, then acquires an exclusive file lock via `acquireAWSConfigLock`.
-1. Extracts managed section to temp file via `getManagedSection`, which calls `validateManagedMarkers` first.
-1. Loads temp sections via `loadAWSConfig`.
-1. Retrieves SSO profile via `getSsoSession`, builds SDK config via `getSDKConfig(cmd.Context(), ...)`, and ensures authentication via `getOrRefreshAuthenticatedCache`.
-1. Validates presence of `sso-session` section; reports using the resolved `ssoProfile` name on failure.
-1. Fetches current account-role assignments from AWS SSO via `listAWSAccounts` (cache-aside pattern).
-1. Rebuilds the managed block from scratch via `buildUpdatedManagedSections` — this intentionally drops stale profiles for accounts/roles the user no longer has access to.
-1. Rewrites temp file via `generateAWSConfig`; injects managed block back into a backup copy of the full AWS config via `setManagedSection` (inject-once guard prevents duplication).
-1. Sets permissions on backup, removes temp file, atomically renames backup to real config path via `os.Rename`, then releases the lock via `Release`.
-1. Prints a note to stderr reminding the user that cached data was used and how to fetch fresh data (`list --no-cache`).
+2. Resolves profile, then acquires an exclusive file lock via `acquireAWSConfigLock`.
+3. Extracts managed section to temp file via `getManagedSection`, which calls `validateManagedMarkers` first.
+4. Loads temp sections via `loadAWSConfig`.
+5. Retrieves SSO profile via `getSsoSession`, builds SDK config via `getSDKConfig(cmd.Context(), ...)`, and ensures authentication via `getOrRefreshAuthenticatedCache`.
+6. Validates presence of `sso-session` section; reports using the resolved `ssoProfile` name on failure.
+7. Fetches current account-role assignments from AWS SSO via `listAWSAccounts` (cache-aside pattern).
+8. Rebuilds the managed block from scratch via `buildUpdatedManagedSections` — this intentionally drops stale profiles for accounts/roles the user no longer has access to.
+9. Rewrites temp file via `generateAWSConfig`; injects managed block back into a backup copy of the full AWS config via `setManagedSection` (inject-once guard prevents duplication).
+10. Sets permissions on backup, removes temp file, atomically renames backup to real config path via `os.Rename`, then releases the lock via `Release`.
+11. Prints a note to stderr reminding the user that cached data was used and how to fetch fresh data (`list --no-cache`).
 
 Branch behavior:
 
 1. If no managed markers or no session section, path fails early.
-1. Existing profile sections are updated; missing sections are created.
-1. Several file operations use `CheckErr`, so any I/O failure aborts the process.
+2. Existing profile sections are updated; missing sections are created.
+3. Several file operations use `CheckErr`, so any I/O failure aborts the process.
 
 ### E. `console` command
 
 1. Declared and registered in [cmd/console.go](../cmd/console.go).
-1. Parses positional args polymorphically: URL vs profile when one arg is given.
-1. Applies `--region` flag to `sessionProfile.Region` before calling `getSDKConfig`.
-1. Builds dynamic interactive form for any missing values (URL, profile, account ID, role).
-1. Requires authenticated cache and account/role listing via `listAWSAccounts`.
-1. Generates final start URL by finding SSO start host via `getStartURL`, stripping the account-prefixed console host via `stripAccountFromURL`, query-escaping destination, and formatting the final link.
+2. Parses positional args polymorphically: URL vs profile when one arg is given.
+3. Applies `--region` flag to `sessionProfile.Region` before calling `getSDKConfig`.
+4. Builds dynamic interactive form for any missing values (URL, profile, account ID, role).
+5. Requires authenticated cache and account/role listing via `listAWSAccounts`.
+6. Generates final start URL by finding SSO start host via `getStartURL`, stripping the account-prefixed console host via `stripAccountFromURL`, query-escaping destination, and formatting the final link.
 
 ### F. `version` command
 
 1. Registered in [cmd/version.go](../cmd/version.go) via its `init` function.
-1. No local side effects beyond command availability.
+2. No local side effects beyond command availability.
 
 ### G. `validate` command
 
 1. Declared and registered in [cmd/validate.go](../cmd/validate.go) with aliases `check` and `lint`.
-1. Calls `inspectManagedMarkers()` to perform a single-pass whole-file scan, returning a `managedMarkerReport` containing per-profile start/end counts, issues, and the full profile list.
-1. Calls `getAllManagedSections()` to collect all `[sso-session <profile>]` section names from the AWS config.
-1. Builds a union of both sets to cover the full population: marker-only profiles and sso-session-only profiles.
-1. For each profile in the union, reports:
-   * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
-   * orphaned markers (marker present but no matching `sso-session` section);
-   * unmanaged sections (`sso-session` section present but no markers).
-1. Exits 0 when all checks pass, exits 1 when any problem is found.
+2. Calls `inspectManagedMarkers()` to perform a single-pass whole-file scan, returning a `managedMarkerReport` containing per-profile start/end counts, issues, and the full profile list.
+3. Calls `getAllManagedSections()` to collect all `[sso-session <profile>]` section names from the AWS config.
+4. Builds a union of both sets to cover the full population: marker-only profiles and sso-session-only profiles.
+5. For each profile in the union, reports:
+    * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
+    * orphaned markers (marker present but no matching `sso-session` section);
+    * unmanaged sections (`sso-session` section present but no markers).
+6. Exits 0 when all checks pass, exits 1 when any problem is found.
 
 ## 4. File and module responsibilities
 
 1. [main.go](../main.go)
    Process bootstrap only; intentionally thin entrypoint forwarding to the cmd package.
-1. [cmd/root.go](../cmd/root.go)
+2. [cmd/root.go](../cmd/root.go)
    Core application shell: global state variables (`asvConfig`, `awsConfigFilePath`, `logger`), root command metadata, persistent flags, logger setup, config initialization via `initializeConfig`, and `Execute`/`Root` accessors. Test seams (`runRootCommand`, `fangExecute`, `fangNotifySignals`, `osExit`) allow signal and exit behavior to be exercised in tests.
-1. [cmd/lockutils.go](../cmd/lockutils.go)
+3. [cmd/lockutils.go](../cmd/lockutils.go)
    Exclusive file locking for the AWS config. `acquireAWSConfigLock(ctx)` creates a lock file at `~/.config/.aws-sso-manager/.config.lock` and acquires an exclusive lock with a 5-second timeout (`awsConfigLockTimeout`) and 100 ms retry interval. Platform-specific implementations live in `lockutils_unix.go` (using `golang.org/x/sys/unix.Flock`) and `lockutils_windows.go` (using `golang.org/x/sys/windows.LockFileEx`). `Release()` unlocks and closes the file. Used by both `init` and `update` before any write operations.
-1. [cmd/awsutils.go](../cmd/awsutils.go)
+4. [cmd/awsutils.go](../cmd/awsutils.go)
    AWS and persistence utility backbone:
    cache file serialization/read/expiry validation via `cacheData.read` and `cacheData.save`,
    AWS config load/create/generation via `loadAWSConfig`, `createAWSConfigFile`, `generateAWSConfig`,
    SDK config and SSO session discovery via `getSDKConfig` and `getSsoSession`,
    OIDC device auth workflow via `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
    account and role discovery/pagination/filtering via `listAWSAccounts`.
-1. [cmd/configutils.go](../cmd/configutils.go)
+5. [cmd/configutils.go](../cmd/configutils.go)
    Marker parsing and managed-block mutation utilities:
    whole-file structural scan via `inspectManagedMarkers` (returns `managedMarkerReport` with per-profile issues, counts, and profile list),
    profile marker check via `markersExist`,
@@ -174,23 +174,23 @@ Branch behavior:
    full profile population from markers via `getAllMarkedProfiles`,
    sso-session section enumeration via `getAllManagedSections`,
    profile name synthesis from TOML rename settings via `getProfileName`.
-1. [cmd/validate.go](../cmd/validate.go)
+6. [cmd/validate.go](../cmd/validate.go)
    Standalone marker integrity command. Drives `inspectManagedMarkers` and `getAllManagedSections`, unions results, and reports per-profile OK/FAIL with detail. Aliases: `check`, `lint`.
-1. [cmd/init.go](../cmd/init.go)
+7. [cmd/init.go](../cmd/init.go)
    Initial seed workflow for creating `sso-session` block and managed markers in AWS config, with lock acquisition and atomic write via `os.CreateTemp` + `os.Rename`.
-1. [cmd/auth.go](../cmd/auth.go)
+8. [cmd/auth.go](../cmd/auth.go)
    Authentication lifecycle manager: cache-validity fast path plus device authorization fallback with optional browser launch. All AWS calls use a context derived from `cmd.Context()`.
-1. [cmd/list.go](../cmd/list.go)
+9. [cmd/list.go](../cmd/list.go)
    Account/role discovery with multiple output formats: styled TUI table (default), JSON (`--json`), CSV (`--csv`), and GitHub-Flavored Markdown (`--markdown`). Supports `--accounts` and `--roles` substring filters and `--no-cache` for fresh data fetching (fetch → delete → write ordering).
-1. [cmd/update.go](../cmd/update.go)
+10. [cmd/update.go](../cmd/update.go)
     Reconciliation engine: syncs discovered account/role combinations into managed profile sections, with lock acquisition and atomic rename via `os.Rename`.
-1. [cmd/console.go](../cmd/console.go)
+11. [cmd/console.go](../cmd/console.go)
     Console deep-link generator: interactive selection and URL transformation to build start portal link with target account and role. Applies `--region` flag to session profile before SDK config construction.
-1. [cmd/version.go](../cmd/version.go)
+12. [cmd/version.go](../cmd/version.go)
     Minimal version command registration using shared helper.
-1. [README.md](../README.md)
+13. [README.md](../README.md)
     Operational contract and expected workflow, including marker dependency for update.
-1. [docs/config_file.md](config_file.md)
+14. [docs/config_file.md](config_file.md)
     Config schema contract for profile naming behavior, directly consumed by `getProfileName` in [cmd/configutils.go](../cmd/configutils.go).
 
 ## 5. Decision points and side effects
@@ -198,13 +198,13 @@ Branch behavior:
 ### A. Major decision points
 
 1. Config source selection: custom config path strict-exists check vs auto-create default, in `initializeConfig`.
-1. Profile resolution: positional arg, then config default, then prompt across all interactive commands (init/auth/list/update/console).
-1. Auth path: valid cache skip vs OIDC device login flow, branched on `getOrRefreshAuthenticatedCache` result.
-1. Output mode in `list`: JSON, CSV, Markdown, or TUI table, controlled by mutually exclusive format flags.
-1. `--no-cache` in `list`: fetch-then-delete ordering ensures old data survives a failed fresh fetch.
-1. Managed section update in `update`: rebuilds from scratch rather than patching, so stale profiles are automatically dropped.
-1. Lock acquisition: `init` and `update` both call `acquireAWSConfigLock` before writes; context cancellation or timeout aborts cleanly.
-1. Lookup resolution: exact match by ID/name/profile tried first, then substring fallback for partial matches.
+2. Profile resolution: positional arg, then config default, then prompt across all interactive commands (init/auth/list/update/console).
+3. Auth path: valid cache skip vs OIDC device login flow, branched on `getOrRefreshAuthenticatedCache` result.
+4. Output mode in `list`: JSON, CSV, Markdown, or TUI table, controlled by mutually exclusive format flags.
+5. `--no-cache` in `list`: fetch-then-delete ordering ensures old data survives a failed fresh fetch.
+6. Managed section update in `update`: rebuilds from scratch rather than patching, so stale profiles are automatically dropped.
+7. Lock acquisition: `init` and `update` both call `acquireAWSConfigLock` before writes; context cancellation or timeout aborts cleanly.
+8. Lookup resolution: exact match by ID/name/profile tried first, then substring fallback for partial matches.
 
 ### B. External integrations
 
@@ -212,9 +212,9 @@ Branch behavior:
    `config.LoadDefaultConfig` in `getSDKConfig`,
    `ssooidc RegisterClient/StartDeviceAuthorization/CreateToken` in `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
    SSO account/role paginators in `listAWSAccounts`.
-1. Terminal UI libraries: Cobra/Fang CLI, Huh forms/spinners, Lipgloss table rendering.
-1. OS/browser integration: browser open side effect in `auth` command (opt-in via `--browser` flag).
-1. Filesystem integration:
+2. Terminal UI libraries: Cobra/Fang CLI, Huh forms/spinners, Lipgloss table rendering.
+3. OS/browser integration: browser open side effect in `auth` command (opt-in via `--browser` flag).
+4. Filesystem integration:
    cache and AWS config read/write via `loadAWSConfig`, `cacheData.read`, `cacheData.save`,
    atomic config replace via `os.CreateTemp` (init) and `os.Rename` (init, update),
    exclusive locking via `acquireAWSConfigLock` / `Release`.
@@ -222,15 +222,15 @@ Branch behavior:
 ### C. State transitions
 
 1. Local state: global config/logger/path variables initialized once in root package scope.
-1. Auth state: unauthenticated to authenticated via `cacheData.save` in `auth` command.
-1. Config state: AWS config managed section evolves through `init` and `update` runs, keyed by marker comments; structural validity enforced by `validateManagedMarkers` before extraction.
+2. Auth state: unauthenticated to authenticated via `cacheData.save` in `auth` command.
+3. Config state: AWS config managed section evolves through `init` and `update` runs, keyed by marker comments; structural validity enforced by `validateManagedMarkers` before extraction.
 
 ### D. Error pivots
 
 1. Mixed error handling model: some paths return errors; others call `cobra.CheckErr` or `logger.Fatal`, causing immediate exit.
-1. OIDC polling in `waitForCustomerToAuthenticate` explicitly classifies many AWS exception types (authorization pending, slow down, expired, access denied).
-1. Cache expiry triggers explicit invalidation error in `cacheData.read`.
-1. `init` and `update` have hard-fail I/O pivots; all protected by lock acquisition.
+2. OIDC polling in `waitForCustomerToAuthenticate` explicitly classifies many AWS exception types (authorization pending, slow down, expired, access denied).
+3. Cache expiry triggers explicit invalidation error in `cacheData.read`.
+4. `init` and `update` have hard-fail I/O pivots; all protected by lock acquisition.
 
 Confidence: High for side effects and error pivots directly visible in code.
 
@@ -259,9 +259,9 @@ Assumptions and confidence levels:
 
 1. Assumption: all commands execute `PersistentPreRunE` via Cobra/Fang composition.
    Confidence: High, but exact edge behavior with help/completion subcommands depends on external framework wiring.
-1. Assumption: managed markers are unique per profile.
+2. Assumption: managed markers are unique per profile.
    Confidence: High; `inspectManagedMarkers` now explicitly detects and reports duplicate blocks.
-1. Assumption: AWS shared config path from SDK helper maps to intended user file in all environments.
+3. Assumption: AWS shared config path from SDK helper maps to intended user file in all environments.
    Confidence: Medium; behavior likely correct but environment override handling is not explicit in this codebase.
 
 ## 7. Design rationale — why we built it this way

@@ -285,103 +285,103 @@ _A property is a characteristic or behavior that should hold true across all val
 
 _For any_ valid SSO start URL input string (bare subdomain, dot-containing without scheme, slash-containing without scheme, or full URL), `normalizeSSOStartURL` should produce a string that starts with `https://` and, for bare subdomains, ends with `.awsapps.com/start`. The output should always be a parseable URL.
 
-**Validates: Requirements 1.5, 1.6, 1.7**
+_Validates: Requirements 1.5, 1.6, 1.7._
 
 ### Property 2: Account and Role Sorting
 
 _For any_ list of accounts with roles returned by `fetchListAWSAccountsFromSSO` (or sorted by the same logic), the accounts should be sorted alphabetically by name (case-insensitive), and within each account, the roles should be sorted alphabetically by name (case-insensitive).
 
-**Validates: Requirements 3.7**
+_Validates: Requirements 3.7._
 
 ### Property 3: Output Formats Contain All Data
 
 _For any_ non-empty `listAccounts` and profile name, the CSV output from `renderCSVTable` should contain every account ID, account name, role name, and generated profile name present in the input data. Similarly, the markdown output from `renderMarkdownTable` should contain the same data. The JSON output from `json.Marshal` should round-trip back to an equivalent `listAccounts` struct.
 
-**Validates: Requirements 3.9, 3.10, 3.11**
+_Validates: Requirements 3.9, 3.10, 3.11._
 
 ### Property 4: Account and Role Filtering
 
 _For any_ list of accounts and a non-empty filter substring, filtering accounts by name (case-insensitive substring match) should return only accounts whose name contains the substring (case-insensitive), and filtering roles by name should return only roles whose name contains the substring (case-insensitive). The filtered result should be a subset of the original.
 
-**Validates: Requirements 3.13, 3.14**
+_Validates: Requirements 3.13, 3.14._
 
 ### Property 5: Lookup Index Round Trip
 
 _For any_ `listAccounts` and profile name, building a `listAWSAccountsLookupIndex` and then looking up each account by its ID should return the correct account name, roles, and profiles. Looking up by account name (lowercased) should return the correct account IDs. Looking up by profile name (lowercased) should return the correct account IDs.
 
-**Validates: Requirements 3.19, 7.1, 10.11**
+_Validates: Requirements 3.19, 7.1, 10.11._
 
 ### Property 6: Managed Block Marker Validation
 
 _For any_ AWS config file content containing managed block markers, `inspectManagedMarkers` should detect: (a) mismatched start/end counts for any profile, (b) duplicate blocks for the same profile, (c) overlapping blocks where one profile's start appears inside another's block, (d) unmatched end markers, and (e) unclosed start markers. For well-formed configs (exactly one start and one matching end per profile, no overlaps), the issues map should be empty.
 
-**Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
+_Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7._
 
 ### Property 7: Profile Name Generation with Pattern
 
 _For any_ valid pattern configuration (non-empty order list of tokens from {PREFIX, ACCOUNT, ROLE, SUFFIX}, a non-empty delimiter, and non-empty prefix/suffix values), `getProfileName` should produce a string that contains the expected tokens joined by the delimiter. Empty prefix/suffix values should be omitted from the output. The output should be lowercased.
 
-**Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
+_Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12._
 
 ### Property 8: Substring Match Replacement in Profile Names
 
 _For any_ account name and a `substr_match_replace` map where a key is a case-insensitive substring of the account name, `getProfileName` should replace the account token with the corresponding replacement value. The same rule applies to role names with the roles `substr_match_replace` map.
 
-**Validates: Requirements 9.6, 9.8**
+_Validates: Requirements 9.6, 9.8._
 
 ### Property 9: Default Profile Name Generation
 
 _For any_ account name and role name, when no pattern order is configured, `buildDefaultProfileName` should produce a lowercased string where non-alphanumeric characters are replaced with hyphens, in the format `<account-token>-<role-token>`. The `toProfileToken` function should be idempotent: `toProfileToken(toProfileToken(x)) == toProfileToken(x)`.
 
-**Validates: Requirements 9.10**
+_Validates: Requirements 9.10._
 
 ### Property 10: Cache File Path Determinism
 
 _For any_ profile name and filter combination, `listAWSAccountsInput.cacheFilePath()` should produce a deterministic path based on the SHA-256 hash. The same inputs should always produce the same path, and different inputs should produce different paths (with high probability).
 
-**Validates: Requirements 10.2**
+_Validates: Requirements 10.2._
 
 ### Property 11: Cache Expiry Detection
 
 _For any_ cache entry with a `cached_at` timestamp and a positive cache duration, `readListAWSAccountsCache` should return the cached data when `time.Now()` is before `cached_at + duration`, and should return not-found (triggering deletion) when `time.Now()` is after `cached_at + duration`.
 
-**Validates: Requirements 10.4**
+_Validates: Requirements 10.4._
 
 ### Property 12: Cache Duration Parsing
 
 _For any_ valid Go duration string (optionally containing `Nd` day tokens), `parseCacheDurationFlag` should return a positive duration. Day tokens should be converted to hours (1d = 24h). Empty strings, zero, and negative durations should return errors.
 
-**Validates: Requirements 10.6, 10.8**
+_Validates: Requirements 10.6, 10.8._
 
 ### Property 13: Console URL Account Subdomain Stripping
 
 _For any_ AWS Console URL of the form `https://<account-subdomain>.<service>.console.aws.amazon.com/...`, `stripAccountFromURL` should remove the account subdomain, producing `https://<service>.console.aws.amazon.com/...`. URLs without an account subdomain should pass through unchanged.
 
-**Validates: Requirements 5.9**
+_Validates: Requirements 5.9._
 
 ### Property 14: Account ID Validation
 
 _For any_ string that is not exactly 12 digits, `getRoleNamesForAccountID` should return an error. _For any_ 12-digit numeric string that exists in the lookup index, it should return the roles for that account.
 
-**Validates: Requirements 6.3**
+_Validates: Requirements 6.3._
 
 ### Property 15: Lookup Account Resolution Correctness
 
 _For any_ lookup index and identifier, `resolveLookupAccount` should: return exactly one account when the identifier uniquely matches by ID, profile name (CI), or account name (CI); return an ambiguity error when multiple accounts match; return a not-found error when no accounts match.
 
-**Validates: Requirements 7.4, 7.5**
+_Validates: Requirements 7.4, 7.5._
 
 ### Property 16: Lookup Role Substring Search
 
 _For any_ account with roles and a non-empty search substring, the role lookup should return only roles whose name contains the substring (case-insensitive), sorted alphabetically (case-insensitive). The result should be a subset of the account's roles.
 
-**Validates: Requirements 7.6, 7.7**
+_Validates: Requirements 7.6, 7.7._
 
 ### Property 17: Update Managed Section Generation
 
 _For any_ list of accounts with roles and a valid SSO session section, `buildUpdatedManagedSections` should produce sections where each account-role combination has a `[profile <name>]` section containing exactly the keys `sso_session`, `sso_account_id`, `sso_role_name`, `region`, and `output`. The count returned should equal the total number of account-role combinations.
 
-**Validates: Requirements 4.9**
+_Validates: Requirements 4.9._
 
 ## Error Handling
 
