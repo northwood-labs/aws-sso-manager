@@ -45,6 +45,8 @@ func TestLookupAccountIDsByIdentifier(t *testing.T) {
 		{name: "account ID", identifier: "111111111111", wantID: "111111111111"},
 		{name: "friendly name case insensitive", identifier: "PrOdUcTiOn", wantID: "111111111111"},
 		{name: "profile name case insensitive", identifier: "PROD-ADMIN", wantID: "111111111111"},
+		{name: "substring of account name", identifier: "prod", wantID: "111111111111"},
+		{name: "substring of profile name", identifier: "admin", wantID: "111111111111"},
 		{name: "missing", identifier: "does-not-exist", wantErr: true},
 	}
 

@@ -211,6 +211,7 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 		return nil, errors.New("account identifier cannot be empty")
 	}
 
+	// Exact match by 12-digit account ID.
 	if accountIDPattern.MatchString(trimmed) {
 		if _, ok := index.AccountsByID[trimmed]; ok {
 			return []string{trimmed}, nil
@@ -219,12 +220,45 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 
 	lookupKey := strings.ToLower(trimmed)
 
+	// Exact match by profile name.
 	if accountIDs := index.AccountIDsByProfileCI[lookupKey]; len(accountIDs) > 0 {
 		return accountIDs, nil
 	}
 
+	// Exact match by account name.
 	if accountIDs := index.AccountIDsByNameCI[lookupKey]; len(accountIDs) > 0 {
 		return accountIDs, nil
+	}
+
+	// Substring match across account names and profile names.
+	seen := map[string]struct{}{}
+	var matched []string
+
+	for nameKey, accountIDs := range index.AccountIDsByNameCI {
+		if strings.Contains(nameKey, lookupKey) {
+			for _, id := range accountIDs {
+				if _, ok := seen[id]; !ok {
+					seen[id] = struct{}{}
+					matched = append(matched, id)
+				}
+			}
+		}
+	}
+
+	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
+		if strings.Contains(profileKey, lookupKey) {
+			for _, id := range accountIDs {
+				if _, ok := seen[id]; !ok {
+					seen[id] = struct{}{}
+					matched = append(matched, id)
+				}
+			}
+		}
+	}
+
+	if len(matched) > 0 {
+		sort.Strings(matched)
+		return matched, nil
 	}
 
 	return nil, fmt.Errorf("account identifier %q not found", identifier)

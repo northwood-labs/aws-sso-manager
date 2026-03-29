@@ -32,6 +32,7 @@ var (
 
 	fGetFor     string
 	fGetProfile string
+	fGetName    bool
 
 	getCmd = &cobra.Command{
 		Use:   "get",
@@ -53,7 +54,7 @@ var (
 
 	getAccountsCmd = &cobra.Command{
 		Use:   "accounts",
-		Short: "Returns linebreak-delimited AWS account IDs.",
+		Short: "Returns linebreak-delimited AWS account IDs (or names with --name).",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profileName, err := resolveGetProfileName()
@@ -69,9 +70,16 @@ var (
 				return fmt.Errorf("could not load lookup cache: %w", err)
 			}
 
-			accountIDs := getAccountIDsFromLookupIndex(lookupIndex)
-			for _, accountID := range accountIDs {
-				fmt.Println(accountID)
+			if fGetName {
+				names := getAccountNamesFromLookupIndex(lookupIndex)
+				for _, name := range names {
+					fmt.Println(name)
+				}
+			} else {
+				accountIDs := getAccountIDsFromLookupIndex(lookupIndex)
+				for _, accountID := range accountIDs {
+					fmt.Println(accountID)
+				}
 			}
 
 			return nil
@@ -139,6 +147,21 @@ func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 	return accountIDs
 }
 
+func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
+	names := make([]string, 0, len(index.AccountsByID))
+	for _, account := range index.AccountsByID {
+		if account.Name != "" {
+			names = append(names, account.Name)
+		}
+	}
+
+	sort.SliceStable(names, func(i, j int) bool {
+		return strings.ToLower(names[i]) < strings.ToLower(names[j])
+	})
+
+	return names
+}
+
 func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string) ([]string, error) {
 	trimmedID := strings.TrimSpace(accountID)
 	if !getAccountIDPattern.MatchString(trimmedID) {
@@ -165,6 +188,8 @@ func init() {
 
 	getCmd.AddCommand(getAccountsCmd)
 	getCmd.AddCommand(getRolesCmd)
+
+	getAccountsCmd.Flags().BoolVarP(&fGetName, "name", "n", false, "print account names instead of account IDs")
 
 	getRolesCmd.Flags().StringVarP(
 		&fGetFor,
