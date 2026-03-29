@@ -65,7 +65,10 @@ var (
 
 	listOutputHeaders = []string{"ID", "Account Name", "Role Name", "Profile Name"}
 
-	// listCmd represents the list command
+	// listCmd fetches and displays all accounts and roles the user has access
+	// to. It supports multiple output formats (TUI table, JSON, CSV, Markdown)
+	// so it works for both interactive use and scripted pipelines. The
+	// cache-aside pattern keeps repeated invocations fast.
 	listCmd = &cobra.Command{
 		Use:   "list [sso-profile-name]",
 		Short: "Lists all configured AWS SSO accounts and their associated roles.",
@@ -181,10 +184,13 @@ var (
 					if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
 						logger.Error("failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
 					}
+
 					if shouldWriteLookupCache(listInput) {
 						lookupCachePath := listInput.lookupCacheFilePath()
+
 						if lookupCachePath != "" {
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
+
 							if err := writeListAWSAccountsLookupCache(lookupCachePath, lookupIndex); err != nil {
 								logger.Error("failed to write lookup cache", "file", lookupCachePath, "error", err)
 							}
@@ -277,6 +283,9 @@ func init() {
 	listCmd.Flags().BoolVarP(&fMarkdown, "markdown", "M", false, "output in GitHub-Flavored Markdown table format")
 }
 
+// buildListOutputRows flattens the nested account→roles structure into table
+// rows. Each row gets a generated profile name so the user can see exactly what
+// will appear in their ~/.aws/config after running "update".
 func buildListOutputRows(profileName string, accounts listAccounts) [][]string {
 	rows := make([][]string, 0)
 
@@ -298,15 +307,22 @@ func buildListOutputRows(profileName string, accounts listAccounts) [][]string {
 	return rows
 }
 
+// quoteCSVCell wraps every cell in double quotes and escapes internal quotes by
+// doubling them (RFC 4180). We always quote rather than conditionally quoting
+// because it's simpler and avoids edge cases with commas or newlines in AWS
+// account names.
 func quoteCSVCell(value string) string {
 	return `"` + strings.ReplaceAll(value, `"`, `""`) + `"`
 }
 
+// renderCSVTable produces RFC 4180 CSV output suitable for import into
+// spreadsheets or processing with tools like csvkit.
 func renderCSVTable(headers []string, rows [][]string) string {
 	var buffer bytes.Buffer
 
 	for _, row := range append([][]string{headers}, rows...) {
 		quoted := make([]string, len(row))
+
 		for i := range row {
 			quoted[i] = quoteCSVCell(row[i])
 		}
@@ -322,8 +338,12 @@ func padRight(value string, width int) string {
 	return value + strings.Repeat(" ", width-len(value))
 }
 
+// renderMarkdownTable produces a GitHub-Flavored Markdown table with
+// column-aligned padding. This format is useful for pasting into PRs, wikis,
+// or documentation where a rendered table is more readable than raw CSV.
 func renderMarkdownTable(headers []string, rows [][]string) string {
 	widths := make([]int, len(headers))
+
 	for i, header := range headers {
 		widths[i] = len(header)
 	}
@@ -339,14 +359,16 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 	var buffer bytes.Buffer
 
 	buffer.WriteString("|")
+
 	for i, header := range headers {
 		buffer.WriteString(" ")
 		buffer.WriteString(padRight(header, widths[i]))
 		buffer.WriteString(" |")
 	}
-	buffer.WriteByte('\n')
 
+	buffer.WriteByte('\n')
 	buffer.WriteString("|")
+
 	for i := range headers {
 		separatorWidth := max(widths[i], 3)
 
@@ -354,15 +376,18 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 		buffer.WriteString(strings.Repeat("-", separatorWidth))
 		buffer.WriteString(" |")
 	}
+
 	buffer.WriteByte('\n')
 
 	for _, row := range rows {
 		buffer.WriteString("|")
+
 		for i, cell := range row {
 			buffer.WriteString(" ")
 			buffer.WriteString(padRight(cell, widths[i]))
 			buffer.WriteString(" |")
 		}
+
 		buffer.WriteByte('\n')
 	}
 

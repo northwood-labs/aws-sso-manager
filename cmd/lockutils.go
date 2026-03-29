@@ -23,14 +23,27 @@ import (
 )
 
 const (
+	// awsConfigLockRetryInterval controls how often we re-attempt the lock.
+	// 100ms is short enough to feel responsive but avoids busy-spinning the CPU.
 	awsConfigLockRetryInterval = 100 * time.Millisecond
-	awsConfigLockTimeout       = 5 * time.Second
+
+	// awsConfigLockTimeout caps the total wait so a stuck lock holder (e.g., a
+	// crashed process that didn't release) doesn't block the user indefinitely.
+	awsConfigLockTimeout = 5 * time.Second
 )
 
+// awsConfigLock wraps an open lock file so that Release can be deferred by the
+// caller. Keeping the file handle here ensures the advisory lock stays held
+// until explicitly released — closing the fd is what actually drops the lock.
 type awsConfigLock struct {
 	file *os.File
 }
 
+// acquireAWSConfigLock obtains an exclusive advisory lock before any write to
+// ~/.aws/config. This prevents concurrent tool invocations (e.g., two terminal
+// tabs running "update" simultaneously) from interleaving writes and corrupting
+// the config file. The lock file lives under ~/.config/.aws-sso-manager/ rather
+// than ~/.aws/ to avoid polluting the AWS config directory.
 func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -53,14 +66,19 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	for {
 		err = lockFileNB(lockFile.Fd())
 		if err == nil {
+			// We hold the lock. Write our PID so that a human investigating a
+			// stale lock file can identify which process held it. Truncate first
+			// to clear any leftover PID from a previous holder.
 			if truncateErr := lockFile.Truncate(0); truncateErr != nil {
 				_ = lockFile.Close()
 				return nil, fmt.Errorf("truncate AWS config lock file %q: %w", lockPath, truncateErr)
 			}
+
 			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil {
 				_ = lockFile.Close()
 				return nil, fmt.Errorf("seek AWS config lock file %q: %w", lockPath, seekErr)
 			}
+
 			if _, writeErr := fmt.Fprintf(lockFile, "%d\n", os.Getpid()); writeErr != nil {
 				_ = lockFile.Close()
 				return nil, fmt.Errorf("write AWS config lock file %q: %w", lockPath, writeErr)
@@ -69,6 +87,8 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			return &awsConfigLock{file: lockFile}, nil
 		}
 
+		// The lock is held by another process. Only retry on transient "busy"
+		// errors; anything else (e.g., permission denied) is a hard failure.
 		if !isLockBusy(err) {
 			_ = lockFile.Close()
 			return nil, fmt.Errorf("acquire AWS config lock %q: %w", lockPath, err)
@@ -83,6 +103,10 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	}
 }
 
+// Release drops the advisory lock and closes the file. It is safe to call on a
+// nil receiver so callers can unconditionally defer it. We unlock before closing
+// because closing the fd implicitly drops the lock on some platforms, and we
+// want the unlock error (if any) to be reported separately.
 func (l *awsConfigLock) Release() error {
 	if l == nil || l.file == nil {
 		return nil

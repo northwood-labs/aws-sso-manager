@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 	"testing"
@@ -377,13 +378,7 @@ func TestCommandAliases(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			for _, alias := range tc.aliases {
-				found := false
-				for _, a := range tc.cmd.Aliases {
-					if a == alias {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(tc.cmd.Aliases, alias)
 				if !found {
 					t.Errorf("expected alias %q on command %q, got aliases %v", alias, tc.cmd.Use, tc.cmd.Aliases)
 				}

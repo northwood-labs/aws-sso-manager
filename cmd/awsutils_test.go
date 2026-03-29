@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -612,13 +613,7 @@ func TestPropertyLookupIndexRoundTrip(t *testing.T) {
 					t.Fatalf("account name %q not found in AccountIDsByNameCI", nameKey)
 				}
 
-				found := false
-				for _, id := range ids {
-					if id == acct.ID {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(ids, acct.ID)
 
 				if !found {
 					t.Fatalf("account ID %q not found in AccountIDsByNameCI[%q]", acct.ID, nameKey)
@@ -627,13 +622,7 @@ func TestPropertyLookupIndexRoundTrip(t *testing.T) {
 
 			// Verify roles match
 			for _, role := range acct.Roles {
-				roleFound := false
-				for _, r := range entry.Roles {
-					if r == role.Name {
-						roleFound = true
-						break
-					}
-				}
+				roleFound := slices.Contains(entry.Roles, role.Name)
 
 				if !roleFound {
 					t.Fatalf("role %q not found in lookup entry for account %q", role.Name, acct.ID)
@@ -647,13 +636,7 @@ func TestPropertyLookupIndexRoundTrip(t *testing.T) {
 						t.Fatalf("profile %q not found in AccountIDsByProfileCI", profileKey)
 					}
 
-					found := false
-					for _, id := range ids {
-						if id == acct.ID {
-							found = true
-							break
-						}
-					}
+					found := slices.Contains(ids, acct.ID)
 
 					if !found {
 						t.Fatalf("account ID %q not found in AccountIDsByProfileCI[%q]", acct.ID, profileKey)

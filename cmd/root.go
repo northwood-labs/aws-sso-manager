@@ -43,18 +43,29 @@ var (
 	fVerbose       int
 	fJSON          bool
 
+	// asvConfig is the Viper instance that merges TOML config, env vars, and
+	// CLI flags into a single configuration source. It's a package-level var
+	// so every command can read profile-specific settings without passing it
+	// around.
 	asvConfig = viper.New()
 
 	awsConfigFilePath  string
 	awsManagerCacheDir string
 	cacheDuration      = 24 * time.Hour
 	userHomeDir        string
-	logger             = log.NewWithOptions(os.Stderr, log.Options{
+
+	// logger defaults to stderr with caller info and timestamps. The
+	// PersistentPreRunE adjusts the level based on -v count so that normal
+	// usage is quiet and -vvv gives full debug output with source locations.
+	logger = log.NewWithOptions(os.Stderr, log.Options{
 		ReportCaller:    true,
 		ReportTimestamp: true,
 		TimeFormat:      time.Kitchen,
 	})
-	// Test seam to verify wrapper behavior without invoking real process exit.
+
+	// fangNotifySignals, fangExecute, runRootCommand, and osExit are test seams.
+	// They let tests verify signal handling and exit behavior without actually
+	// killing the test process or requiring real signal delivery.
 	fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}
 	fangExecute       = fang.Execute
 	runRootCommand    = func(ctx context.Context, cmd *cobra.Command, signals ...os.Signal) error {
@@ -79,6 +90,10 @@ var (
 		aws-sso-manager update [sso-profile-name]
 		`)),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// Verbose levels: 0=warn (quiet default), 1=info (-v), 2=debug
+			// (-vv), 3+=debug with source file:line (-vvv). ReportCaller is
+			// expensive so it's only enabled at the highest level for deep
+			// debugging.
 			switch {
 			case fVerbose == 0:
 				logger.SetLevel(log.WarnLevel)
@@ -106,6 +121,10 @@ var (
 	}
 )
 
+// parseCacheDurationFlag extends Go's time.ParseDuration with a "d" (day) suffix
+// because cache lifetimes are commonly expressed in days (e.g., "1d", "2d12h")
+// and Go's stdlib doesn't support that. Day tokens are converted to hours before
+// parsing so the rest of the duration string is handled normally.
 func parseCacheDurationFlag(raw string) (time.Duration, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
@@ -179,8 +198,15 @@ func Root() *cobra.Command {
 	return rootCmd
 }
 
+// initializeConfig wires up Viper to merge config file, env vars (ASM_ prefix),
+// and CLI flags into a single config source. The precedence is:
+// flags > env vars > config file > defaults. This lets users override any
+// setting at any level without editing files.
 func initializeConfig(cmd *cobra.Command) error {
 	asvConfig.SetEnvPrefix("ASM") // AWS SSO Manager
+
+	// Map dots and hyphens in config keys to underscores for env var lookup,
+	// so "profile-name" in TOML becomes ASM_PROFILE_NAME as an env var.
 	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	asvConfig.AutomaticEnv()
 

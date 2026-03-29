@@ -28,7 +28,10 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
-// updateCmd represents the update command
+// updateCmd synchronizes ~/.aws/config with the current set of accounts and
+// roles from AWS Identity Center. It rebuilds the managed block from scratch on
+// every run so that stale profiles (from accounts or roles the user no longer
+// has access to) are automatically removed.
 var updateCmd = &cobra.Command{
 	Use:   "update [sso-profile-name]",
 	Short: "Simplifies updating accounts and roles in the AWS config.",
@@ -179,12 +182,21 @@ var updateCmd = &cobra.Command{
 		cobra.CheckErr(err)
 
 		fmt.Printf("Updated %d profiles for %q.\n", counter, profileName)
-		fmt.Fprintf(os.Stderr, "Note: used cached account data. Run \"aws-sso-manager list %s --no-cache\" first to fetch fresh data.\n", profileName)
+		fmt.Fprintf(
+			os.Stderr,
+			`Note: used cached account data. Run "aws-sso-manager list %s --no-cache" first to fetch fresh data.\n`,
+			profileName,
+		)
 
 		return nil
 	},
 }
 
+// buildUpdatedManagedSections creates a fresh set of INI sections from the
+// current account/role list. It intentionally starts from an empty Sections
+// (preserving only the [sso-session]) so that profiles for accounts or roles
+// the user no longer has access to are dropped. The returned count lets the
+// caller report how many profiles were written.
 func buildUpdatedManagedSections(
 	sections configFile.Sections,
 	ssoProfile,

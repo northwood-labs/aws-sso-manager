@@ -18,7 +18,7 @@ It is also designed to help you manage configs across multiple AWS Organizations
 > [!NOTE]
 > _Most_ configurations are scoped to a particular SSO Profile. This allows you to set up your naming rules per-Organization. For brevity, this is marked in the names as `%`.
 
-The configuration file lives at `${HOME}/.aws-sso-manager.toml` for macOS and Linux, and `%USERPROFILE%\.aws-sso-manager.toml` for Windows.
+The configuration file lives at `~/.config/aws-sso-manager/config.toml` for macOS and Linux, and `%USERPROFILE%\.config\aws-sso-manager\config.toml` for Windows.
 
 This is the organization of the [TOML](https://toml.io) keys in the config file.
 

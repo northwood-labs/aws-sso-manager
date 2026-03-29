@@ -23,21 +23,27 @@ import (
 )
 
 const (
-	// lockfileExclusiveLock requests an exclusive lock.
+	// lockfileExclusiveLock requests an exclusive (write) lock, matching the
+	// semantics of LOCK_EX on Unix.
 	lockfileExclusiveLock = 0x02
-	// lockfileFailImmediately makes the call non-blocking.
+
+	// lockfileFailImmediately makes the call non-blocking so we can implement
+	// our own retry loop with timeout, matching LOCK_NB on Unix.
 	lockfileFailImmediately = 0x01
 )
 
 // lockFileNB attempts a non-blocking exclusive lock on the file descriptor.
+// On Windows, LockFileEx with LOCKFILE_FAIL_IMMEDIATELY is the equivalent of
+// flock(LOCK_EX|LOCK_NB). We lock just 1 byte because we only need mutual
+// exclusion, not range locking.
 func lockFileNB(fd uintptr) error {
 	ol := new(windows.Overlapped)
 	return windows.LockFileEx(
 		windows.Handle(fd),
 		lockfileExclusiveLock|lockfileFailImmediately,
-		0,           // reserved
-		1,           // lock 1 byte
-		0,           // high-order bytes
+		0, // reserved
+		1, // lock 1 byte
+		0, // high-order bytes
 		ol,
 	)
 }

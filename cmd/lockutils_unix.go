@@ -23,6 +23,8 @@ import (
 )
 
 // lockFileNB attempts a non-blocking exclusive lock on the file descriptor.
+// Non-blocking so we can implement our own retry loop with timeout and context
+// cancellation, rather than blocking the goroutine inside the kernel.
 func lockFileNB(fd uintptr) error {
 	return unix.Flock(int(fd), unix.LOCK_EX|unix.LOCK_NB)
 }
@@ -33,6 +35,8 @@ func unlockFile(fd uintptr) error {
 }
 
 // isLockBusy reports whether err indicates the lock is held by another process.
+// On Unix, EWOULDBLOCK and EAGAIN both mean "lock is busy" (they're often the
+// same errno). EINTR means a signal interrupted the call and it's safe to retry.
 func isLockBusy(err error) bool {
 	return errors.Is(err, unix.EWOULDBLOCK) ||
 		errors.Is(err, unix.EAGAIN) ||

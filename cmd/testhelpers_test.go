@@ -23,8 +23,11 @@ import (
 )
 
 // genListAccount returns a rapid generator that produces random listAccount
-// structs with valid 12-digit numeric IDs, alphanumeric names (3-20 chars),
-// email addresses, and 1-5 roles.
+// structs. IDs are constrained to valid 12-digit format so property tests
+// exercise realistic data rather than tripping over format validation. Names
+// are alphanumeric to avoid special characters that would complicate substring
+// matching assertions. Each account gets 1-5 roles to cover both single-role
+// and multi-role scenarios.
 func genListAccount() *rapid.Generator[listAccount] {
 	return rapid.Custom[listAccount](func(t *rapid.T) listAccount {
 		accountID := genAccountID().Draw(t, "accountID")
@@ -57,10 +60,11 @@ func genAccountID() *rapid.Generator[string] {
 	return rapid.StringMatching(`[0-9]{12}`)
 }
 
-// genListAccounts returns a rapid generator that produces listAccounts with
-// between minAccounts and maxAccounts accounts. Accounts are sorted by name
-// (case-insensitive) and roles within each account are sorted by name
-// (case-insensitive), matching the production sorting logic.
+// genListAccounts returns a rapid generator that produces pre-sorted
+// listAccounts. The sorting matches the production code's sort order so that
+// property tests can assert on sorted output without re-sorting. This is
+// intentional — if the production sort order changes, the generator should
+// change too, and the property tests will catch the mismatch.
 func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts] {
 	return rapid.Custom[listAccounts](func(t *rapid.T) listAccounts {
 		numAccounts := rapid.IntRange(minAccounts, maxAccounts).Draw(t, "numAccounts")
@@ -85,9 +89,10 @@ func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts
 	})
 }
 
-// genLookupIndex returns a rapid generator that produces a
-// listAWSAccountsLookupIndex by generating random accounts and calling
-// buildListAWSAccountsLookupIndex.
+// genLookupIndex produces a lookup index by calling the real
+// buildListAWSAccountsLookupIndex function on random accounts. This ensures
+// property tests exercise the actual index-building logic rather than a
+// hand-crafted mock that might diverge from production behavior.
 func genLookupIndex() *rapid.Generator[listAWSAccountsLookupIndex] {
 	return rapid.Custom[listAWSAccountsLookupIndex](func(t *rapid.T) listAWSAccountsLookupIndex {
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")
@@ -95,10 +100,11 @@ func genLookupIndex() *rapid.Generator[listAWSAccountsLookupIndex] {
 	})
 }
 
-// genManagedBlockConfig returns a rapid generator that produces well-formed AWS
-// config file content with managed block markers. For each profile, a managed
-// block is generated with start/end markers and an [sso-session <profile>]
-// section inside.
+// genManagedBlockConfig produces well-formed AWS config file content with
+// managed block markers. This is used by Property 6 to verify that
+// inspectManagedMarkers correctly identifies well-formed configs as having no
+// issues. Each profile gets a complete start/end pair with realistic INI
+// content inside.
 func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 	return rapid.Custom[string](func(t *rapid.T) string {
 		var sb strings.Builder
@@ -137,12 +143,13 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 	})
 }
 
-// genProfilePatternConfig returns a rapid generator that produces a
-// map[string]interface{} representing a profile pattern configuration with
-// pattern order (subset of ["PREFIX","ACCOUNT","ROLE","SUFFIX"]), delimiter
-// (1-3 chars), prefix, suffix, and substr_match_replace maps.
-func genProfilePatternConfig() *rapid.Generator[map[string]interface{}] {
-	return rapid.Custom[map[string]interface{}](func(t *rapid.T) map[string]interface{} {
+// genProfilePatternConfig produces random but structurally valid profile naming
+// configurations. The token order is a random permutation of a random subset,
+// which exercises all possible orderings and token combinations. This is used
+// by Property 7 to verify that getProfileName correctly assembles tokens
+// regardless of order.
+func genProfilePatternConfig() *rapid.Generator[map[string]any] {
+	return rapid.Custom[map[string]any](func(t *rapid.T) map[string]any {
 		allTokens := []string{"PREFIX", "ACCOUNT", "ROLE", "SUFFIX"}
 
 		// Pick a non-empty subset of tokens in random order
@@ -155,7 +162,7 @@ func genProfilePatternConfig() *rapid.Generator[map[string]interface{}] {
 		suffix := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "suffix")
 
 		// Generate substr_match_replace maps with 0-2 entries
-		accountReplacements := make(map[string]interface{})
+		accountReplacements := make(map[string]any)
 		numAccountReplacements := rapid.IntRange(0, 2).Draw(t, "numAccountReplacements")
 		for i := range numAccountReplacements {
 			key := rapid.StringMatching(`[A-Za-z]{2,8}`).Draw(t, fmt.Sprintf("acctReplKey%d", i))
@@ -163,7 +170,7 @@ func genProfilePatternConfig() *rapid.Generator[map[string]interface{}] {
 			accountReplacements[key] = val
 		}
 
-		roleReplacements := make(map[string]interface{})
+		roleReplacements := make(map[string]any)
 		numRoleReplacements := rapid.IntRange(0, 2).Draw(t, "numRoleReplacements")
 		for i := range numRoleReplacements {
 			key := rapid.StringMatching(`[A-Za-z]{2,8}`).Draw(t, fmt.Sprintf("roleReplKey%d", i))
@@ -171,17 +178,17 @@ func genProfilePatternConfig() *rapid.Generator[map[string]interface{}] {
 			roleReplacements[key] = val
 		}
 
-		config := map[string]interface{}{
-			"pattern": map[string]interface{}{
+		config := map[string]any{
+			"pattern": map[string]any{
 				"order":     order,
 				"delimiter": delimiter,
 			},
 			"prefix": prefix,
 			"suffix": suffix,
-			"accounts": map[string]interface{}{
+			"accounts": map[string]any{
 				"substr_match_replace": accountReplacements,
 			},
-			"roles": map[string]interface{}{
+			"roles": map[string]any{
 				"substr_match_replace": roleReplacements,
 			},
 		}

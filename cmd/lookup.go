@@ -29,6 +29,9 @@ import (
 )
 
 type (
+	// lookupAccountResponse is the JSON envelope for "lookup account --json".
+	// It bundles everything a caller needs to identify and interact with an
+	// account without making additional lookups.
 	lookupAccountResponse struct {
 		SSOProfile string   `json:"sso_profile,omitzero"`
 		AccountID  string   `json:"account_id"`
@@ -37,6 +40,9 @@ type (
 		Roles      []string `json:"roles"`
 	}
 
+	// lookupRoleResponse is the JSON envelope for "lookup role --json".
+	// Including the query string lets callers correlate results with their input
+	// when processing multiple lookups in a pipeline.
 	lookupRoleResponse struct {
 		SSOProfile string   `json:"sso_profile,omitzero"`
 		AccountID  string   `json:"account_id"`
@@ -47,11 +53,15 @@ type (
 )
 
 var (
+	// accountIDPattern is shared across lookup subcommands to distinguish a
+	// 12-digit account ID from a human-readable name or profile identifier.
 	accountIDPattern = regexp.MustCompile(`^\d{12}$`)
 
 	fLookupProfile string
 	fLookupFor     string
 
+	// lookupCmd is the parent command. It reads exclusively from the local
+	// lookup index cache — no AWS API calls — so it's fast and works offline.
 	lookupCmd = &cobra.Command{
 		Use:   "lookup",
 		Short: "Lookup account and role information from local account cache.",
@@ -68,6 +78,10 @@ var (
 		`)),
 	}
 
+	// lookupAccountCmd resolves a flexible identifier (account ID, name, profile
+	// name, or substring) to a single account. This flexibility lets users type
+	// whatever they remember — "internal", "prod-admin", or the full 12-digit ID
+	// — and get the canonical account ID back.
 	lookupAccountCmd = &cobra.Command{
 		Use:   "account [account]",
 		Short: "Resolve an account identifier to account details and valid roles.",
@@ -116,6 +130,10 @@ var (
 		},
 	}
 
+	// lookupRoleCmd searches for roles by substring within a single account.
+	// The --for flag is mandatory because role names are only meaningful in the
+	// context of a specific account (the same role name can exist across many
+	// accounts).
 	lookupRoleCmd = &cobra.Command{
 		Use:   "role [role] --for [account]",
 		Short: "Lookup roles by case-insensitive substring within one account.",
@@ -191,6 +209,9 @@ var (
 	}
 )
 
+// resolveLookupProfileName determines which SSO profile to use for cache
+// lookups. The --profile flag takes priority so scripts can target a specific
+// profile without changing the config file.
 func resolveLookupProfileName() (string, error) {
 	profileName := strings.TrimSpace(fLookupProfile)
 	if profileName != "" {
@@ -205,6 +226,17 @@ func resolveLookupProfileName() (string, error) {
 	return profileName, nil
 }
 
+// lookupAccountIDsByIdentifier resolves a user-provided identifier to one or
+// more account IDs. The resolution order is intentional:
+//
+//  1. Exact 12-digit account ID — fastest, unambiguous.
+//  2. Exact profile name (CI) — users often remember their profile aliases.
+//  3. Exact account name (CI) — the human-readable AWS account name.
+//  4. Substring match across names and profiles — catches partial input like
+//     "internal" matching "internal-prod".
+//
+// Exact matches are tried first so that a user who types a full name always
+// gets a single result, even if that name is also a substring of another.
 func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier string) ([]string, error) {
 	trimmed := strings.TrimSpace(identifier)
 	if trimmed == "" {
@@ -230,7 +262,10 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 		return accountIDs, nil
 	}
 
-	// Substring match across account names and profile names.
+	// Substring match across account names and profile names. This is the
+	// fallback that enables partial-name lookups like "internal" matching
+	// "internal-prod". We deduplicate via a seen set because the same account
+	// ID can appear in both name and profile maps.
 	seen := map[string]struct{}{}
 	var matched []string
 
@@ -264,6 +299,10 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 	return nil, fmt.Errorf("account identifier %q not found", identifier)
 }
 
+// resolveLookupAccount narrows the identifier down to exactly one account.
+// Multiple matches are reported as an ambiguity error rather than silently
+// picking one, because an incorrect account selection could lead to the user
+// assuming the wrong role or accessing the wrong environment.
 func resolveLookupAccount(
 	index listAWSAccountsLookupIndex,
 	identifier string,

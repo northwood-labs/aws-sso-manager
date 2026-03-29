@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -213,13 +214,7 @@ func TestPropertyLookupRoleSubstringSearch(t *testing.T) {
 			// 7. Verify completeness: no role that should match was missed.
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needleLower) {
-					found := false
-					for _, m := range matches {
-						if m == roleName {
-							found = true
-							break
-						}
-					}
+					found := slices.Contains(matches, roleName)
 					if !found {
 						t.Fatalf("role %q contains %q but was not in matches", roleName, needle)
 					}

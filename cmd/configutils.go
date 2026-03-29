@@ -26,10 +26,17 @@ import (
 )
 
 const (
+	// managedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
+	// ~/.aws/config that this tool owns. Content between a matching start/end
+	// pair is regenerated on every "update" — anything outside is left untouched.
+	// This marker-based approach lets the tool coexist with hand-edited sections.
 	managedStartMarkerPrefix = "aws-sso-manager: start "
 	managedEndMarkerPrefix   = "aws-sso-manager: end "
 )
 
+// managedMarkerReport captures the structural health of managed blocks so the
+// validate command can report all anomalies in a single pass rather than
+// failing on the first one.
 type managedMarkerReport struct {
 	profiles    []string
 	startCounts map[string]int
@@ -37,6 +44,9 @@ type managedMarkerReport struct {
 	issues      map[string][]string
 }
 
+// appendManagedMarkerIssue deduplicates issues per profile so overlapping
+// anomalies (e.g., an overlap reported from both profiles' perspectives) don't
+// produce duplicate error messages.
 func appendManagedMarkerIssue(issues map[string][]string, profile, issue string) {
 	if slices.Contains(issues[profile], issue) {
 		return
@@ -45,6 +55,9 @@ func appendManagedMarkerIssue(issues map[string][]string, profile, issue string)
 	issues[profile] = append(issues[profile], issue)
 }
 
+// parseManagedMarkerProfile extracts the profile name from a marker line.
+// The marker format uses a fixed prefix and trailing dashes, so we strip both
+// to recover the bare profile name.
 func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 	_, after, ok := strings.Cut(line, prefix)
 	if !ok {
@@ -60,6 +73,11 @@ func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 	return name, true
 }
 
+// inspectManagedMarkers performs a single-pass scan of the AWS config file to
+// detect structural anomalies in managed blocks: mismatched counts, duplicates,
+// overlaps, orphaned end markers, and unclosed start markers. A single pass is
+// important because the config file can be large and we want the validate
+// command to be fast.
 func inspectManagedMarkers() (*managedMarkerReport, error) {
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
@@ -77,6 +95,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 		endCounts:   map[string]int{},
 		issues:      map[string][]string{},
 	}
+
 	seenProfiles := map[string]struct{}{}
 	activeProfile := ""
 
@@ -104,6 +123,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 					profile,
 					activeProfile,
 				)
+
 				appendManagedMarkerIssue(report.issues, activeProfile, issue)
 				appendManagedMarkerIssue(report.issues, profile, issue)
 
@@ -136,6 +156,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 					profile,
 					activeProfile,
 				)
+
 				appendManagedMarkerIssue(report.issues, activeProfile, issue)
 				appendManagedMarkerIssue(report.issues, profile, issue)
 
@@ -190,6 +211,11 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 	return report, nil
 }
 
+// getProfileName generates the AWS CLI profile name for an account-role pair.
+// The naming is fully configurable per SSO profile via the TOML config file,
+// allowing organizations to enforce consistent naming conventions (e.g.,
+// "prod-admin" instead of "My Production Account-AdministratorAccess").
+// When no pattern is configured, it falls back to a safe default.
 func getProfileName(profileName, account, role string) string {
 	var (
 		order     = asvConfig.GetStringSlice(profileName + ".rename.pattern.order")
@@ -260,6 +286,9 @@ func getProfileName(profileName, account, role string) string {
 		}
 	}
 
+	// If all tokens resolved to empty (e.g., empty prefix + empty suffix with
+	// no ACCOUNT/ROLE in the order), fall back to the default so we never
+	// generate a blank profile name.
 	generatedName := strings.TrimSpace(strings.Join(orderCopy, delimiter))
 	if generatedName == "" {
 		return buildDefaultProfileName(account, role)
@@ -268,6 +297,9 @@ func getProfileName(profileName, account, role string) string {
 	return generatedName
 }
 
+// buildDefaultProfileName produces a safe, filesystem-friendly profile name
+// when no custom pattern is configured. It lowercases and sanitizes both tokens
+// so the result works as an AWS CLI profile name without quoting or escaping.
 func buildDefaultProfileName(account, role string) string {
 	accountToken := toProfileToken(account)
 	roleToken := toProfileToken(role)
@@ -284,6 +316,11 @@ func buildDefaultProfileName(account, role string) string {
 	}
 }
 
+// toProfileToken normalizes a string into a valid, lowercase profile name
+// component by replacing non-alphanumeric characters with hyphens and
+// collapsing consecutive hyphens. This is idempotent:
+// toProfileToken(toProfileToken(x)) == toProfileToken(x), which is important
+// because profile names may be round-tripped through the lookup index.
 func toProfileToken(input string) string {
 	input = strings.TrimSpace(strings.ToLower(input))
 	if input == "" {
@@ -312,7 +349,7 @@ func toProfileToken(input string) string {
 
 // markersExist reports whether the AWS config file already contains any managed
 // block start marker for the given profile name. It is used before writing new
-// markers so that orphaned markers (e.g. after manual section-header deletion)
+// markers so that orphaned markers (e.g., after manual section-header deletion)
 // are caught before a duplicate block is appended.
 func markersExist(profileName string) (bool, error) {
 	report, err := inspectManagedMarkers()
@@ -342,6 +379,8 @@ func validateMarkers(profileName string) error {
 	return nil
 }
 
+// validateManagedMarkers checks all profiles at once, used by the validate
+// command to give a comprehensive report rather than stopping at the first error.
 func validateManagedMarkers() error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
@@ -354,6 +393,7 @@ func validateManagedMarkers() error {
 			errs = append(errs, errors.New(issue))
 		}
 	}
+
 	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
@@ -361,6 +401,10 @@ func validateManagedMarkers() error {
 	return nil
 }
 
+// getManagedSection extracts the content between a profile's managed block
+// markers into a temp file. The update command uses this to load the existing
+// INI sections, rebuild them from scratch, and then swap the result back in.
+// Validating markers first prevents operating on a corrupt config.
 func getManagedSection(profileName string) (string, error) {
 	if err := validateManagedMarkers(); err != nil {
 		return "", err
@@ -416,9 +460,15 @@ func getManagedSection(profileName string) (string, error) {
 	return tmp.Name(), nil
 }
 
+// setManagedSection replaces the content between a profile's managed block
+// markers with new content from tmpFile. It writes to a backup file in the same
+// directory as the config so that the final os.Rename is an atomic
+// same-filesystem operation — this prevents a half-written config if the
+// process is interrupted.
 func setManagedSection(tmpFile, profileName string) (string, error) {
 	// Create the backup in the same directory as the config file so that
-	// os.Rename can atomically swap it in without crossing filesystem boundaries.
+	// os.Rename can atomically swap it in without crossing filesystem
+	// boundaries.
 	backup, err := os.CreateTemp(filepath.Dir(awsConfigFilePath), ".aws-sso-manager-*.ini")
 	if err != nil {
 		return "", err
@@ -538,18 +588,3 @@ func getAllManagedSections() ([]string, error) {
 
 	return ssoProfiles, nil
 }
-
-// func truncate(filename string, perm os.FileMode) error {
-// 	logger.Debugf("Truncating %s...", filename)
-
-// 	f, err := os.OpenFile(filename, os.O_TRUNC, perm)
-// 	if err != nil {
-// 		return fmt.Errorf("could not open file %q for truncation: %w", filename, err)
-// 	}
-
-// 	if err = f.Close(); err != nil {
-// 		return fmt.Errorf("could not close file handler for %q after truncation: %w", filename, err)
-// 	}
-
-// 	return nil
-// }

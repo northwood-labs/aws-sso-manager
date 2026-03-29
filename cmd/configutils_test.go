@@ -507,7 +507,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 		config := genProfilePatternConfig().Draw(rt, "patternConfig")
 
 		// Extract pattern config values
-		patternMap := config["pattern"].(map[string]interface{})
+		patternMap := config["pattern"].(map[string]any)
 		order := patternMap["order"].([]string)
 		delimiter := patternMap["delimiter"].(string)
 		prefix := config["prefix"].(string)
@@ -696,7 +696,7 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 		// and the substr_match_replace map
 		asvConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
 		asvConfig.Set(profileName+".rename.pattern.delimiter", "-")
-		asvConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]interface{}{
+		asvConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]any{
 			matchKey: replacement,
 		})
 

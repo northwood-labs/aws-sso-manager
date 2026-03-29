@@ -61,7 +61,8 @@ var validateCmd = &cobra.Command{
 		}
 
 		// Collect all profile names from both sources so that we report on the
-		// full universe: known sso-session sections and any marker-only profiles.
+		// full universe: known sso-session sections and any marker-only
+		// profiles.
 		ssoSections, err := getAllManagedSections()
 		if err != nil {
 			return fmt.Errorf("reading AWS config: %w", err)
@@ -146,6 +147,7 @@ var validateCmd = &cobra.Command{
 			}
 
 			results = append(results, result{profile: profile, errs: errs})
+
 			if len(errs) > 0 {
 				foundProblems = true
 			}
@@ -157,6 +159,7 @@ var validateCmd = &cobra.Command{
 				fmt.Printf("  OK  %s\n", r.profile)
 			} else {
 				fmt.Printf("FAIL  %s\n", r.profile)
+
 				for _, e := range r.errs {
 					fmt.Printf("        %s\n", e)
 				}

@@ -29,7 +29,10 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
-// initCmd represents the init command
+// initCmd sets up a new SSO session in ~/.aws/config. It's the first command a
+// user runs for each AWS Organization — it creates the [sso-session] section
+// inside a managed block so that subsequent "update" calls know which region of
+// the config file to regenerate.
 var initCmd = &cobra.Command{
 	Use:   "init [sso-profile-name]",
 	Short: "Initializes AWS SSO Manager configuration.",
@@ -211,6 +214,7 @@ var initCmd = &cobra.Command{
 			if tmpConfig == nil {
 				return
 			}
+
 			if closeErr := tmpConfig.Close(); closeErr != nil {
 				logger.Error("Failed to close temporary AWS config file", "error", closeErr)
 			}
@@ -243,6 +247,7 @@ var initCmd = &cobra.Command{
 		if err = tmpConfig.Close(); err != nil {
 			return fmt.Errorf("close temporary AWS config file: %w", err)
 		}
+
 		tmpConfig = nil
 
 		if err = os.Rename(tmpConfigPath, awsConfigFilePath); err != nil {
@@ -273,6 +278,12 @@ func init() {
 	)
 }
 
+// normalizeSSOStartURL accepts multiple shorthand formats for the SSO start URL
+// so users don't have to remember the full URL. AWS Identity Center URLs follow
+// a predictable pattern, so we can expand bare subdomains ("my-org") into full
+// URLs ("https://my-org.awsapps.com/start"). The resolution order handles
+// progressively more complete inputs: bare subdomain → dotted host → host/path
+// → full URL.
 func normalizeSSOStartURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
@@ -284,6 +295,7 @@ func normalizeSSOStartURL(raw string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("could not parse %q: %w", raw, err)
 		}
+
 		if parsed.Scheme == "" || parsed.Host == "" {
 			return "", fmt.Errorf("expected a full URL with scheme and host, got %q", raw)
 		}
@@ -293,10 +305,12 @@ func normalizeSSOStartURL(raw string) (string, error) {
 
 	if strings.Contains(trimmed, "/") {
 		candidate := "https://" + trimmed
+
 		parsed, err := url.Parse(candidate)
 		if err != nil {
 			return "", fmt.Errorf("could not parse %q: %w", raw, err)
 		}
+
 		if parsed.Host == "" {
 			return "", fmt.Errorf("expected a host or subdomain, got %q", raw)
 		}

@@ -319,6 +319,9 @@ func init() {
 	rootCmd.AddCommand(consoleCmd)
 }
 
+// minMaxRows clamps the TUI select list height between 5 and 10 rows. Too few
+// rows makes the list feel cramped; too many pushes the prompt off-screen on
+// small terminals.
 func minMaxRows[T any](rows []T) int {
 	return int(
 		math.Min(
@@ -335,6 +338,9 @@ func minMaxRows[T any](rows []T) int {
 	)
 }
 
+// getRolesForAccount returns the roles for a specific account ID. This is used
+// by the console command's interactive prompt to show only the roles available
+// for the selected account.
 func getRolesForAccount(accounts []listAccount, accountId string) []listRole {
 	for _, acct := range accounts {
 		if acct.ID == accountId {
@@ -345,6 +351,9 @@ func getRolesForAccount(accounts []listAccount, accountId string) []listRole {
 	return []listRole{}
 }
 
+// getStartURL extracts the SSO portal hostname from the config. The console
+// command needs this to construct the final redirect URL — the hostname is the
+// SSO portal that handles the account/role selection.
 func getStartURL(profileName string) (string, error) {
 	sections, err := configFile.OpenFile(awsConfigFilePath)
 	if err != nil {
@@ -363,6 +372,11 @@ func getStartURL(profileName string) (string, error) {
 	return "", fmt.Errorf("could not discover 'sso_start_url' for profile '%s'", profileName)
 }
 
+// stripAccountFromURL removes the account-specific subdomain from an AWS
+// Console URL. When a user copies a URL from their browser, it often includes
+// an account subdomain (e.g., https://123456789012.s3.console.aws.amazon.com).
+// The SSO redirect URL needs the generic form without the account subdomain,
+// because the account is specified separately via the account_id parameter.
 func stripAccountFromURL(consoleURL string) string {
 	reConsole := regexp.MustCompile(`https://([0-9a-zA-Z-]+)\.([0-9a-zA-Z-]+)\.console\.aws\.amazon\.com`)
 	consoleURL = reConsole.ReplaceAllString(consoleURL, `https://${2}.console.aws.amazon.com`)

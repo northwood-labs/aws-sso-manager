@@ -43,6 +43,8 @@ import (
 )
 
 type (
+	// ssoProfile holds the parsed [sso-session] config for one AWS Organization.
+	// It's the bridge between the INI config on disk and the AWS SDK calls.
 	ssoProfile struct {
 		Name     string
 		StartURL string
@@ -59,6 +61,9 @@ type (
 		loginTimeout   time.Duration
 	}
 
+	// cacheFileData is the SSO OIDC auth token cache. Persisting it avoids
+	// re-authenticating via the browser on every command — the token is valid
+	// for hours, so most invocations can reuse it.
 	cacheFileData struct {
 		ExpiresAt             time.Time `json:"expiresAt"`
 		RegistrationExpiresAt time.Time `json:"registrationExpiresAt"`
@@ -69,6 +74,9 @@ type (
 		ClientSecret          string    `json:"clientSecret"`
 	}
 
+	// listAWSAccountsInput bundles everything needed to list accounts. Passing
+	// it as a struct keeps the function signatures manageable and makes it easy
+	// to add new parameters (like filters) without breaking callers.
 	listAWSAccountsInput struct {
 		Cmd           *cobra.Command
 		SDKConfig     *aws.Config
@@ -91,6 +99,10 @@ type (
 		Roles    []string `json:"roles"`
 	}
 
+	// listAWSAccountsLookupIndex provides O(1) lookups by account ID, name, or
+	// profile name. It's built from the accounts cache and persisted separately
+	// so that "get" and "lookup" commands can resolve identifiers without
+	// re-fetching from AWS.
 	listAWSAccountsLookupIndex struct {
 		ProfileName           string                                  `json:"profile_name"`
 		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`
@@ -105,6 +117,8 @@ type (
 	}
 )
 
+// listAWSAccountsFetcher is a package-level function variable so tests can
+// replace the real AWS API call with a mock without needing an interface.
 var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
 
 func (c *cacheFileData) save(cacheFilePath string) error {
@@ -149,11 +163,14 @@ func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 
 func ensureAWSManagerCacheDir() (string, error) {
 	cacheDir := awsManagerCacheDir
+
 	if cacheDir == "" {
 		homeDir := userHomeDir
+
 		if homeDir == "" {
 			var err error
 			homeDir, err = os.UserHomeDir()
+
 			if err != nil {
 				return "", fmt.Errorf("could not determine user home directory: %w", err)
 			}
@@ -177,6 +194,10 @@ func (input listAWSAccountsInput) getLogger() *charmlog.Logger {
 	return logger
 }
 
+// cacheFilePath computes a deterministic, collision-resistant path for the
+// accounts cache. The SHA-256 hash includes the profile name and any active
+// filters so that filtered and unfiltered results are cached independently —
+// a filtered cache shouldn't be served for an unfiltered request.
 func (input listAWSAccountsInput) cacheFilePath() string {
 	cacheKey := strings.Join([]string{
 		"listAWSAccounts.v1",
@@ -203,6 +224,9 @@ func (input listAWSAccountsInput) lookupCacheFilePath() string {
 	return strings.TrimSuffix(cacheFilePath, ".json") + "-lookup.json"
 }
 
+// shouldWriteLookupCache returns true only when no filters are active. The
+// lookup index must represent the complete account set — a filtered subset
+// would cause "get" and "lookup" commands to miss accounts.
 func shouldWriteLookupCache(input listAWSAccountsInput) bool {
 	return strings.TrimSpace(input.AccountFilter) == "" && strings.TrimSpace(input.RoleFilter) == ""
 }
@@ -219,6 +243,11 @@ func appendUnique(values []string, value string) []string {
 	return append(values, value)
 }
 
+// buildListAWSAccountsLookupIndex creates the O(1) lookup maps from a flat
+// account list. It builds three indexes (by ID, by name CI, by profile CI) so
+// that the lookup and get commands can resolve any identifier format without
+// scanning the full list. Entries are deduplicated and sorted for deterministic
+// output.
 func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) listAWSAccountsLookupIndex {
 	index := listAWSAccountsLookupIndex{
 		ProfileName:           profileName,
@@ -242,10 +271,11 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 
 		for _, role := range account.Roles {
 			entry.Roles = appendUnique(entry.Roles, role.Name)
-
 			profileKey := strings.ToLower(strings.TrimSpace(role.Profile))
+
 			if profileKey != "" {
 				entry.Profiles = appendUnique(entry.Profiles, role.Profile)
+
 				index.AccountIDsByProfileCI[profileKey] = appendUnique(
 					index.AccountIDsByProfileCI[profileKey],
 					account.ID,
@@ -256,6 +286,7 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 		sort.SliceStable(entry.Roles, func(i, j int) bool {
 			return strings.ToLower(entry.Roles[i]) < strings.ToLower(entry.Roles[j])
 		})
+
 		sort.SliceStable(entry.Profiles, func(i, j int) bool {
 			return strings.ToLower(entry.Profiles[i]) < strings.ToLower(entry.Profiles[j])
 		})
@@ -416,6 +447,9 @@ func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
 	return nil
 }
 
+// readListAWSAccountsCache loads cached account data if it exists and hasn't
+// expired. Expired entries are proactively deleted so stale files don't
+// accumulate. Returns (data, true, nil) on hit, (empty, false, nil) on miss.
 func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) {
 	data, err := os.ReadFile(cacheFilePath)
 	if err != nil {
@@ -454,6 +488,9 @@ func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) 
 	return cached.Accounts, true, nil
 }
 
+// writeListAWSAccountsCache persists account data with a timestamp. The
+// write-to-tmp-then-rename pattern prevents readers from seeing a half-written
+// file if the process is interrupted mid-write.
 func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) error {
 	cacheData := listAWSAccountsCacheData{
 		CachedAt: time.Now().UTC(),
@@ -581,7 +618,7 @@ func getSDKConfig(ctx context.Context, sessionProfile ssoProfile) (aws.Config, e
 		)
 
 		if errors.As(err, &credentialsErr) {
-			return aws.Config{}, fmt.Errorf("credential requires arn error: %w", err)
+			return aws.Config{}, fmt.Errorf("credential requires ARN error: %w", err)
 		} else if errors.As(err, &assumeRoleErr) {
 			return aws.Config{}, fmt.Errorf("shared config assume role error: %w", err)
 		} else if errors.As(err, &configLoadErr) {
@@ -662,7 +699,7 @@ func authenticateSSOProfile(
 		)
 	}
 
-	logger.Debug("Current OS user", "user", currentUser.Username)
+	logger.Debug("current OS user", "user", currentUser.Username)
 
 	clientName := currentUser.Username + "-" + sessionProfile.Name + "-" + sessionProfile.Region
 	oidcClient := ssooidc.NewFromConfig(*sdkConfig)
@@ -795,6 +832,10 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	return cacheFile, nil
 }
 
+// listAWSAccounts is the main entry point for fetching account/role data. It
+// implements a cache-aside pattern: check cache first, fall back to the AWS API
+// on miss, then write the result back to cache. This keeps repeated commands
+// fast (sub-second) while ensuring fresh data is fetched when the cache expires.
 func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 	cacheFilePath := input.cacheFilePath()
 	lookupCacheFilePath := input.lookupCacheFilePath()
@@ -809,6 +850,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 		} else if ok {
 			if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 				lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, cachedAccounts)
+
 				if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
 					inputLogger.Error(
 						"Failed to write AWS accounts lookup cache",
@@ -821,6 +863,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 			}
 
 			inputLogger.Debug("Using cached AWS accounts", "file", cacheFilePath)
+
 			return cachedAccounts, nil
 		}
 	}
@@ -839,6 +882,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 
 		if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 			lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
+
 			if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
 				inputLogger.Error(
 					"Failed to write AWS accounts lookup cache",
@@ -856,6 +900,11 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 	return accounts, nil
 }
 
+// fetchListAWSAccountsFromSSO calls the AWS SSO ListAccounts and
+// ListAccountRoles APIs, applying any active filters and sorting the results.
+// This is the only function that makes real AWS API calls for account data —
+// everything else reads from cache. Filters are applied during pagination
+// rather than after to avoid fetching roles for accounts that will be discarded.
 func fetchListAWSAccountsFromSSO(input listAWSAccountsInput) (listAccounts, error) {
 	var accts listAccounts
 
