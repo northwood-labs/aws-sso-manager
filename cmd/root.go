@@ -84,9 +84,16 @@ var (
 		also enables the use of AWS Vault with SSO.
 		`),
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# Initialize a new SSO profile.
 		aws-sso-manager init [sso-profile-name]
+
+		# Authenticate with an SSO profile.
 		aws-sso-manager auth [sso-profile-name]
+
+		# List all AWS accounts accessible with this SSO profile.
 		aws-sso-manager list [sso-profile-name]
+
+		# Update the .aws/config file with the AWS accounts/roles you have access to.
 		aws-sso-manager update [sso-profile-name]
 		`)),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

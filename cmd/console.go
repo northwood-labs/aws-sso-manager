@@ -54,11 +54,16 @@ var (
 		`),
 		Args: cobra.RangeArgs(0, 2),
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# Prompt for both the AWS console URL and the SSO profile.
 		aws-sso-manager console
-		aws-sso-manager console --clipboard=false
+
+		# Prompt for whichever is undefined.
 		aws-sso-manager console <url>
 		aws-sso-manager console <sso-profile>
 		aws-sso-manager console <sso-profile> <url>
+
+		# Disable reading from/writing to the clipboard.
+		aws-sso-manager console --clipboard=false
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (

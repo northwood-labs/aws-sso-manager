@@ -52,6 +52,7 @@ var validateCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	Aliases: []string{"check", "lint"},
 	Example: strings.TrimSpace(dedent.Dedent(`
+	# Validate that the ~/.aws/config file is valid.
 	aws-sso-manager validate
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -51,10 +51,13 @@ var (
 		`),
 		Args: cobra.NoArgs,
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# List all AWS accounts for an SSO profile.
 		aws-sso-manager get accounts
-		aws-sso-manager get accounts | fzf
+		aws-sso-manager get accounts <sso-profile-name> | fzf
+
+		# List all granted roles for an AWS account under an SSO profile.
 		aws-sso-manager get roles --for 123456789012
-		aws-sso-manager get roles --for 123456789012 | fzf
+		aws-sso-manager get roles <sso-profile-name> --for 123456789012 | fzf
 		`)),
 	}
 

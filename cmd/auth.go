@@ -44,7 +44,10 @@ var (
 		Args:    cobra.RangeArgs(0, 1),
 		Aliases: []string{"login"},
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# Authenticate with the default SSO profile.
 		aws-sso-manager auth
+
+		# Authenticate with a specific SSO profile.
 		aws-sso-manager auth <sso-profile-name>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {

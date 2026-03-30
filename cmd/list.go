@@ -82,12 +82,21 @@ var (
 		Args:    cobra.RangeArgs(0, 1),
 		Aliases: []string{"ls"},
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# List profiles for the default SSO profile.
 		aws-sso-manager list
+
+		# List profiles for a specific SSO profile.
 		aws-sso-manager list <sso-profile-name>
+
+		# List profiles in different formats.
 		aws-sso-manager list <sso-profile-name> --json
 		aws-sso-manager list <sso-profile-name> --csv
 		aws-sso-manager list <sso-profile-name> --markdown
+
+		# Fetch fresh data instead of using cached data.
 		aws-sso-manager list <sso-profile-name> --no-cache
+
+		# Filter by specific details.
 		aws-sso-manager list <sso-profile-name> --accounts <substring>
 		aws-sso-manager list <sso-profile-name> --roles <substring>
 		`)),

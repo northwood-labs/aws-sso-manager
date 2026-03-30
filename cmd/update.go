@@ -45,7 +45,10 @@ var updateCmd = &cobra.Command{
 	Args:    cobra.RangeArgs(0, 1),
 	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
+	# Update profiles in the default SSO profile.
 	aws-sso-manager update
+
+	# Update profiles in a specific SSO profile.
 	aws-sso-manager update <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {

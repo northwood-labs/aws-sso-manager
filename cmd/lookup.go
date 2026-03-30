@@ -73,7 +73,10 @@ var (
 		`),
 		Args: cobra.NoArgs,
 		Example: strings.TrimSpace(dedent.Dedent(`
+		# Lookup an account by one of the identifiers.
 		aws-sso-manager lookup account <account-identifier>
+
+		# Lookup a role for a 12-digit AWS account.
 		aws-sso-manager lookup role <role-substring> --for <account-identifier>
 		`)),
 	}
@@ -86,6 +89,10 @@ var (
 		Use:   "account [account]",
 		Short: "Resolve an account identifier to account details and valid roles.",
 		Args:  cobra.ExactArgs(1),
+		Example: strings.TrimSpace(dedent.Dedent(`
+		# Lookup an account by one of the identifiers.
+		aws-sso-manager lookup account <account-identifier>
+		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profileName, err := resolveLookupProfileName()
 			if err != nil {
@@ -136,8 +143,12 @@ var (
 	// accounts).
 	lookupRoleCmd = &cobra.Command{
 		Use:   "role [role] --for [account]",
-		Short: "Lookup roles by case-insensitive substring within one account.",
+		Short: "Lookup a role by case-insensitive substring within one account.",
 		Args:  cobra.ExactArgs(1),
+		Example: strings.TrimSpace(dedent.Dedent(`
+		# Lookup a role by case-insensitive substring within one account.
+		aws-sso-manager lookup role <role-substring> --for <account-identifier>
+		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if strings.TrimSpace(fLookupFor) == "" {
 				return errors.New("flag --for is required")

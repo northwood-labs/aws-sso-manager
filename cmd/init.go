@@ -42,7 +42,7 @@ var initCmd = &cobra.Command{
 	`),
 	Args: cobra.RangeArgs(0, 1),
 	Example: strings.TrimSpace(dedent.Dedent(`
-	aws-sso-manager init
+	# Initialize a new SSO profile with a short name.
 	aws-sso-manager init <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -268,7 +268,7 @@ func init() {
 		"u",
 		"",
 		"The start URL for the AWS SSO portal, or just the awsapps subdomain "+
-			"(e.g., https://northwood-labs.awsapps.com/start or northwood-labs)",
+			"(e.g., `https://my-organization.awsapps.com/start` or `my-organization`)",
 	)
 	initCmd.Flags().StringP(
 		"sso-region", "r", "", "The AWS region where AWS SSO is configured (e.g., us-east-1)",
