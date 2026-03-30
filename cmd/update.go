@@ -184,7 +184,7 @@ var updateCmd = &cobra.Command{
 		fmt.Printf("Updated %d profiles for %q.\n", counter, profileName)
 		fmt.Fprintf(
 			os.Stderr,
-			`Note: used cached account data. Run "aws-sso-manager list %s --no-cache" first to fetch fresh data.\n`,
+			"Note: used cached account data. Run \"aws-sso-manager list %s --no-cache\" first to fetch fresh data.\n",
 			profileName,
 		)
 
