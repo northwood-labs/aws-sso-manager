@@ -8,6 +8,31 @@ These SSO profiles can be used with `$AWS_PROFILE`, [AWS Vault], or other tools,
 
 It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
+## Features
+
+* Allows you to login to [AWS Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html) (née _SSO_), then update your AWS config file with all of the profiles you have access to.
+
+* Updates to your AWS config file are sandboxed in a way that does not mess with existing credentials or profiles.
+
+* Supports multiple _AWS Identity Center_ profiles.
+
+* Is complementary to tools such as [AWS Vault] in that it sets up the AWS config file that AWS Vault uses to perform its magic.
+
+* Leverages the modern [SSO token provider configuration](https://docs.aws.amazon.com/sdkref/latest/guide/feature-sso-credentials.html#sso-token-config).
+
+* Supports the [`AWS_CONFIG_FILE`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) environment variable for alternate config files.
+
+* Supports custom profile names via configuration file and pattern-matching.
+
+* Supports configuring a default SSO profile to interact with.
+
+* Does not require the [AWS CLI](https://aws.amazon.com/cli/).
+
+### Non-features
+
+* Not meant for solutions that do not leverage _AWS Identity Center_, e.g., `saml2aws`.
+* Chooses to let _AWS Vault_ do what it does best, and doesn't try to replicate its functionality.
+
 ## Adding your AWS Identity Center account
 
 > [!NOTE]
@@ -117,22 +142,10 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## TODO
 
-* [X] Cache the `list` results by default (24h, configurable).
-* [X] Use `list` cache to generate a lookup table (24h, configurable).
-* [X] `list --csv`.
-* [X] `list --markdown`.
-* [X] `get accounts` returns a list for `fzf`.
-* [X] `get roles --for <ID>` returns a list for `fzf`.
-* [X] `lookup account <NAME>` returns the account ID for the friendly name.
-* [X] `lookup role <NAME> --for <NAME>` returns the full role name for the friendly name.
-* [X] Move the config per the [XDG](https://specifications.freedesktop.org/basedir/latest/) spec.
 * [ ] Save JSON to keychain and delete from disk?
-* [X] Support awsapps.com subdomain.
 * [ ] `config set default-account`.
 * [ ] Lookup the ARN for all users of an SSO role.
-* [ ] Support `AWS_CONFIG_FILE`.
 * [ ] Table: <https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/>
-* [ ] Support config keys: <https://docs.aws.amazon.com/sdkref/latest/guide/settings-reference.html>
 * [ ] <https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments>
 
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
