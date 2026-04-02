@@ -43,11 +43,11 @@ var (
 	fVerbose       int
 	fJSON          bool
 
-	// asvConfig is the Viper instance that merges TOML config, env vars, and
+	// asmConfig is the Viper instance that merges TOML config, env vars, and
 	// CLI flags into a single configuration source. It's a package-level var
 	// so every command can read profile-specific settings without passing it
 	// around.
-	asvConfig = viper.New()
+	asmConfig = viper.New()
 
 	awsConfigFilePath  string
 	awsManagerCacheDir string
@@ -162,6 +162,7 @@ func parseCacheDurationFlag(raw string) (time.Duration, error) {
 	return parsed, nil
 }
 
+// This runs too early in the process to use the logger.
 func init() {
 	var err error
 
@@ -170,7 +171,15 @@ func init() {
 		cobra.CheckErr(err)
 	}
 
+	// The SDK doesn't appear to provide access to a fully-resolved config file
+	// location, so we'll do it quick-and-dirty here.
 	awsConfigFilePath = config.DefaultSharedConfigFilename()
+	envConfigFile := os.Getenv("AWS_CONFIG_FILE")
+
+	if envConfigFile != "" {
+		awsConfigFilePath = envConfigFile
+	}
+
 	awsManagerCacheDir = path.Join(userHomeDir, ".config", "aws-sso-manager", "cache")
 	fCacheDuration = "24h"
 
@@ -210,12 +219,12 @@ func Root() *cobra.Command {
 // flags > env vars > config file > defaults. This lets users override any
 // setting at any level without editing files.
 func initializeConfig(cmd *cobra.Command) error {
-	asvConfig.SetEnvPrefix("ASM") // AWS SSO Manager
+	asmConfig.SetEnvPrefix("ASM") // AWS SSO Manager
 
 	// Map dots and hyphens in config keys to underscores for env var lookup,
 	// so "profile-name" in TOML becomes ASM_PROFILE_NAME as an env var.
-	asvConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	asvConfig.AutomaticEnv()
+	asmConfig.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+	asmConfig.AutomaticEnv()
 
 	defaultConfigFile := path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml")
 
@@ -230,7 +239,7 @@ func initializeConfig(cmd *cobra.Command) error {
 			return fmt.Errorf("config file does not exist at %s", fConfigFile)
 		}
 
-		asvConfig.SetConfigFile(fConfigFile)
+		asmConfig.SetConfigFile(fConfigFile)
 	} else {
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
@@ -241,9 +250,9 @@ func initializeConfig(cmd *cobra.Command) error {
 				return fmt.Errorf("could not create config directory: %w", err)
 			}
 
-			asvConfig.SetConfigType("toml")
+			asmConfig.SetConfigType("toml")
 
-			err = asvConfig.WriteConfigAs(defaultConfigFile)
+			err = asmConfig.WriteConfigAs(defaultConfigFile)
 			if err != nil {
 				logger.Info("!!!!!! This should not happen !!!!!!")
 
@@ -255,12 +264,16 @@ func initializeConfig(cmd *cobra.Command) error {
 		}
 
 		logger.Info("Using the config file", "file", fConfigFile)
-		asvConfig.SetConfigFile(fConfigFile)
+		asmConfig.SetConfigFile(fConfigFile)
 	}
+
+	// We can print globals here and they will show up in verbose logs for all
+	// subcommands.
+	logger.Info("Using AWS config file", "file", awsConfigFilePath)
 
 	// If a config file is found, read it in. We use a robust error check to
 	// ignore "file not found" errors, but panic on any other error.
-	if err := asvConfig.ReadInConfig(); err != nil {
+	if err := asmConfig.ReadInConfig(); err != nil {
 		// It's okay if the config file doesn't exist.
 		var configFileNotFoundError viper.ConfigFileNotFoundError
 		if !errors.As(err, &configFileNotFoundError) {
@@ -270,7 +283,7 @@ func initializeConfig(cmd *cobra.Command) error {
 
 	// This is the magic that makes the flag values available through Viper. It
 	// binds the full flag set of the command passed in.
-	err := asvConfig.BindPFlags(cmd.Flags())
+	err := asmConfig.BindPFlags(cmd.Flags())
 	if err != nil {
 		return err
 	}
