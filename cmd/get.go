@@ -148,7 +148,7 @@ func resolveGetProfileName() (string, error) {
 		return profileName, nil
 	}
 
-	profileName = strings.TrimSpace(asvConfig.GetString("profile-name"))
+	profileName = strings.TrimSpace(asmConfig.GetString("profile-name"))
 	if profileName == "" {
 		return "", errors.New("no profile configured; set profile-name in config or pass --profile")
 	}

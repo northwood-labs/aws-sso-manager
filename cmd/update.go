@@ -63,7 +63,7 @@ var updateCmd = &cobra.Command{
 		if len(args) == 1 {
 			profileName = args[0]
 		} else {
-			profileName = asvConfig.GetString("profile-name")
+			profileName = asmConfig.GetString("profile-name")
 		}
 
 		if profileName == "" {

@@ -218,15 +218,15 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 // When no pattern is configured, it falls back to a safe default.
 func getProfileName(profileName, account, role string) string {
 	var (
-		order     = asvConfig.GetStringSlice(profileName + ".rename.pattern.order")
-		delimiter = asvConfig.GetString(profileName + ".rename.pattern.delimiter")
-		prefix    = asvConfig.GetString(profileName + ".rename.prefix")
-		suffix    = asvConfig.GetString(profileName + ".rename.suffix")
+		order     = asmConfig.GetStringSlice(profileName + ".rename.pattern.order")
+		delimiter = asmConfig.GetString(profileName + ".rename.pattern.delimiter")
+		prefix    = asmConfig.GetString(profileName + ".rename.prefix")
+		suffix    = asmConfig.GetString(profileName + ".rename.suffix")
 
 		// accountGlobal = asvConfig.GetStringMapString(profileName + ".rename.accounts.global_regex_replace")
-		accountSubstr = asvConfig.GetStringMapString(profileName + ".rename.accounts.substr_match_replace")
+		accountSubstr = asmConfig.GetStringMapString(profileName + ".rename.accounts.substr_match_replace")
 		// roleGlobal    = asvConfig.GetStringMapString(profileName + ".rename.roles.global_regex_replace")
-		roleSubstr = asvConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
+		roleSubstr = asmConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
 	)
 
 	if len(order) == 0 {

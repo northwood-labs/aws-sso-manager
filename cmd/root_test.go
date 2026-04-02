@@ -180,13 +180,13 @@ func TestVerboseLevels(t *testing.T) {
 	oldVerbose := fVerbose
 	oldCacheDuration := fCacheDuration
 	oldConfigFile := fConfigFile
-	oldConfig := asvConfig
+	oldConfig := asmConfig
 	t.Cleanup(func() {
 		logger = oldLogger
 		fVerbose = oldVerbose
 		fCacheDuration = oldCacheDuration
 		fConfigFile = oldConfigFile
-		asvConfig = oldConfig
+		asmConfig = oldConfig
 	})
 
 	tmpDir := t.TempDir()
@@ -212,7 +212,7 @@ func TestVerboseLevels(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			asvConfig = viper.New()
+			asmConfig = viper.New()
 
 			var buf bytes.Buffer
 			logger = log.NewWithOptions(&buf, log.Options{
@@ -251,10 +251,10 @@ func TestVerboseLevels(t *testing.T) {
 
 func TestEnvPrefixASM(t *testing.T) {
 	// Save and restore the global asvConfig on cleanup.
-	oldConfig := asvConfig
+	oldConfig := asmConfig
 	oldConfigFile := fConfigFile
 	t.Cleanup(func() {
-		asvConfig = oldConfig
+		asmConfig = oldConfig
 		fConfigFile = oldConfigFile
 	})
 
@@ -266,7 +266,7 @@ func TestEnvPrefixASM(t *testing.T) {
 	}
 
 	t.Run("ASM prefix is read", func(t *testing.T) {
-		asvConfig = viper.New()
+		asmConfig = viper.New()
 		fConfigFile = tmpConfig
 
 		// The env key replacer maps "-" to "_", so for key "profile-name"
@@ -278,14 +278,14 @@ func TestEnvPrefixASM(t *testing.T) {
 			t.Fatalf("initializeConfig: %v", err)
 		}
 
-		got := asvConfig.GetString("profile-name")
+		got := asmConfig.GetString("profile-name")
 		if got != "test-profile-from-env" {
 			t.Fatalf("expected %q, got %q", "test-profile-from-env", got)
 		}
 	})
 
 	t.Run("old ASV prefix is not read", func(t *testing.T) {
-		asvConfig = viper.New()
+		asmConfig = viper.New()
 		fConfigFile = tmpConfig
 
 		// Set the old ASV_ prefix env var — should NOT be picked up.
@@ -296,7 +296,7 @@ func TestEnvPrefixASM(t *testing.T) {
 			t.Fatalf("initializeConfig: %v", err)
 		}
 
-		got := asvConfig.GetString("profile-name")
+		got := asmConfig.GetString("profile-name")
 		if got == "old-prefix-value" {
 			t.Fatal("ASV_ prefix should no longer be read, but got old-prefix-value")
 		}

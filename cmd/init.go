@@ -58,7 +58,7 @@ var initCmd = &cobra.Command{
 		if len(args) == 1 {
 			profileName = args[0]
 		} else {
-			profileName = asvConfig.GetString("profile-name")
+			profileName = asmConfig.GetString("profile-name")
 		}
 
 		if profileName == "" {
@@ -72,16 +72,16 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		if asvConfig.Get("sso-start-url") != nil {
-			ssoStartURL = asvConfig.Get("sso-start-url").(string)
+		if asmConfig.Get("sso-start-url") != nil {
+			ssoStartURL = asmConfig.Get("sso-start-url").(string)
 		}
 
-		if asvConfig.Get("sso-region") != nil {
-			ssoRegion = asvConfig.Get("sso-region").(string)
+		if asmConfig.Get("sso-region") != nil {
+			ssoRegion = asmConfig.Get("sso-region").(string)
 		}
 
-		if asvConfig.Get("sso-scopes") != nil {
-			ssoScopes = asvConfig.Get("sso-scopes").(string)
+		if asmConfig.Get("sso-scopes") != nil {
+			ssoScopes = asmConfig.Get("sso-scopes").(string)
 		}
 
 		configLock, err := acquireAWSConfigLock(cmd.Context())

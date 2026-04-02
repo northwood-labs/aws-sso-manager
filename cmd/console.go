@@ -90,7 +90,7 @@ var (
 				profileName = args[0]
 				consoleURL = args[1]
 			} else {
-				profileName = asvConfig.GetString("profile-name")
+				profileName = asmConfig.GetString("profile-name")
 			}
 
 			var groups []*huh.Group

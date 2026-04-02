@@ -467,9 +467,9 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 }
 
 func TestGetProfileNameFallsBackWhenRenameConfigMissing(t *testing.T) {
-	oldConfig := asvConfig
-	asvConfig = viper.New()
-	t.Cleanup(func() { asvConfig = oldConfig })
+	oldConfig := asmConfig
+	asmConfig = viper.New()
+	t.Cleanup(func() { asmConfig = oldConfig })
 
 	got := getProfileName("nwl2", "Sandbox", "ReadOnlyAccess")
 	if got != "sandbox-readonlyaccess" {
@@ -478,13 +478,13 @@ func TestGetProfileNameFallsBackWhenRenameConfigMissing(t *testing.T) {
 }
 
 func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
-	oldConfig := asvConfig
-	asvConfig = viper.New()
-	t.Cleanup(func() { asvConfig = oldConfig })
+	oldConfig := asmConfig
+	asmConfig = viper.New()
+	t.Cleanup(func() { asmConfig = oldConfig })
 
-	asvConfig.Set("nwl2.rename.pattern.order", []string{"PREFIX", "SUFFIX"})
-	asvConfig.Set("nwl2.rename.prefix", "")
-	asvConfig.Set("nwl2.rename.suffix", "")
+	asmConfig.Set("nwl2.rename.pattern.order", []string{"PREFIX", "SUFFIX"})
+	asmConfig.Set("nwl2.rename.prefix", "")
+	asmConfig.Set("nwl2.rename.suffix", "")
 
 	got := getProfileName("nwl2", "Prod Account", "AdministratorAccess")
 	if got != "prod-account-administratoraccess" {
@@ -496,9 +496,9 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 // **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
 func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
-		oldConfig := asvConfig
-		asvConfig = viper.New()
-		defer func() { asvConfig = oldConfig }()
+		oldConfig := asmConfig
+		asmConfig = viper.New()
+		defer func() { asmConfig = oldConfig }()
 
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
 		account := rapid.StringMatching(`[A-Za-z][A-Za-z0-9 ]{2,19}`).Draw(rt, "account")
@@ -514,10 +514,10 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 		suffix := config["suffix"].(string)
 
 		// Set up asvConfig with the pattern config (skip substr_match_replace for this test)
-		asvConfig.Set(profileName+".rename.pattern.order", order)
-		asvConfig.Set(profileName+".rename.pattern.delimiter", delimiter)
-		asvConfig.Set(profileName+".rename.prefix", prefix)
-		asvConfig.Set(profileName+".rename.suffix", suffix)
+		asmConfig.Set(profileName+".rename.pattern.order", order)
+		asmConfig.Set(profileName+".rename.pattern.delimiter", delimiter)
+		asmConfig.Set(profileName+".rename.prefix", prefix)
+		asmConfig.Set(profileName+".rename.suffix", suffix)
 
 		got := getProfileName(profileName, account, role)
 
@@ -671,9 +671,9 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 // **Validates: Requirements 9.6, 9.8**
 func TestPropertySubstringMatchReplacement(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
-		oldConfig := asvConfig
-		asvConfig = viper.New()
-		defer func() { asvConfig = oldConfig }()
+		oldConfig := asmConfig
+		asmConfig = viper.New()
+		defer func() { asmConfig = oldConfig }()
 
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
 
@@ -694,9 +694,9 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 
 		// Set up asvConfig with pattern order ["ACCOUNT", "ROLE"], delimiter "-",
 		// and the substr_match_replace map
-		asvConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
-		asvConfig.Set(profileName+".rename.pattern.delimiter", "-")
-		asvConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]any{
+		asmConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
+		asmConfig.Set(profileName+".rename.pattern.delimiter", "-")
+		asmConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]any{
 			matchKey: replacement,
 		})
 
