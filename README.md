@@ -28,6 +28,10 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 * Does not require the [AWS CLI](https://aws.amazon.com/cli/).
 
+* Only need to install a single binary (no dependencies).
+
+* Supports Linux, macOS, and Windows.
+
 ### Non-features
 
 * Not meant for solutions that do not leverage _AWS Identity Center_, e.g., `saml2aws`.
@@ -142,36 +146,43 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## Comparison
 
-| Feature                          | [AWS Vault] | [aws-sso] | [AWS CLI v2] | ASM (Us)  |
-|----------------------------------|-------------|-----------|--------------|-----------|
-| Secure store creds               | ✅           | ✅         | ❌            | ❌[^1]     |
-| Static AWS API Creds             | ✅           | ❌         | ✅            | ❌[^1]     |
-| SAML auth support                | ❌           | ❌         | ❌            | ❌[^2]     |
-| AWS SSO support                  | ✅           | ✅         | ✅            | ✅         |
-| Web Identity support             | ✅           | ❌         | ✅            | ❌[^1]     |
-| Open AWS web console             | ✅           | ✅         | ❌            | ❌[^1]     |
-| Bulk SSO Role discovery          | ❌           | ✅         | ❌            | ✅         |
-| Read `~/.aws/config`             | ✅           | ❌         | ✅            | ✅         |
-| Write `~/.aws/config`            | ❌           | ✅         | ✅            | ✅         |
-| User defined ENV vars            | ❌           | ✅         | ❌            | ❌         |
-| `$AWS_PROFILE` templates         | ❌           | ✅         | ❌            | ❌         |
-| Role chaining                    | ✅           | ✅         | ✅            | ❌[^3]     |
-| CLI auto-complete                | ✅           | ✅         | ✅            | ✅         |
-| EC2/ECS Metadata server          | ✅           | ✅         | ❌            | ❌[^1]     |
-| Firefox Containers               | ❌           | ✅         | ❌            | ❌         |
-| Exec new shell with AWS creds    | ✅           | ✅         | ❌            | ❌[^1]     |
-| Detect `$AWS_PROFILE` collision  | ❌           | ✅         | ✅            | ❌[^1][^3] |
-| Add AWS creds into current shell | ❌           | ✅         | ❌            | ❌[^1]     |
+| Feature                             | ASM (Us) | [aws-sso-cli] |
+|-------------------------------------|----------|---------------|
+| AWS SSO support                     | ✅        | ✅             |
+| Bulk SSO Role discovery             | ✅        | ✅             |
+| Write `~/.aws/config`               | ✅        | ✅             |
+| User defined ENV vars               | ❌        | ✅             |
+| `$AWS_PROFILE` templates            | ✅        | ✅             |
+| CLI auto-complete                   | ✅        | ✅             |
+| Console links with account and role | ✅        |               |
+| Supports multiple profiles          | ✅        | ✅             |
+| Sandboxed AWS config updates        | ✅        |               |
+| Supports `AWS_CONFIG_FILE`          | ✅        | ✅             |
+| Configure a default SSO profile     | ✅        | ✅             |
+| Does not require the AWS CLI        | ✅        |               |
+| Atomic writes with locking          | ✅        |               |
+| No runtime dependencies             | ✅        | ✅             |
+| Runs on Windows                     | ✅        | ✅             |
+| Runs on macOS                       | ✅        | ✅             |
+| Runs on Linux                       | ✅        | ✅             |
+| Windows code signing                | ❌        |               |
+| macOS code signing (Gatekeeper)     | ✅        |               |
+| Linux code signing                  | ❌        |               |
+
+* _AWS SSO Manager_ very intentionally does not try to compete with [AWS Vault].
+* _AWS SSO Manager_ is specific to the [AWS Identity Center] solution; not SAML.
+* _AWS SSO Manager_ only tries to replace the SSO onboarding of the [AWS CLI v2] with improved automation.
 
 ## TODO
 
 * [ ] Save JSON to keychain and delete from disk?
-
-[^1]: AWS SSO Manager very intentionally does not try to compete with AWS Vault.
-[^2]: AWS SSO Manager is specific to the AWS Identity Center solution; not SAML.
-[^3]: AWS SSO Manager only tries to replace the SSO onboarding of the AWS CLI v2 with improved automation.
+* [ ] Configure default region.
+* [ ] Support templating other parameters.
+* [ ] Support a longer default token timeout for `auth`.
+* [ ] Configure output format for the AWS CLI.
+* [ ] Listing for SSO profiles.
 
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
-[aws-sso]: https://synfinatic.github.io/aws-sso-cli/latest/
+[aws-sso-cli]: https://synfinatic.github.io/aws-sso-cli/latest/
 [AWS CLI v2]: https://aws.amazon.com/cli/
