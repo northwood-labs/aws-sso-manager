@@ -140,12 +140,38 @@ See the documentation for your specific SDK, but everything supported in the AWS
 
 Make sure you replaced `{PROFILE}` with the actual name of the profile. The use of `{PROFILE}` in the code samples is just a placeholder.
 
+## Comparison
+
+| Feature                          | [AWS Vault] | [aws-sso] | [AWS CLI v2] | ASM (Us)  |
+|----------------------------------|-------------|-----------|--------------|-----------|
+| Secure store creds               | ✅           | ✅         | ❌            | ❌[^1]     |
+| Static AWS API Creds             | ✅           | ❌         | ✅            | ❌[^1]     |
+| SAML auth support                | ❌           | ❌         | ❌            | ❌[^2]     |
+| AWS SSO support                  | ✅           | ✅         | ✅            | ✅         |
+| Web Identity support             | ✅           | ❌         | ✅            | ❌[^1]     |
+| Open AWS web console             | ✅           | ✅         | ❌            | ❌[^1]     |
+| Bulk SSO Role discovery          | ❌           | ✅         | ❌            | ✅         |
+| Read `~/.aws/config`             | ✅           | ❌         | ✅            | ✅         |
+| Write `~/.aws/config`            | ❌           | ✅         | ✅            | ✅         |
+| User defined ENV vars            | ❌           | ✅         | ❌            | ❌         |
+| `$AWS_PROFILE` templates         | ❌           | ✅         | ❌            | ❌         |
+| Role chaining                    | ✅           | ✅         | ✅            | ❌[^3]     |
+| CLI auto-complete                | ✅           | ✅         | ✅            | ✅         |
+| EC2/ECS Metadata server          | ✅           | ✅         | ❌            | ❌[^1]     |
+| Firefox Containers               | ❌           | ✅         | ❌            | ❌         |
+| Exec new shell with AWS creds    | ✅           | ✅         | ❌            | ❌[^1]     |
+| Detect `$AWS_PROFILE` collision  | ❌           | ✅         | ✅            | ❌[^1][^3] |
+| Add AWS creds into current shell | ❌           | ✅         | ❌            | ❌[^1]     |
+
 ## TODO
 
 * [ ] Save JSON to keychain and delete from disk?
-* [ ] `config set default-account`.
-* [ ] Table: <https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/>
-* [ ] <https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments>
+
+[^1]: AWS SSO Manager very intentionally does not try to compete with AWS Vault.
+[^2]: AWS SSO Manager is specific to the AWS Identity Center solution; not SAML.
+[^3]: AWS SSO Manager only tries to replace the SSO onboarding of the AWS CLI v2 with improved automation.
 
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
+[aws-sso]: https://synfinatic.github.io/aws-sso-cli/latest/
+[AWS CLI v2]: https://aws.amazon.com/cli/
