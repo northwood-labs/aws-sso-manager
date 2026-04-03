@@ -17,13 +17,14 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	configFile "github.com/northwood-labs/aws-config-parser/ini"
 	"pgregory.net/rapid"
 )
@@ -167,7 +168,7 @@ func TestBuildUpdatedManagedSectionsUpdatesRoleFields(t *testing.T) {
 }
 
 func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -298,7 +299,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 
 // Feature: aws-sso-manager, Property 17: Update Managed Section Generation
 func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	rapid.Check(t, func(t *rapid.T) {
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")

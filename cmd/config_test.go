@@ -17,13 +17,14 @@ package cmd
 import (
 	"bytes"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
@@ -34,7 +35,7 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 	// **Validates: Requirements 2.2, 2.3, 3.2, 6.1**
 
 	rapid.Check(t, func(rt *rapid.T) {
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		oldConfig := asmConfig
 		asmConfig = viper.New()
@@ -86,7 +87,7 @@ func TestPropertyConfigSetConfirmation(t *testing.T) {
 	// **Validates: Requirements 2.6**
 
 	rapid.Check(t, func(rt *rapid.T) {
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		oldConfig := asmConfig
 		defer func() { asmConfig = oldConfig }()
@@ -128,7 +129,7 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 	// **Validates: Requirements 8.4**
 
 	rapid.Check(t, func(rt *rapid.T) {
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		oldConfig := asmConfig
 		defer func() { asmConfig = oldConfig }()
@@ -193,7 +194,7 @@ func TestPropertyConfigBackupContent(t *testing.T) {
 	// **Validates: Requirements 8.1, 8.2**
 
 	rapid.Check(t, func(rt *rapid.T) {
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		oldConfig := asmConfig
 		defer func() { asmConfig = oldConfig }()
@@ -274,7 +275,7 @@ func TestPropertyConfigNonexistentKey(t *testing.T) {
 		defer func() { asmConfig = oldConfig }()
 
 		// Silence logger.
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		// Fresh Viper instance with empty config.
 		asmConfig = viper.New()
@@ -372,7 +373,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		defer func() { fForce = oldForce }()
 
 		// Silence logger.
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		// Fresh Viper instance with temp config file.
 		asmConfig = viper.New()
@@ -462,7 +463,7 @@ func TestPropertyConfigDelConfirmation(t *testing.T) {
 		defer func() { fForce = oldForce }()
 
 		// Silence logger.
-		logger = log.New(io.Discard)
+		logger = slog.New(log.New(io.Discard))
 
 		// Fresh Viper instance with temp config file.
 		asmConfig = viper.New()
@@ -573,7 +574,7 @@ func TestConfigNoSubcommandShowsHelp(t *testing.T) {
 // parent directory when it doesn't exist.
 // **Validates: Requirements 2.5**
 func TestConfigSetCreatesParentDirectory(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
 	t.Cleanup(func() { asmConfig = oldConfig })
@@ -637,7 +638,7 @@ func TestConfigSubcommandsUseRunE(t *testing.T) {
 // confirmation prompt and deletes the key immediately.
 // **Validates: Requirements 4.2, 4.4**
 func TestConfigDelForceSkipsPrompt(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
 	oldForce := fForce
@@ -690,7 +691,7 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 // unchanged.
 // **Validates: Requirements 4.3**
 func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
 	oldForce := fForce
@@ -755,7 +756,7 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 // when config set writes the config file for the first time.
 // **Validates: Requirements 8.5**
 func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
 	t.Cleanup(func() { asmConfig = oldConfig })
@@ -791,7 +792,7 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 // prevent the config mutation from succeeding.
 // **Validates: Requirements 8.6**
 func TestConfigSetBackupFailureNonFatal(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	// Call backupConfigFile with a path inside a read-only directory.
 	// The backup write should fail silently (logged as warning) and not panic.

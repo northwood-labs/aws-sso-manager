@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -27,9 +28,9 @@ import (
 	"syscall"
 	"time"
 
+	"charm.land/fang/v2"
+	"charm.land/log/v2"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/charmbracelet/fang"
-	"github.com/charmbracelet/log"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -54,14 +55,16 @@ var (
 	cacheDuration      = 24 * time.Hour
 	userHomeDir        string
 
-	// logger defaults to stderr with caller info and timestamps. The
+	// charmlogger defaults to stderr with caller info and timestamps. The
 	// PersistentPreRunE adjusts the level based on -v count so that normal
 	// usage is quiet and -vvv gives full debug output with source locations.
-	logger = log.NewWithOptions(os.Stderr, log.Options{
+	charmlogger = log.NewWithOptions(os.Stderr, log.Options{
 		ReportCaller:    true,
 		ReportTimestamp: true,
 		TimeFormat:      time.Kitchen,
 	})
+
+	logger *slog.Logger
 
 	// fangNotifySignals, fangExecute, runRootCommand, and osExit are test seams.
 	// They let tests verify signal handling and exit behavior without actually
@@ -97,24 +100,29 @@ var (
 		aws-sso-manager update [sso-profile-name]
 		`)),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			charmlogger.SetStyles(clihelpers.GetLoggerStyles())
+
 			// Verbose levels: 0=warn (quiet default), 1=info (-v), 2=debug
 			// (-vv), 3+=debug with source file:line (-vvv). ReportCaller is
 			// expensive so it's only enabled at the highest level for deep
 			// debugging.
 			switch {
 			case fVerbose == 0:
-				logger.SetLevel(log.WarnLevel)
-				logger.SetReportCaller(false)
+				charmlogger.SetLevel(log.WarnLevel)
+				charmlogger.SetReportCaller(false)
 			case fVerbose == 1:
-				logger.SetLevel(log.InfoLevel)
-				logger.SetReportCaller(false)
+				charmlogger.SetLevel(log.InfoLevel)
+				charmlogger.SetReportCaller(false)
 			case fVerbose == 2:
-				logger.SetLevel(log.DebugLevel)
-				logger.SetReportCaller(false)
+				charmlogger.SetLevel(log.DebugLevel)
+				charmlogger.SetReportCaller(false)
 			default:
-				logger.SetLevel(log.DebugLevel)
-				logger.SetReportCaller(true)
+				charmlogger.SetLevel(log.DebugLevel)
+				charmlogger.SetReportCaller(true)
 			}
+
+			// At the end, convert charmlogger to a slog logger.
+			logger = slog.New(charmlogger)
 
 			parsedCacheDuration, err := parseCacheDurationFlag(fCacheDuration)
 			if err != nil {

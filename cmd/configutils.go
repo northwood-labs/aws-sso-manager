@@ -415,7 +415,7 @@ func getManagedSection(profileName string) (string, error) {
 		return "", err
 	}
 
-	logger.Debugf("Reading from %s...", awsConfigFilePath)
+	logger.Debug("Reading from AWS config", "file", awsConfigFilePath)
 
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
@@ -434,15 +434,15 @@ func getManagedSection(profileName string) (string, error) {
 		line := scanner.Text()
 
 		if strings.Contains(line, "aws-sso-manager: start "+profileName) {
-			logger.Debugf(">| %s", line)
+			logger.Debug(">| " + line)
 
 			doCopy = true
 			continue
 		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
-			logger.Debugf("<| %s", line)
+			logger.Debug("<| " + line)
 			break
 		} else {
-			logger.Debugf(" | %s", line)
+			logger.Debug(" | " + line)
 			if doCopy {
 				_, err = tmp.WriteString(line + "\n")
 				if err != nil {
@@ -497,7 +497,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 		confLine := confScanner.Text()
 
 		if strings.Contains(confLine, "aws-sso-manager: start "+profileName) {
-			logger.Debugf(">| %s", confLine)
+			logger.Debug(">| " + confLine)
 
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
@@ -508,7 +508,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			injectedInBlock = false
 			continue
 		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
-			logger.Debugf("<| %s", confLine)
+			logger.Debug("<| " + confLine)
 
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
@@ -519,7 +519,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			injectedInBlock = false
 			continue
 		} else {
-			logger.Debugf(" | %s", confLine)
+			logger.Debug(" | " + confLine)
 
 			if inManagedBlock {
 				if !injectedInBlock {
@@ -562,7 +562,7 @@ func getAllMarkedProfiles() ([]string, error) {
 func getAllManagedSections() ([]string, error) {
 	var ssoProfiles []string
 
-	logger.Debugf("Reading from %s...", awsConfigFilePath)
+	logger.Debug("Reading from AWS config", "file", awsConfigFilePath)
 
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {

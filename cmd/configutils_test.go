@@ -18,12 +18,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
 )
@@ -31,7 +32,7 @@ import (
 func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 	t.Helper()
 
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() {
@@ -103,7 +104,7 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 }
 
 func TestGetAllMarkedProfiles(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -140,7 +141,7 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 }
 
 func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -171,7 +172,7 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 }
 
 func TestValidateMarkersOK(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -195,7 +196,7 @@ func TestValidateMarkersOK(t *testing.T) {
 }
 
 func TestValidateMarkersMismatched(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -217,7 +218,7 @@ func TestValidateMarkersMismatched(t *testing.T) {
 }
 
 func TestValidateMarkersDuplicate(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -243,7 +244,7 @@ func TestValidateMarkersDuplicate(t *testing.T) {
 }
 
 func TestValidateMarkersOverlappingProfiles(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -275,7 +276,7 @@ func TestValidateMarkersOverlappingProfiles(t *testing.T) {
 }
 
 func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -299,7 +300,7 @@ func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
 }
 
 func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -333,7 +334,7 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.T) {
 	t.Helper()
 
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() {
@@ -391,7 +392,7 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 }
 
 func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldHomeDir := userHomeDir
 	t.Cleanup(func() { userHomeDir = oldHomeDir })
@@ -434,7 +435,7 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 }
 
 func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
-	logger = log.New(io.Discard)
+	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
@@ -571,7 +572,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 	t.Run("well-formed configs produce no issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
-			logger = log.New(io.Discard)
+			logger = slog.New(log.New(io.Discard))
 
 			oldConfigPath := awsConfigFilePath
 			defer func() { awsConfigFilePath = oldConfigPath }()
@@ -615,7 +616,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
 	t.Run("malformed configs produce issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
-			logger = log.New(io.Discard)
+			logger = slog.New(log.New(io.Discard))
 
 			oldConfigPath := awsConfigFilePath
 			defer func() { awsConfigFilePath = oldConfigPath }()

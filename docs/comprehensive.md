@@ -306,7 +306,7 @@ The original `ASV_` prefix was a holdover from an earlier project name. `ASM_` m
 
 ### Why are verbose levels with caller info only at `-vvv`?
 
-`ReportCaller` in the [charmbracelet/log](https://github.com/charmbracelet/log) library adds the source file and line number to every log message, which is invaluable for debugging but adds visual noise and a small performance cost (runtime stack inspection). The three-level scheme (`-v` = info, `-vv` = debug, `-vvv` = debug with source locations) gives users a progressive disclosure model: most debugging needs are met by `-vv`, and `-vvv` is reserved for deep investigation.
+`ReportCaller` in the [charmbracelet/log/v2](https://github.com/charmbracelet/log) library adds the source file and line number to every log message, which is invaluable for debugging but adds visual noise and a small performance cost (runtime stack inspection). The three-level scheme (`-v` = info, `-vv` = debug, `-vvv` = debug with source locations) gives users a progressive disclosure model: most debugging needs are met by `-vv`, and `-vvv` is reserved for deep investigation.
 
 ### Why support substring matching in lookup (with exact-match priority)?
 

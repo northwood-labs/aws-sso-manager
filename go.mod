@@ -3,22 +3,22 @@ module github.com/northwood-labs/aws-sso-manager
 go 1.26.0
 
 require (
+	charm.land/fang/v2 v2.0.1
 	charm.land/lipgloss/v2 v2.0.2
+	charm.land/log/v2 v2.0.0
 	github.com/aws/aws-sdk-go-v2 v1.41.5
 	github.com/aws/aws-sdk-go-v2/config v1.32.14
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.14
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.15
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.19
 	github.com/aymanbagabas/go-nativeclipboard v0.1.3
-	github.com/charmbracelet/fang v1.0.0
 	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20260223110133-9dc45e34a40b
-	github.com/charmbracelet/log v1.0.0
 	github.com/gtramontina/ooze v0.2.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/northwood-labs/aws-config-parser v1.8.4
-	github.com/northwood-labs/cli-helpers v0.0.0-20260326231351-e6128371e88b
+	github.com/northwood-labs/cli-helpers v0.0.0-20260403181625-7fbdec54999a
 	github.com/pelletier/go-toml/v2 v2.3.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/cobra v1.10.2

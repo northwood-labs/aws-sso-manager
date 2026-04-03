@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/huh"
 	"github.com/lithammer/dedent"
 	"github.com/pkg/browser"
@@ -152,6 +153,8 @@ func authenticateAndCacheSSOSession(
 		return err
 	}
 
+	logger.Debug("Authentication URL", "url", authURL)
+
 	u, err := url.Parse(authURL)
 	if err != nil {
 		return err
@@ -162,7 +165,18 @@ func authenticateAndCacheSSOSession(
 		return err
 	}
 
-	fmt.Printf("Ensure the code matches: %s\n", u.Query().Get("user_code"))
+	codeWrapper := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		Padding(1, 2, 0, 2) // lint:allow_raw_number
+
+	lipgloss.Println(
+		codeWrapper.Render(
+			lipgloss.Sprintf(
+				"Ensure the code matches: %s\n",
+				clihelpers.StyleInlineHighlight.Bold(true).Render(u.Query().Get("user_code")),
+			),
+		),
+	)
 
 	if fBrowser {
 		err = browser.OpenURL(authURL)
@@ -229,7 +243,7 @@ func getOrRefreshAuthenticatedCache(
 		"Session cache is missing or expired; attempting automatic authentication",
 		"profile",
 		profileName,
-		"error",
+		"err",
 		err,
 	)
 

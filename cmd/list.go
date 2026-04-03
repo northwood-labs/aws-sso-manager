@@ -179,7 +179,7 @@ var (
 					}(&accounts)).
 					Run()
 				if err != nil {
-					logger.Fatal("failed to fetch fresh data", "error", err)
+					logger.Error("failed to fetch fresh data", "err", err)
 				}
 
 				// Delete old cache after successful fetch
@@ -191,7 +191,7 @@ var (
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
 					if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
-						logger.Error("failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
+						logger.Error("failed to write AWS accounts cache", "file", cacheFilePath, "err", err)
 					}
 
 					if shouldWriteLookupCache(listInput) {
@@ -201,7 +201,7 @@ var (
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
 
 							if err := writeListAWSAccountsLookupCache(lookupCachePath, lookupIndex); err != nil {
-								logger.Error("failed to write lookup cache", "file", lookupCachePath, "error", err)
+								logger.Error("failed to write lookup cache", "file", lookupCachePath, "err", err)
 							}
 						}
 					}
@@ -220,7 +220,7 @@ var (
 					}(&accounts)).
 					Run()
 				if err != nil {
-					logger.Fatal(err)
+					cobra.CheckErr(err)
 				}
 			}
 

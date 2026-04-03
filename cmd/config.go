@@ -173,7 +173,6 @@ var (
 
 		return confirmed, err
 	}
-
 )
 
 func init() {
@@ -317,18 +316,18 @@ func backupConfigFile(configPath string) {
 	}
 
 	dir := filepath.Dir(configPath)
-	timestamp := time.Now().UTC().Format("20060102T150405Z")
+	timestamp := time.Now().UTC().Format(time.RFC3339)
 	backupPath := filepath.Join(dir, fmt.Sprintf("config-%s.toml.bak", timestamp))
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		logger.Warn("could not read config for backup", "error", err)
+		logger.Warn("could not read config for backup", "err", err)
 
 		return
 	}
 
 	if err := os.WriteFile(backupPath, data, 0o0644); err != nil {
-		logger.Warn("could not write config backup", "error", err)
+		logger.Warn("could not write config backup", "err", err)
 
 		return
 	}
@@ -342,7 +341,7 @@ func backupConfigFile(configPath string) {
 func pruneConfigBackups(dir string, keep int) {
 	matches, err := filepath.Glob(filepath.Join(dir, "config-*.toml.bak"))
 	if err != nil {
-		logger.Warn("could not list config backups", "error", err)
+		logger.Warn("could not list config backups", "err", err)
 
 		return
 	}
@@ -355,7 +354,7 @@ func pruneConfigBackups(dir string, keep int) {
 
 	for _, old := range matches[:len(matches)-keep] {
 		if err := os.Remove(old); err != nil {
-			logger.Warn("could not remove old config backup", "file", old, "error", err)
+			logger.Warn("could not remove old config backup", "file", old, "err", err)
 		}
 	}
 }

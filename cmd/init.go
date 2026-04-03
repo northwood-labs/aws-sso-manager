@@ -90,7 +90,7 @@ var initCmd = &cobra.Command{
 		}
 		defer func() {
 			if releaseErr := configLock.Release(); releaseErr != nil {
-				logger.Error("Failed to release AWS config lock", "error", releaseErr)
+				logger.Error("Failed to release AWS config lock", "err", releaseErr)
 			}
 		}()
 
@@ -216,7 +216,7 @@ var initCmd = &cobra.Command{
 			}
 
 			if closeErr := tmpConfig.Close(); closeErr != nil {
-				logger.Error("Failed to close temporary AWS config file", "error", closeErr)
+				logger.Error("Failed to close temporary AWS config file", "err", closeErr)
 			}
 		}()
 

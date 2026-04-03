@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"math"
 	"net/url"
 	"os"
@@ -96,13 +97,13 @@ var (
 			var groups []*huh.Group
 
 			if consoleURL == "" {
-				logger.Debugf("AWS Console URL is undefined. Collect it from user.")
+				logger.Debug("AWS Console URL is undefined. Collect it from user.")
 
 				if fClipboard {
 					// Set the default value to whatever's on the clipboard.
 					clipboardBytes, err := nativeclipboard.Text.Read()
 					if err != nil {
-						logger.Debug("could not read from the clipboard", "error", err)
+						logger.Debug("could not read from the clipboard", "err", err)
 					}
 
 					clipboardString := string(clipboardBytes)
@@ -121,7 +122,7 @@ var (
 			}
 
 			if profileName == "" {
-				logger.Debugf("SSO profile is undefined. Collect it from user.")
+				logger.Debug("SSO profile is undefined. Collect it from user.")
 
 				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
 					sections, e := getAllManagedSections()
@@ -194,11 +195,11 @@ var (
 				}(&accounts)).
 				Run()
 			if err != nil {
-				logger.Fatal(err)
+				cobra.CheckErr(err)
 			}
 
 			if accountID == "" {
-				logger.Debugf("AWS Account ID is undefined. Collect it from user.")
+				logger.Debug("AWS Account ID is undefined. Collect it from user.")
 
 				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
 					return huh.NewSelect[string]().
@@ -225,7 +226,7 @@ var (
 			}
 
 			if roleName == "" {
-				logger.Debugf("AWS Organizations Role is undefined. Collect it from user.")
+				logger.Debug("AWS Organizations Role is undefined. Collect it from user.")
 
 				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
 					return huh.NewSelect[string]().
@@ -255,13 +256,13 @@ var (
 				log.Fatal(err)
 			}
 
-			logger.Debugf("Values have been collected: %+v", map[string]string{
-				"profileName": profileName,
-				"startHost":   startHost,
-				"consoleURL":  consoleURL,
-				"accountID":   accountID,
-				"roleName":    roleName,
-			})
+			logger.WithGroup("v").With(
+				slog.String("profileName", profileName),
+				slog.String("startHost", startHost),
+				slog.String("consoleURL", consoleURL),
+				slog.String("accountID", accountID),
+				slog.String("roleName", roleName),
+			).Debug("Values have been collected")
 
 			destinationURL := stripAccountFromURL(consoleURL)
 			destinationURL = url.QueryEscape(destinationURL)
@@ -277,7 +278,7 @@ var (
 			if fClipboard {
 				_, err = nativeclipboard.Text.Write([]byte(finalURL))
 				if err != nil {
-					logger.Debug("could not write URL to clipboard", "error", err)
+					logger.Debug("could not write URL to clipboard", "err", err)
 				}
 			}
 

@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -28,8 +29,8 @@ import (
 	"testing"
 	"time"
 
+	"charm.land/log/v2"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"pgregory.net/rapid"
 )
@@ -45,7 +46,7 @@ func TestListAWSAccountsCacheFilePathUsesPackageDefaultDir(t *testing.T) {
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -69,7 +70,7 @@ func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:        log.New(io.Discard),
+		Logger:        slog.New(log.New(io.Discard)),
 		ProfileName:   "nwl2",
 		AccountFilter: "sandbox",
 		RoleFilter:    "readonly",
@@ -121,7 +122,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 		Cmd:         &cobra.Command{},
 		SDKConfig:   &aws.Config{},
 		Cache:       &cacheFileData{AccessToken: "token"},
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -203,7 +204,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 		Cmd:         &cobra.Command{},
 		SDKConfig:   &aws.Config{},
 		Cache:       &cacheFileData{AccessToken: "token"},
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -284,7 +285,7 @@ func TestLoadOrBuildListAWSAccountsLookupIndexBuildsFromAccountsCache(t *testing
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -333,7 +334,7 @@ func TestDeleteListAWSAccountsCacheRemovesExistingFile(t *testing.T) {
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -374,7 +375,7 @@ func TestDeleteListAWSAccountsCacheIgnoresMissingFile(t *testing.T) {
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -390,7 +391,7 @@ func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	input := listAWSAccountsInput{
-		Logger:      log.New(io.Discard),
+		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
 
@@ -660,7 +661,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 		roleFilter := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "roleFilter")
 
 		input := listAWSAccountsInput{
-			Logger:        log.New(io.Discard),
+			Logger:        slog.New(log.New(io.Discard)),
 			ProfileName:   profileName,
 			AccountFilter: accountFilter,
 			RoleFilter:    roleFilter,
@@ -676,7 +677,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 		// Different inputs produce different paths (with high probability)
 		differentProfile := profileName + "x"
 		differentInput := listAWSAccountsInput{
-			Logger:        log.New(io.Discard),
+			Logger:        slog.New(log.New(io.Discard)),
 			ProfileName:   differentProfile,
 			AccountFilter: accountFilter,
 			RoleFilter:    roleFilter,
@@ -705,7 +706,7 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 		accounts := genListAccounts(1, 3).Draw(t, "accounts")
 
 		input := listAWSAccountsInput{
-			Logger:      log.New(io.Discard),
+			Logger:      slog.New(log.New(io.Discard)),
 			ProfileName: rapid.StringMatching(`[a-z]{3,8}`).Draw(t, "profile"),
 		}
 		cachePath := input.cacheFilePath()

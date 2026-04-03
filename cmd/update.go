@@ -83,7 +83,7 @@ var updateCmd = &cobra.Command{
 		}
 		defer func() {
 			if releaseErr := configLock.Release(); releaseErr != nil {
-				logger.Error("Failed to release AWS config lock", "error", releaseErr)
+				logger.Error("Failed to release AWS config lock", "err", releaseErr)
 			}
 		}()
 
@@ -144,7 +144,7 @@ var updateCmd = &cobra.Command{
 			}(&accounts)).
 			Run()
 		if err != nil {
-			logger.Fatal(err)
+			cobra.CheckErr(err)
 		}
 
 		nextSections, counter, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
@@ -174,13 +174,13 @@ var updateCmd = &cobra.Command{
 		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
-		logger.Debugf("Deleted %q.", tmpFilename)
+		logger.Debug("Deleted file", "file", tmpFilename)
 		err = os.Remove(tmpFilename)
 		cobra.CheckErr(err)
 
 		// Atomic rename: the config file is replaced in a single OS operation,
 		// eliminating the window where the file would be empty on an interrupted write.
-		logger.Debugf("Rename %q to %q.", backupFilename, awsConfigFilePath)
+		logger.Debug("Rename file", "from", backupFilename, "to", awsConfigFilePath)
 		err = os.Rename(backupFilename, awsConfigFilePath)
 		cobra.CheckErr(err)
 

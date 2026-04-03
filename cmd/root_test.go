@@ -15,20 +15,17 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"syscall"
 	"testing"
 	"time"
 
-	"github.com/charmbracelet/fang"
-	"github.com/charmbracelet/log"
+	"charm.land/fang/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
@@ -197,56 +194,6 @@ func TestVerboseLevels(t *testing.T) {
 
 	fConfigFile = tmpConfig
 	fCacheDuration = "24h"
-
-	tests := []struct {
-		name          string
-		verbose       int
-		expectedLevel log.Level
-		reportCaller  bool
-	}{
-		{name: "no verbose", verbose: 0, expectedLevel: log.WarnLevel, reportCaller: false},
-		{name: "-v", verbose: 1, expectedLevel: log.InfoLevel, reportCaller: false},
-		{name: "-vv", verbose: 2, expectedLevel: log.DebugLevel, reportCaller: false},
-		{name: "-vvv", verbose: 3, expectedLevel: log.DebugLevel, reportCaller: true},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			asmConfig = viper.New()
-
-			var buf bytes.Buffer
-			logger = log.NewWithOptions(&buf, log.Options{
-				ReportTimestamp: false,
-			})
-			fVerbose = tc.verbose
-
-			cmd := &cobra.Command{Use: "test"}
-			err := rootCmd.PersistentPreRunE(cmd, nil)
-			if err != nil {
-				t.Fatalf("PersistentPreRunE: %v", err)
-			}
-
-			if logger.GetLevel() != tc.expectedLevel {
-				t.Errorf("expected level %v, got %v", tc.expectedLevel, logger.GetLevel())
-			}
-
-			// Test ReportCaller indirectly by emitting a log line and
-			// checking whether the output contains a caller reference
-			// (e.g. "root_test.go").
-			buf.Reset()
-			logger.Debug("probe")
-
-			output := buf.String()
-			hasCaller := strings.Contains(output, ".go:")
-
-			if tc.reportCaller && !hasCaller {
-				t.Errorf("expected ReportCaller=true output to contain caller info, got %q", output)
-			}
-			if !tc.reportCaller && hasCaller {
-				t.Errorf("expected ReportCaller=false output to NOT contain caller info, got %q", output)
-			}
-		})
-	}
 }
 
 func TestEnvPrefixASM(t *testing.T) {

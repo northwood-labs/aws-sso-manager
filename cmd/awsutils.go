@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/user"
 	"path"
@@ -36,7 +37,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sso"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc"
 	"github.com/aws/aws-sdk-go-v2/service/ssooidc/types"
-	charmlog "github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
 	"github.com/northwood-labs/aws-config-parser/ini"
@@ -81,7 +81,7 @@ type (
 		Cmd           *cobra.Command
 		SDKConfig     *aws.Config
 		Cache         *cacheFileData
-		Logger        *charmlog.Logger
+		Logger        *slog.Logger
 		ProfileName   string
 		AccountFilter string
 		RoleFilter    string
@@ -186,7 +186,7 @@ func ensureAWSManagerCacheDir() (string, error) {
 	return cacheDir, nil
 }
 
-func (input listAWSAccountsInput) getLogger() *charmlog.Logger {
+func (input listAWSAccountsInput) getLogger() *slog.Logger {
 	if input.Logger != nil {
 		return input.Logger
 	}
@@ -208,7 +208,7 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 	hash := sha256.Sum256([]byte(cacheKey))
 	cacheDir, err := ensureAWSManagerCacheDir()
 	if err != nil {
-		input.getLogger().Error("Failed to ensure AWS accounts cache directory", "error", err)
+		input.getLogger().Error("Failed to ensure AWS accounts cache directory", "err", err)
 		return ""
 	}
 
@@ -411,7 +411,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	index = buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
 	if err := writeListAWSAccountsLookupCache(lookupCachePath, index); err != nil {
-		input.getLogger().Error("Failed to write accounts lookup cache", "file", lookupCachePath, "error", err)
+		input.getLogger().Error("Failed to write accounts lookup cache", "file", lookupCachePath, "err", err)
 	}
 
 	return index, nil
@@ -699,7 +699,7 @@ func authenticateSSOProfile(
 		)
 	}
 
-	logger.Debug("current OS user", "user", currentUser.Username)
+	logger.Debug("Current OS user", "user", currentUser.Username)
 
 	clientName := currentUser.Username + "-" + sessionProfile.Name + "-" + sessionProfile.Region
 	oidcClient := ssooidc.NewFromConfig(*sdkConfig)
@@ -846,7 +846,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 
 		cachedAccounts, ok, err := readListAWSAccountsCache(cacheFilePath)
 		if err != nil {
-			inputLogger.Error("Failed to read AWS accounts cache", "file", cacheFilePath, "error", err)
+			inputLogger.Error("Failed to read AWS accounts cache", "file", cacheFilePath, "err", err)
 		} else if ok {
 			if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 				lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, cachedAccounts)
@@ -856,7 +856,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 						"Failed to write AWS accounts lookup cache",
 						"file",
 						lookupCacheFilePath,
-						"error",
+						"err",
 						err,
 					)
 				}
@@ -875,7 +875,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 
 	if cacheFilePath != "" {
 		if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
-			inputLogger.Error("Failed to write AWS accounts cache", "file", cacheFilePath, "error", err)
+			inputLogger.Error("Failed to write AWS accounts cache", "file", cacheFilePath, "err", err)
 		} else {
 			inputLogger.Debug("Wrote AWS accounts cache", "file", cacheFilePath)
 		}
@@ -888,7 +888,7 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 					"Failed to write AWS accounts lookup cache",
 					"file",
 					lookupCacheFilePath,
-					"error",
+					"err",
 					err,
 				)
 			} else {
