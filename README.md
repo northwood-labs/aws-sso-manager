@@ -144,7 +144,6 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 * [ ] Save JSON to keychain and delete from disk?
 * [ ] `config set default-account`.
-* [ ] Lookup the ARN for all users of an SSO role.
 * [ ] Table: <https://synfinatic.github.io/aws-sso-cli/latest/aws-vault/>
 * [ ] <https://github.com/benkehoe/aws-sso-util#administrators-looking-up-identifiers-and-assignments>
 

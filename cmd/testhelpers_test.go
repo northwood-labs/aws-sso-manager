@@ -196,3 +196,42 @@ func genProfilePatternConfig() *rapid.Generator[map[string]any] {
 		return config
 	})
 }
+
+// genConfigKey returns a rapid generator that produces valid config keys
+// matching the schema defined in configschema.go. Keys follow the pattern
+// <profile>.rename.<leaf> where leaf is one of the valid terminal paths.
+func genConfigKey() *rapid.Generator[string] {
+	return rapid.Custom[string](func(t *rapid.T) string {
+		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
+
+		leaves := []string{
+			"rename.prefix",
+			"rename.suffix",
+			"rename.pattern.delimiter",
+		}
+
+		leaf := rapid.SampledFrom(leaves).Draw(t, "leaf")
+
+		return profile + "." + leaf
+	})
+}
+
+// genConfigMapKey returns a rapid generator that produces valid config keys
+// targeting map entries (e.g., substr_match_replace.<mapkey>).
+func genConfigMapKey() *rapid.Generator[string] {
+	return rapid.Custom[string](func(t *rapid.T) string {
+		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
+
+		mapPaths := []string{
+			"rename.accounts.global_regex_replace",
+			"rename.accounts.substr_match_replace",
+			"rename.roles.global_regex_replace",
+			"rename.roles.substr_match_replace",
+		}
+
+		mapPath := rapid.SampledFrom(mapPaths).Draw(t, "mapPath")
+		mapKey := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{1,10}`).Draw(t, "mapKey")
+
+		return profile + "." + mapPath + "." + mapKey
+	})
+}

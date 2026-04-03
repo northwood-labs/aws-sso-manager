@@ -1,0 +1,187 @@
+// Copyright 2025-2026, Northwood Labs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package cmd
+
+import (
+	"errors"
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/invopop/jsonschema"
+)
+
+// These types model the TOML configuration file at
+// ~/.config/aws-sso-manager/config.toml so that a JSON Schema can be generated
+// programmatically via reflection. The dynamic SSO profile keys (e.g., "abc",
+// "nwl") are handled via JSONSchemaExtend on ConfigFile, which sets
+// additionalProperties to reference SSOProfileConfig.
+
+// PatternConfig controls how profile name tokens are assembled. Order defines
+// which tokens appear and in what sequence; Delimiter separates them.
+type PatternConfig struct {
+	Order     []string `json:"order,omitempty" toml:"order,omitempty" jsonschema:"description=Ordered list of tokens to include in the generated profile name.,enum=PREFIX,enum=ACCOUNT,enum=ROLE,enum=SUFFIX"`
+	Delimiter string   `json:"delimiter,omitempty" toml:"delimiter,omitempty" jsonschema:"description=Delimiter between tokens in the generated profile name.,default=-"`
+}
+
+// AccountRenameConfig holds the rules for rewriting AWS account names in
+// generated profile names. Supports both regex-based and substring-based
+// matching strategies.
+type AccountRenameConfig struct {
+	GlobalRegexReplace map[string]string `json:"global_regex_replace,omitempty" toml:"global_regex_replace,omitempty" jsonschema:"description=Regex patterns applied to every account name. Key is the regex and value is the replacement."`
+	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" toml:"substr_match_replace,omitempty" jsonschema:"description=If the account name contains the key the entire name is replaced with the value."`
+}
+
+// RoleRenameConfig holds the rules for rewriting AWS role names in generated
+// profile names. Same matching strategies as AccountRenameConfig.
+type RoleRenameConfig struct {
+	GlobalRegexReplace map[string]string `json:"global_regex_replace,omitempty" toml:"global_regex_replace,omitempty" jsonschema:"description=Regex patterns applied to every role name. Key is the regex and value is the replacement."`
+	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" toml:"substr_match_replace,omitempty" jsonschema:"description=If the role name contains the key the entire name is replaced with the value."`
+}
+
+// RenameConfig groups all profile-name generation settings for a single SSO
+// profile. It controls prefix/suffix tokens, the assembly pattern, and
+// account/role name rewriting rules.
+type RenameConfig struct {
+	Prefix   string              `json:"prefix,omitempty" toml:"prefix,omitempty" jsonschema:"description=Standard prefix added to all generated profile names for this SSO profile."`
+	Suffix   string              `json:"suffix,omitempty" toml:"suffix,omitempty" jsonschema:"description=Standard suffix added to all generated profile names for this SSO profile."`
+	Pattern  PatternConfig       `json:"pattern,omitempty" toml:"pattern,omitempty" jsonschema:"description=Controls how profile name tokens are ordered and delimited."`
+	Accounts AccountRenameConfig `json:"accounts,omitempty" toml:"accounts,omitempty" jsonschema:"description=Rules for rewriting AWS account names in generated profile names."`
+	Roles    RoleRenameConfig    `json:"roles,omitempty" toml:"roles,omitempty" jsonschema:"description=Rules for rewriting AWS role names in generated profile names."`
+}
+
+// SSOProfileConfig represents the configuration for a single SSO profile
+// (AWS Organization). The profile key (e.g., "abc", "nwl") is the dynamic
+// map key at the top level of the TOML file.
+type SSOProfileConfig struct {
+	Rename RenameConfig `json:"rename" toml:"rename" jsonschema:"description=Profile name generation and rewriting rules for this SSO profile."`
+}
+
+// ConfigFile is the root schema for the TOML configuration file. The fixed
+// "profile-name" key sets the default SSO profile. All other top-level keys
+// are dynamic SSO profile identifiers mapped to SSOProfileConfig.
+type ConfigFile struct {
+	ProfileName string `json:"profile-name,omitempty" jsonschema:"description=Default SSO profile name used when no profile is explicitly provided to the CLI."`
+}
+
+// JSONSchemaExtend adds additionalProperties referencing SSOProfileConfig so
+// that dynamic SSO profile keys (e.g., "abc", "nwl") are validated against
+// the correct sub-schema. Standard reflection only captures the fixed
+// "profile-name" property; this hook fills in the dynamic part.
+func (ConfigFile) JSONSchemaExtend(schema *jsonschema.Schema) {
+	schema.AdditionalProperties = &jsonschema.Schema{
+		Ref: "#/$defs/SSOProfileConfig",
+	}
+}
+
+// validateConfigKey checks whether a dot-delimited key is a valid path in the
+// config file schema. This prevents `config set` from persisting keys that
+// belong to Viper's merged state (flags, env vars) but not the TOML file.
+// The validation walks the struct types via reflection so it stays in sync
+// with the schema automatically.
+func validateConfigKey(key string) error {
+	parts := strings.Split(key, ".")
+	if len(parts) == 0 {
+		return errors.New("config key cannot be empty")
+	}
+
+	// "profile-name" is the only fixed top-level key.
+	if parts[0] == "profile-name" {
+		if len(parts) == 1 {
+			return nil
+		}
+
+		return fmt.Errorf("key %q is not valid: %q is a string, not a table", key, "profile-name")
+	}
+
+	// Everything else is <sso-profile>.rename.* — the first segment is the
+	// dynamic profile name, so we skip it and validate the rest against
+	// SSOProfileConfig.
+	if len(parts) < 2 {
+		return fmt.Errorf("key %q is not valid: expected <profile>.<path>", key)
+	}
+
+	return walkStructPath(reflect.TypeOf(SSOProfileConfig{}), parts[1:], key)
+}
+
+// walkStructPath recursively validates that a sequence of dot-split key
+// segments corresponds to a valid path through the given struct type. Map
+// fields (map[string]string) accept any remaining key as a map entry.
+func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
+	if len(parts) == 0 {
+		return nil
+	}
+
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if t.Kind() != reflect.Struct {
+		return fmt.Errorf("key %q is not valid: unexpected non-struct type at segment %q", fullKey, parts[0])
+	}
+
+	segment := parts[0]
+
+	for i := range t.NumField() {
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
+		jsonName, _, _ := strings.Cut(jsonTag, ",")
+
+		if jsonName != segment {
+			continue
+		}
+
+		ft := field.Type
+		for ft.Kind() == reflect.Ptr {
+			ft = ft.Elem()
+		}
+
+		remaining := parts[1:]
+
+		switch ft.Kind() {
+		case reflect.Map:
+			if len(remaining) <= 1 {
+				return nil
+			}
+
+			return fmt.Errorf("key %q is not valid: %q is a map, keys cannot be nested further", fullKey, segment)
+
+		case reflect.Struct:
+			if len(remaining) == 0 {
+				return nil
+			}
+
+			return walkStructPath(ft, remaining, fullKey)
+
+		case reflect.Slice, reflect.String, reflect.Bool,
+			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Float32, reflect.Float64:
+			if len(remaining) == 0 {
+				return nil
+			}
+
+			return fmt.Errorf("key %q is not valid: %q is a leaf value, not a table", fullKey, segment)
+
+		default:
+			if len(remaining) == 0 {
+				return nil
+			}
+
+			return fmt.Errorf("key %q is not valid: cannot descend into %q", fullKey, segment)
+		}
+	}
+
+	return fmt.Errorf("key %q is not valid: unknown config key %q", fullKey, segment)
+}
