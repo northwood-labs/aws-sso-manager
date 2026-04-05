@@ -146,28 +146,30 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## Comparison
 
-| Feature                             | ASM (Us) | [aws-sso-cli] |
-|-------------------------------------|----------|---------------|
-| AWS SSO support                     | ✅        | ✅             |
-| Bulk SSO Role discovery             | ✅        | ✅             |
-| Write `~/.aws/config`               | ✅        | ✅             |
-| User defined ENV vars               | ❌        | ✅             |
-| `$AWS_PROFILE` templates            | ✅        | ✅             |
-| CLI auto-complete                   | ✅        | ✅             |
-| Console links with account and role | ✅        |               |
-| Supports multiple profiles          | ✅        | ✅             |
-| Sandboxed AWS config updates        | ✅        |               |
-| Supports `AWS_CONFIG_FILE`          | ✅        | ✅             |
-| Configure a default SSO profile     | ✅        | ✅             |
-| Does not require the AWS CLI        | ✅        |               |
-| Atomic writes with locking          | ✅        |               |
-| No runtime dependencies             | ✅        | ✅             |
-| Runs on Windows                     | ✅        | ✅             |
-| Runs on macOS                       | ✅        | ✅             |
-| Runs on Linux                       | ✅        | ✅             |
-| Windows code signing                | ❌        |               |
-| macOS code signing (Gatekeeper)     | ✅        |               |
-| Linux code signing                  | ❌        |               |
+| Feature                                      | ASM (Us)                    | [aws-sso-cli][^1]  |
+|----------------------------------------------|-----------------------------|--------------------|
+| AWS SSO support                              | ✅                           | ✅                  |
+| Bulk SSO Role discovery                      | ✅                           | ✅                  |
+| Write `~/.aws/config`                        | ✅                           | ✅                  |
+| User defined ENV vars                        | ❌                           | ✅                  |
+| `$AWS_PROFILE` templates                     | ✅                           | ✅                  |
+| CLI auto-complete                            | ✅                           | ✅                  |
+| Sharable console links with account and role | ✅                           | ❌                  |
+| Supports multiple profiles                   | ✅                           | ✅                  |
+| Sandboxed AWS config updates                 | ✅                           | ❌                  |
+| Atomic writes with locking                   | ✅                           | ❌                  |
+| Supports `AWS_CONFIG_FILE`                   | ✅                           | ✅                  |
+| Configure a default SSO profile              | ✅                           | ✅                  |
+| Does not require the AWS CLI                 | ✅                           | ✅                  |
+| No runtime dependencies                      | ✅                           | ✅                  |
+| Runs on Windows                              | ✅                           | ✅                  |
+| Runs on macOS                                | ✅                           | ✅                  |
+| Runs on Linux                                | ✅                           | ✅                  |
+| macOS code signing (Gatekeeper)              | ✅                           |                    |
+| Linux code signing                           | ❌                           |                    |
+| Windows code signing                         | ❌                           |                    |
+| Shell completion                             | Bash, Zsh, Fish, PowerShell | Bash, Zsh, Fish    |
+| License                                      | [Apache-2.0]                | [GPL-3.0-or-later] |
 
 * _AWS SSO Manager_ very intentionally does not try to compete with [AWS Vault].
 * _AWS SSO Manager_ is specific to the [AWS Identity Center] solution; not SAML.
@@ -181,8 +183,13 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 * [ ] Support a longer default token timeout for `auth`.
 * [ ] Configure output format for the AWS CLI.
 * [ ] Listing for SSO profiles.
+* [ ] Implement SSO profile logout.
 
+[Apache-2.0]: https://choosealicense.com/licenses/apache-2.0/
+[AWS CLI v2]: https://aws.amazon.com/cli/
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
 [aws-sso-cli]: https://synfinatic.github.io/aws-sso-cli/latest/
-[AWS CLI v2]: https://aws.amazon.com/cli/
+[GPL-3.0-or-later]: https://choosealicense.com/licenses/gpl-3.0/
+
+[^1]: As of version v2.1.0.
