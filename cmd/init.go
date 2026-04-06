@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 

@@ -11,6 +11,7 @@ require (
 	charm.land/bubbles/v2 v2.1.0 // indirect
 	charm.land/bubbletea/v2 v2.0.2 // indirect
 	charm.land/fang/v2 v2.0.1 // indirect
+	charm.land/huh/v2 v2.0.0 // indirect
 	charm.land/lipgloss/v2 v2.0.2 // indirect
 	charm.land/log/v2 v2.0.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.23.1 // indirect
@@ -39,13 +40,13 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.10 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/glamour v1.0.0 // indirect
-	github.com/charmbracelet/huh v1.0.0 // indirect
 	github.com/charmbracelet/huh/spinner v0.0.0-20260223110133-9dc45e34a40b // indirect
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260330092749-0f94982c930b // indirect
 	github.com/charmbracelet/x/ansi v0.11.6 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/exp/charmtone v0.0.0-20260330094520-2dce04b6f8a4 // indirect
+	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
 	github.com/charmbracelet/x/exp/slice v0.0.0-20260330094520-2dce04b6f8a4 // indirect
 	github.com/charmbracelet/x/exp/strings v0.1.0 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
@@ -80,7 +81,7 @@ require (
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/northwood-labs/archstring v0.0.0-20240514202917-e9357b4b91c8 // indirect
 	github.com/northwood-labs/aws-config-parser v1.8.4 // indirect
-	github.com/northwood-labs/cli-helpers v0.0.0-20260326231351-e6128371e88b // indirect
+	github.com/northwood-labs/cli-helpers v0.0.0-20260403181625-7fbdec54999a // indirect
 	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

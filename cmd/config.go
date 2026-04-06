@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
 	"charm.land/lipgloss/v2/table"
-	"github.com/charmbracelet/huh"
 	"github.com/lithammer/dedent"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"

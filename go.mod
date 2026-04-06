@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	charm.land/fang/v2 v2.0.1
+	charm.land/huh/v2 v2.0.3
 	charm.land/lipgloss/v2 v2.0.2
 	charm.land/log/v2 v2.0.0
 	github.com/aws/aws-sdk-go-v2 v1.41.5
@@ -12,7 +13,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.15
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.19
 	github.com/aymanbagabas/go-nativeclipboard v0.1.3
-	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20260223110133-9dc45e34a40b
 	github.com/gtramontina/ooze v0.2.0
 	github.com/invopop/jsonschema v0.13.0
@@ -55,6 +55,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.6 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/exp/charmtone v0.0.0-20260330094520-2dce04b6f8a4 // indirect
+	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
 	github.com/charmbracelet/x/exp/slice v0.0.0-20260330094520-2dce04b6f8a4 // indirect
 	github.com/charmbracelet/x/exp/strings v0.1.0 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect

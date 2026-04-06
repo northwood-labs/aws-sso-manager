@@ -170,7 +170,6 @@ func ensureAWSManagerCacheDir() (string, error) {
 		if homeDir == "" {
 			var err error
 			homeDir, err = os.UserHomeDir()
-
 			if err != nil {
 				return "", fmt.Errorf("could not determine user home directory: %w", err)
 			}

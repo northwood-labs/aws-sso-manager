@@ -24,8 +24,8 @@ import (
 	"regexp"
 	"strings"
 
+	"charm.land/huh/v2"
 	nativeclipboard "github.com/aymanbagabas/go-nativeclipboard"
-	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
@@ -124,18 +124,9 @@ var (
 			if profileName == "" {
 				logger.Debug("SSO profile is undefined. Collect it from user.")
 
-				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
-					sections, e := getAllManagedSections()
-					if e != nil {
-						err = e
-					}
-
-					return huh.NewSelect[string]().
-						Title("Select an SSO profile...").
-						Value(&profileName).
-						Height(minMaxRows(sections) + 1).
-						Options(huh.NewOptions(sections...)...)
-				}()))
+				if err := promptProfileSelect(&profileName); err != nil {
+					return err
+				}
 			}
 
 			logger.Info("Retrieving SSO session profile", "profile", profileName)

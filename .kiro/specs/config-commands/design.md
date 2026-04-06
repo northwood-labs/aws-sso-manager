@@ -289,53 +289,53 @@ The `deleteConfigKey` function works with `map[string]any` — the standard repr
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+_A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
 ### Property 1: Set-then-get round trip
 
-*For any* valid config key (matching `[a-z][a-z0-9.-]{0,30}`) and any non-empty string value, calling `config set <key> <value>` followed by `config get <key>` shall return the exact same value that was set.
+_For any_ valid config key (matching `[a-z][a-z0-9.-]{0,30}`) and any non-empty string value, calling `config set <key> <value>` followed by `config get <key>` shall return the exact same value that was set.
 
 **Validates: Requirements 2.2, 2.3, 3.2, 6.1**
 
 ### Property 2: Set-then-delete-then-get round trip
 
-*For any* valid config key and any non-empty string value, calling `config set <key> <value>`, then `config del --force <key>`, then `config get <key>` shall return an error indicating the key is not set.
+_For any_ valid config key and any non-empty string value, calling `config set <key> <value>`, then `config del --force <key>`, then `config get <key>` shall return an error indicating the key is not set.
 
 **Validates: Requirements 4.4, 4.5, 6.2**
 
 ### Property 3: Wrong argument count returns error
 
-*For any* config subcommand (`set`, `get`, `del`) and any argument count that does not match the expected arity (2 for `set`, 1 for `get`, 1 for `del`), the command shall return an error.
+_For any_ config subcommand (`set`, `get`, `del`) and any argument count that does not match the expected arity (2 for `set`, 1 for `get`, 1 for `del`), the command shall return an error.
 
 **Validates: Requirements 2.4, 3.4, 4.4**
 
 ### Property 4: Nonexistent key returns error
 
-*For any* config key that has not been set, calling `config get <key>` or `config del --force <key>` shall return an error indicating the key is not set.
+_For any_ config key that has not been set, calling `config get <key>` or `config del --force <key>` shall return an error indicating the key is not set.
 
 **Validates: Requirements 3.3, 4.6**
 
 ### Property 5: Set confirmation output contains key and value
 
-*For any* valid config key and any non-empty string value, the stdout output of a successful `config set <key> <value>` shall contain both the key and the value.
+_For any_ valid config key and any non-empty string value, the stdout output of a successful `config set <key> <value>` shall contain both the key and the value.
 
 **Validates: Requirements 2.6**
 
 ### Property 6: Del confirmation output contains key
 
-*For any* valid config key that exists, the stdout output of a successful `config del --force <key>` shall contain the key.
+_For any_ valid config key that exists, the stdout output of a successful `config del --force <key>` shall contain the key.
 
 **Validates: Requirements 4.8**
 
 ### Property 7: Backup retention limit
 
-*For any* sequence of N mutations (set or delete) where N > 5, the number of `config-*.toml.bak` files in the config directory shall never exceed 5. The retained backups shall be the 5 most recent by timestamp.
+_For any_ sequence of N mutations (set or delete) where N > 5, the number of `config-*.toml.bak` files in the config directory shall never exceed 5. The retained backups shall be the 5 most recent by timestamp.
 
 **Validates: Requirements 8.4**
 
 ### Property 8: Backup content matches pre-mutation state
 
-*For any* config mutation (set or delete), the backup file created immediately before the mutation shall contain the exact same bytes as the config file had before the mutation.
+_For any_ config mutation (set or delete), the backup file created immediately before the mutation shall contain the exact same bytes as the config file had before the mutation.
 
 **Validates: Requirements 8.1, 8.2**
 

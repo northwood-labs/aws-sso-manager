@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/huh"
 	"github.com/lithammer/dedent"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -67,12 +66,7 @@ var (
 			}
 
 			if profileName == "" {
-				err := huh.NewInput().
-					Title("SSO profile name").
-					Description("should be short; no spaces").
-					Value(&profileName).
-					Run()
-				if err != nil {
+				if err := promptProfileSelect(&profileName); err != nil {
 					return err
 				}
 			}
