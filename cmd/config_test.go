@@ -895,13 +895,25 @@ func TestValidateConfigKey(t *testing.T) {
 		{name: "rename suffix is valid", key: "abc.rename.suffix", wantErr: false},
 		{name: "pattern delimiter is valid", key: "abc.rename.pattern.delimiter", wantErr: false},
 		{name: "pattern order is valid", key: "abc.rename.pattern.order", wantErr: false},
-		{name: "accounts substr_match_replace entry is valid", key: "abc.rename.accounts.substr_match_replace.Production", wantErr: false},
-		{name: "roles global_regex_replace entry is valid", key: "abc.rename.roles.global_regex_replace.pattern", wantErr: false},
+		{
+			name:    "accounts substr_match_replace entry is valid",
+			key:     "abc.rename.accounts.substr_match_replace.Production",
+			wantErr: false,
+		},
+		{
+			name:    "roles global_regex_replace entry is valid",
+			key:     "abc.rename.roles.global_regex_replace.pattern",
+			wantErr: false,
+		},
 		{name: "bare profile name is rejected", key: "abc", wantErr: true},
 		{name: "unknown top-level key is rejected", key: "verbose", wantErr: true},
 		{name: "unknown nested key is rejected", key: "abc.rename.bogus", wantErr: true},
 		{name: "too deep into leaf is rejected", key: "abc.rename.prefix.extra", wantErr: true},
-		{name: "too deep into map is rejected", key: "abc.rename.accounts.substr_match_replace.key.extra", wantErr: true},
+		{
+			name:    "too deep into map is rejected",
+			key:     "abc.rename.accounts.substr_match_replace.key.extra",
+			wantErr: true,
+		},
 		{name: "profile-name with child is rejected", key: "profile-name.child", wantErr: true},
 	}
 
@@ -917,4 +929,30 @@ func TestValidateConfigKey(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Feature: config-output-region-overrides, Property 3: Settings key validation accepts region/output and rejects unknown keys
+func TestPropertySettingsKeyValidation(t *testing.T) {
+	// **Validates: Requirements 3.1, 3.2, 3.3**
+
+	rapid.Check(t, func(t *rapid.T) {
+		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
+
+		// settings.region and settings.output must be accepted.
+		if err := validateConfigKey(profile + ".settings.region"); err != nil {
+			t.Fatalf("expected %q.settings.region to be valid, got: %v", profile, err)
+		}
+		if err := validateConfigKey(profile + ".settings.output"); err != nil {
+			t.Fatalf("expected %q.settings.output to be valid, got: %v", profile, err)
+		}
+
+		// An unknown leaf under settings must be rejected.
+		unknown := rapid.StringMatching(`[a-z]{3,10}`).
+			Filter(func(s string) bool { return s != "region" && s != "output" }).
+			Draw(t, "unknownLeaf")
+
+		if err := validateConfigKey(profile + ".settings." + unknown); err == nil {
+			t.Fatalf("expected %q.settings.%s to be rejected, got nil", profile, unknown)
+		}
+	})
 }

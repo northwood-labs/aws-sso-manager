@@ -25,6 +25,9 @@ This is the organization of the [TOML](https://toml.io) keys in the config file.
 ```plain
 ├── profile-name (string)
 └── %.
+    ├── settings.
+    │   ├── region (string)
+    │   └── output (string)
     └── rename.
         ├── prefix (string)
         ├── suffix (string)
@@ -48,6 +51,18 @@ This is the organization of the [TOML](https://toml.io) keys in the config file.
 This is a `string` and represents the _SSO profile_ name to use as a default when no _SSO profile_ is explicitly provided to the CLI.
 
 If you run `aws-sso-manager auth` and this config value is set to `abc`, then the command will execute `aws-sso-manager auth abc`. However, if you explicitly run `aws-sso-manager auth xyz`, then the command will execute that.
+
+### %.settings.region
+
+This is a `string` that overrides the `region` field in every generated `[profile ...]` block for a particular SSO profile. When set to a non-empty value, all profiles generated under that SSO profile will use this region instead of the `sso_region` from the `[sso-session ...]` section.
+
+When this value is empty or absent, the `sso_region` from the corresponding `[sso-session ...]` section is used as the fallback.
+
+### %.settings.output
+
+This is a `string` that overrides the `output` field in every generated `[profile ...]` block for a particular SSO profile. Valid values are `json`, `text`, `table`, `yaml`, and `yaml-stream`.
+
+When this value is empty or absent, `json` is used as the default.
 
 ### %.rename.prefix
 
@@ -123,6 +138,11 @@ You can add multiple `"key" = "value"` pairs to match different patterns.
 ```toml
 # This is the default SSO profile to use if nothing else is provided.
 profile-name = "abc"
+
+# Per-profile AWS CLI defaults applied to every generated profile.
+[abc.settings]
+region = "us-west-2"
+output = "json"
 
 # Used for generating account profiles under the SSO profile.
 #

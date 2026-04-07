@@ -26,6 +26,7 @@ import (
 
 	"charm.land/log/v2"
 	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	"github.com/spf13/viper"
 	"pgregory.net/rapid"
 )
 
@@ -381,6 +382,229 @@ func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
 					t.Fatalf("section [%s]: expected output=json, got %q", profileHeader, got)
 				}
 			}
+		}
+	})
+}
+
+// Feature: config-output-region-overrides, Property 1: Region resolution respects config override with sso_region fallback
+func TestPropertyRegionOverrideResolution(t *testing.T) {
+	// **Validates: Requirements 1.1, 1.2, 1.3, 4.1**
+	logger = slog.New(log.New(io.Discard))
+
+	oldConfig := asmConfig
+	t.Cleanup(func() { asmConfig = oldConfig })
+
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 5).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		ssoRegion := rapid.SampledFrom([]string{
+			"us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1",
+		}).Draw(t, "ssoRegion")
+
+		// Decide whether a settings.region override is present.
+		hasOverride := rapid.Bool().Draw(t, "hasRegionOverride")
+		overrideRegion := ""
+		if hasOverride {
+			overrideRegion = rapid.SampledFrom([]string{
+				"us-east-2", "eu-central-1", "ap-northeast-1", "sa-east-1",
+			}).Draw(t, "overrideRegion")
+		}
+
+		// Configure a fresh Viper instance with the optional override.
+		asmConfig = viper.New()
+		if hasOverride {
+			asmConfig.Set(profileName+".settings.region", overrideRegion)
+		}
+
+		// Build a valid SSO session section with sso_region set.
+		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoSection := configFile.NewSection(ssoProfile)
+
+		regionVal, err := configFile.NewStringValue(ssoRegion)
+		if err != nil {
+			t.Fatalf("new string value for sso_region: %v", err)
+		}
+		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
+			t.Fatalf("update sso_region: %v", err)
+		}
+
+		sections := configFile.NewSections()
+		sections = sections.SetSection(ssoProfile, ssoSection)
+
+		// Call buildUpdatedManagedSections.
+		nextSections, _, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("buildUpdatedManagedSections: %v", err)
+		}
+
+		// Determine expected region: override when non-empty, else sso_region.
+		expectedRegion := ssoRegion
+		if overrideRegion != "" {
+			expectedRegion = overrideRegion
+		}
+
+		// Assert every generated profile's region field equals the expected value.
+		for _, acct := range accounts.Accounts {
+			for _, role := range acct.Roles {
+				profileHeader := fmt.Sprintf("profile %s", role.Profile)
+				section, ok := nextSections.GetSection(profileHeader)
+				if !ok {
+					t.Fatalf("expected section [%s] to exist", profileHeader)
+				}
+
+				if got := section.String("region"); got != expectedRegion {
+					t.Fatalf(
+						"section [%s]: expected region=%q, got %q (hasOverride=%v, overrideRegion=%q, ssoRegion=%q)",
+						profileHeader, expectedRegion, got, hasOverride, overrideRegion, ssoRegion,
+					)
+				}
+			}
+		}
+	})
+}
+
+// Feature: config-output-region-overrides, Property 2: Output resolution respects config override with "json" fallback
+func TestPropertyOutputOverrideResolution(t *testing.T) {
+	// **Validates: Requirements 2.1, 2.2, 2.3, 4.2**
+	logger = slog.New(log.New(io.Discard))
+
+	oldConfig := asmConfig
+	t.Cleanup(func() { asmConfig = oldConfig })
+
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 5).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		ssoRegion := rapid.SampledFrom([]string{
+			"us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1",
+		}).Draw(t, "ssoRegion")
+
+		// Decide whether a settings.output override is present.
+		hasOverride := rapid.Bool().Draw(t, "hasOutputOverride")
+		overrideOutput := ""
+		if hasOverride {
+			overrideOutput = rapid.SampledFrom([]string{
+				"json", "text", "table", "yaml", "yaml-stream",
+			}).Draw(t, "overrideOutput")
+		}
+
+		// Configure a fresh Viper instance with the optional override.
+		asmConfig = viper.New()
+		if hasOverride {
+			asmConfig.Set(profileName+".settings.output", overrideOutput)
+		}
+
+		// Build a valid SSO session section with sso_region set.
+		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoSection := configFile.NewSection(ssoProfile)
+
+		regionVal, err := configFile.NewStringValue(ssoRegion)
+		if err != nil {
+			t.Fatalf("new string value for sso_region: %v", err)
+		}
+		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
+			t.Fatalf("update sso_region: %v", err)
+		}
+
+		sections := configFile.NewSections()
+		sections = sections.SetSection(ssoProfile, ssoSection)
+
+		nextSections, _, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("buildUpdatedManagedSections: %v", err)
+		}
+
+		// Expected output: override when non-empty, else "json".
+		expectedOutput := "json"
+		if overrideOutput != "" {
+			expectedOutput = overrideOutput
+		}
+
+		for _, acct := range accounts.Accounts {
+			for _, role := range acct.Roles {
+				profileHeader := fmt.Sprintf("profile %s", role.Profile)
+				section, ok := nextSections.GetSection(profileHeader)
+				if !ok {
+					t.Fatalf("expected section [%s] to exist", profileHeader)
+				}
+
+				if got := section.String("output"); got != expectedOutput {
+					t.Fatalf(
+						"section [%s]: expected output=%q, got %q (hasOverride=%v, overrideOutput=%q)",
+						profileHeader, expectedOutput, got, hasOverride, overrideOutput,
+					)
+				}
+			}
+		}
+	})
+}
+
+// Feature: config-output-region-overrides, Property 4: Update idempotence with settings overrides
+func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
+	// **Validates: Requirements 5.1**
+	logger = slog.New(log.New(io.Discard))
+
+	oldConfig := asmConfig
+	t.Cleanup(func() { asmConfig = oldConfig })
+
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 5).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		ssoRegion := rapid.SampledFrom([]string{
+			"us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1",
+		}).Draw(t, "ssoRegion")
+
+		// Configure random settings overrides.
+		asmConfig = viper.New()
+
+		if rapid.Bool().Draw(t, "hasRegionOverride") {
+			region := rapid.SampledFrom([]string{
+				"us-east-2", "eu-central-1", "ap-northeast-1",
+			}).Draw(t, "overrideRegion")
+			asmConfig.Set(profileName+".settings.region", region)
+		}
+
+		if rapid.Bool().Draw(t, "hasOutputOverride") {
+			output := rapid.SampledFrom([]string{
+				"json", "text", "table", "yaml", "yaml-stream",
+			}).Draw(t, "overrideOutput")
+			asmConfig.Set(profileName+".settings.output", output)
+		}
+
+		// Build SSO session section.
+		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoSection := configFile.NewSection(ssoProfile)
+
+		regionVal, err := configFile.NewStringValue(ssoRegion)
+		if err != nil {
+			t.Fatalf("new string value for sso_region: %v", err)
+		}
+		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
+			t.Fatalf("update sso_region: %v", err)
+		}
+
+		sections := configFile.NewSections()
+		sections = sections.SetSection(ssoProfile, ssoSection)
+
+		// Call twice with identical inputs.
+		sections1, count1, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("first call: %v", err)
+		}
+
+		sections2, count2, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("second call: %v", err)
+		}
+
+		if count1 != count2 {
+			t.Fatalf("counts differ: %d vs %d", count1, count2)
+		}
+
+		// Compare rendered output.
+		out1 := generateAWSConfig(sections1)
+		out2 := generateAWSConfig(sections2)
+		if out1 != out2 {
+			t.Fatalf("outputs differ:\n--- first ---\n%s\n--- second ---\n%s", out1, out2)
 		}
 	})
 }

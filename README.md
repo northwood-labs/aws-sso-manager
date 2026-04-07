@@ -146,18 +146,18 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## Comparison
 
-| Feature                                      | ASM (Us)                    | [aws-sso-cli][^1]  |
+| Feature                                      | ASM (Us)                    | [aws-sso-cli] [^1] |
 |----------------------------------------------|-----------------------------|--------------------|
 | AWS SSO support                              | ✓                           | ✓                  |
 | Bulk SSO Role discovery                      | ✓                           | ✓                  |
 | Write `~/.aws/config`                        | ✓                           | ✓                  |
-| User defined ENV vars                        | ×                           | ✓                  |
+| User defined ENV vars                        | —                           | ✓                  |
 | `$AWS_PROFILE` templates                     | ✓                           | ✓                  |
 | CLI auto-complete                            | ✓                           | ✓                  |
-| Sharable console links with account and role | ✓                           | ×                  |
+| Sharable console links with account and role | ✓                           | —                  |
 | Supports multiple profiles                   | ✓                           | ✓                  |
-| Sandboxed AWS config updates                 | ✓                           | ×                  |
-| Atomic writes with locking                   | ✓                           | ×                  |
+| Sandboxed AWS config updates                 | ✓                           | —                  |
+| Atomic writes with locking                   | ✓                           | —                  |
 | Supports `AWS_CONFIG_FILE`                   | ✓                           | ✓                  |
 | Configure a default SSO profile              | ✓                           | ✓                  |
 | Does not require the AWS CLI                 | ✓                           | ✓                  |
@@ -166,8 +166,8 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 | Runs on macOS                                | ✓                           | ✓                  |
 | Runs on Linux                                | ✓                           | ✓                  |
 | macOS code signing (Gatekeeper)              | ✓                           |                    |
-| Linux code signing                           | ×                           |                    |
-| Windows code signing                         | ×                           |                    |
+| Linux code signing                           | —                           |                    |
+| Windows code signing                         | —                           |                    |
 | Shell completion                             | Bash, Zsh, Fish, PowerShell | Bash, Zsh, Fish    |
 | License                                      | [Apache-2.0]                | [GPL-3.0-or-later] |
 
@@ -178,9 +178,7 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 ## TODO
 
 * [ ] Save JSON to keychain and delete from disk?
-* [ ] Configure default region.
 * [ ] Support templating other parameters.
-* [ ] Configure output format for the AWS CLI.
 
 [Apache-2.0]: https://choosealicense.com/licenses/apache-2.0/
 [AWS CLI v2]: https://aws.amazon.com/cli/

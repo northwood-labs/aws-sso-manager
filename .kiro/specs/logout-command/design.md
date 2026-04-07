@@ -122,6 +122,7 @@ Each correctness property maps to a property-based test in `cmd/logout_test.go`:
 | 4: Error propagation            | `TestPropertyLogoutInvalidProfileReturnsError` | Generate random strings not matching any `[sso-session]` in config, run logout, assert error returned   |
 
 Configuration:
+
 * Minimum 100 iterations per property (rapid's default)
 * Each test tagged with: `// Feature: logout-command, Property N: <title>`
 * Each test annotated with: `// **Validates: Requirements X.Y**`

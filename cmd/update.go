@@ -214,6 +214,18 @@ func buildUpdatedManagedSections(
 	nextSections := configFile.NewSections()
 	nextSections = nextSections.SetSection(ssoProfile, ssoSection)
 
+	// Resolve per-profile overrides once so every generated [profile ...]
+	// block in this managed section shares the same values (Req 4.1, 4.2).
+	resolvedRegion := asmConfig.GetString(profileName + ".settings.region")
+	if resolvedRegion == "" {
+		resolvedRegion = ssoSection.String("sso_region")
+	}
+
+	resolvedOutput := asmConfig.GetString(profileName + ".settings.output")
+	if resolvedOutput == "" {
+		resolvedOutput = "json"
+	}
+
 	counter := 0
 
 	for _, account := range accounts.Accounts {
@@ -235,8 +247,8 @@ func buildUpdatedManagedSections(
 			m["sso_session"] = profileName
 			m["sso_account_id"] = role.AccountID
 			m["sso_role_name"] = role.Name
-			m["region"] = ssoSection.String("sso_region")
-			m["output"] = "json"
+			m["region"] = resolvedRegion
+			m["output"] = resolvedOutput
 
 			for iniKey, iniValue := range m {
 				if v, err := configFile.NewStringValue(iniValue); err != nil {
