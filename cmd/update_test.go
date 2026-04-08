@@ -413,7 +413,7 @@ func TestPropertyRegionOverrideResolution(t *testing.T) {
 		// Configure a fresh Viper instance with the optional override.
 		asmConfig = viper.New()
 		if hasOverride {
-			asmConfig.Set(profileName+".settings.region", overrideRegion)
+			asmConfig.Set(profileName+".settings.global.region", overrideRegion)
 		}
 
 		// Build a valid SSO session section with sso_region set.
@@ -490,7 +490,7 @@ func TestPropertyOutputOverrideResolution(t *testing.T) {
 		// Configure a fresh Viper instance with the optional override.
 		asmConfig = viper.New()
 		if hasOverride {
-			asmConfig.Set(profileName+".settings.output", overrideOutput)
+			asmConfig.Set(profileName+".settings.global.output", overrideOutput)
 		}
 
 		// Build a valid SSO session section with sso_region set.
@@ -560,14 +560,14 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 			region := rapid.SampledFrom([]string{
 				"us-east-2", "eu-central-1", "ap-northeast-1",
 			}).Draw(t, "overrideRegion")
-			asmConfig.Set(profileName+".settings.region", region)
+			asmConfig.Set(profileName+".settings.global.region", region)
 		}
 
 		if rapid.Bool().Draw(t, "hasOutputOverride") {
 			output := rapid.SampledFrom([]string{
 				"json", "text", "table", "yaml", "yaml-stream",
 			}).Draw(t, "overrideOutput")
-			asmConfig.Set(profileName+".settings.output", output)
+			asmConfig.Set(profileName+".settings.global.output", output)
 		}
 
 		// Build SSO session section.
@@ -605,6 +605,105 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 		out2 := generateAWSConfig(sections2)
 		if out1 != out2 {
 			t.Fatalf("outputs differ:\n--- first ---\n%s\n--- second ---\n%s", out1, out2)
+		}
+	})
+}
+
+// Feature: config-output-region-overrides, Property 5: Per-profile settings override global settings
+func TestPropertyPerProfileOverridePrecedence(t *testing.T) {
+	// **Validates: per-profile override takes precedence over global**
+	logger = slog.New(log.New(io.Discard))
+
+	oldConfig := asmConfig
+	t.Cleanup(func() { asmConfig = oldConfig })
+
+	rapid.Check(t, func(t *rapid.T) {
+		accounts := genListAccounts(1, 3).Draw(t, "accounts")
+		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
+		ssoRegion := rapid.SampledFrom([]string{
+			"us-east-1", "us-west-2", "eu-west-1",
+		}).Draw(t, "ssoRegion")
+
+		globalRegion := rapid.SampledFrom([]string{
+			"eu-central-1", "ap-southeast-1",
+		}).Draw(t, "globalRegion")
+		globalOutput := rapid.SampledFrom([]string{
+			"text", "table",
+		}).Draw(t, "globalOutput")
+
+		asmConfig = viper.New()
+		asmConfig.Set(profileName+".settings.global.region", globalRegion)
+		asmConfig.Set(profileName+".settings.global.output", globalOutput)
+
+		// Pick the first role to apply a per-profile override to.
+		targetProfile := accounts.Accounts[0].Roles[0].Profile
+
+		perProfileRegion := rapid.SampledFrom([]string{
+			"sa-east-1", "ap-northeast-1",
+		}).Draw(t, "perProfileRegion")
+		perProfileOutput := rapid.SampledFrom([]string{
+			"yaml", "yaml-stream",
+		}).Draw(t, "perProfileOutput")
+
+		asmConfig.Set(profileName+".settings."+targetProfile+".region", perProfileRegion)
+		asmConfig.Set(profileName+".settings."+targetProfile+".output", perProfileOutput)
+
+		// Build SSO session section.
+		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoSection := configFile.NewSection(ssoProfile)
+
+		regionVal, err := configFile.NewStringValue(ssoRegion)
+		if err != nil {
+			t.Fatalf("new string value for sso_region: %v", err)
+		}
+		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
+			t.Fatalf("update sso_region: %v", err)
+		}
+
+		sections := configFile.NewSections()
+		sections = sections.SetSection(ssoProfile, ssoSection)
+
+		nextSections, _, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
+		if err != nil {
+			t.Fatalf("buildUpdatedManagedSections: %v", err)
+		}
+
+		for _, acct := range accounts.Accounts {
+			for _, role := range acct.Roles {
+				profileHeader := fmt.Sprintf("profile %s", role.Profile)
+				section, ok := nextSections.GetSection(profileHeader)
+				if !ok {
+					t.Fatalf("expected section [%s] to exist", profileHeader)
+				}
+
+				if role.Profile == targetProfile {
+					// Per-profile override should win.
+					if got := section.String("region"); got != perProfileRegion {
+						t.Fatalf(
+							"section [%s]: expected per-profile region=%q, got %q",
+							profileHeader,
+							perProfileRegion,
+							got,
+						)
+					}
+					if got := section.String("output"); got != perProfileOutput {
+						t.Fatalf(
+							"section [%s]: expected per-profile output=%q, got %q",
+							profileHeader,
+							perProfileOutput,
+							got,
+						)
+					}
+				} else {
+					// Global should apply.
+					if got := section.String("region"); got != globalRegion {
+						t.Fatalf("section [%s]: expected global region=%q, got %q", profileHeader, globalRegion, got)
+					}
+					if got := section.String("output"); got != globalOutput {
+						t.Fatalf("section [%s]: expected global output=%q, got %q", profileHeader, globalOutput, got)
+					}
+				}
+			}
 		}
 	})
 }

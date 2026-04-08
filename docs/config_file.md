@@ -26,8 +26,22 @@ This is the organization of the [TOML](https://toml.io) keys in the config file.
 ├── profile-name (string)
 └── %.
     ├── settings.
-    │   ├── region (string)
-    │   └── output (string)
+    │   ├── global.
+    │   │   ├── region (string)
+    │   │   ├── output (string)
+    │   │   ├── duration_seconds (string)
+    │   │   ├── sdk_ua_app_id (string)
+    │   │   ├── use_dualstack_endpoint (string)
+    │   │   ├── use_fips_endpoint (string)
+    │   │   └── tcp_keepalive (string)
+    │   └── <profile-name>.
+    │       ├── region (string)
+    │       ├── output (string)
+    │       ├── duration_seconds (string)
+    │       ├── sdk_ua_app_id (string)
+    │       ├── use_dualstack_endpoint (string)
+    │       ├── use_fips_endpoint (string)
+    │       └── tcp_keepalive (string)
     └── rename.
         ├── prefix (string)
         ├── suffix (string)
@@ -52,17 +66,61 @@ This is a `string` and represents the _SSO profile_ name to use as a default whe
 
 If you run `aws-sso-manager auth` and this config value is set to `abc`, then the command will execute `aws-sso-manager auth abc`. However, if you explicitly run `aws-sso-manager auth xyz`, then the command will execute that.
 
-### %.settings.region
+### %.settings.global.region
 
 This is a `string` that overrides the `region` field in every generated `[profile ...]` block for a particular SSO profile. When set to a non-empty value, all profiles generated under that SSO profile will use this region instead of the `sso_region` from the `[sso-session ...]` section.
 
 When this value is empty or absent, the `sso_region` from the corresponding `[sso-session ...]` section is used as the fallback.
 
-### %.settings.output
+### %.settings.global.output
 
 This is a `string` that overrides the `output` field in every generated `[profile ...]` block for a particular SSO profile. Valid values are `json`, `text`, `table`, `yaml`, and `yaml-stream`.
 
 When this value is empty or absent, `json` is used as the default.
+
+### %.settings.global.duration\_seconds
+
+This is a `string` that sets the `duration_seconds` field in every generated `[profile ...]` block for a particular SSO profile. This controls the session duration for assumed roles.
+
+Only written to the profile when explicitly configured.
+
+### %.settings.global.sdk\_ua\_app\_id
+
+This is a `string` that sets the `sdk_ua_app_id` field in every generated `[profile ...]` block. This appends an application ID to the SDK user-agent string.
+
+Only written to the profile when explicitly configured.
+
+### %.settings.global.use\_dualstack\_endpoint
+
+This is a `string` (`true` or `false`) that sets the `use_dualstack_endpoint` field in every generated `[profile ...]` block. Enables dual-stack (IPv4/IPv6) endpoints.
+
+Only written to the profile when explicitly configured.
+
+### %.settings.global.use\_fips\_endpoint
+
+This is a `string` (`true` or `false`) that sets the `use_fips_endpoint` field in every generated `[profile ...]` block. Enables FIPS-compliant endpoints.
+
+Only written to the profile when explicitly configured.
+
+### %.settings.global.tcp\_keepalive
+
+This is a `string` (`true` or `false`) that sets the `tcp_keepalive` field in every generated `[profile ...]` block. Enables TCP keep-alive for connections.
+
+Only written to the profile when explicitly configured.
+
+### %.settings.\<profile-name\>.region
+
+This is a `string` that overrides the `region` field for a single generated `[profile ...]` block, identified by its profile name. This takes precedence over `%.settings.global.region`.
+
+When this value is empty or absent, the global setting (or `sso_region` fallback) is used.
+
+### %.settings.\<profile-name\>.output
+
+This is a `string` that overrides the `output` field for a single generated `[profile ...]` block, identified by its profile name. This takes precedence over `%.settings.global.output`. Valid values are `json`, `text`, `table`, `yaml`, and `yaml-stream`.
+
+When this value is empty or absent, the global setting (or `json` fallback) is used.
+
+The per-profile scope also supports `duration_seconds`, `sdk_ua_app_id`, `use_dualstack_endpoint`, `use_fips_endpoint`, and `tcp_keepalive` with the same override behavior.
 
 ### %.rename.prefix
 
@@ -140,9 +198,15 @@ You can add multiple `"key" = "value"` pairs to match different patterns.
 profile-name = "abc"
 
 # Per-profile AWS CLI defaults applied to every generated profile.
-[abc.settings]
+[abc.settings.global]
 region = "us-west-2"
 output = "json"
+use_fips_endpoint = "true"
+
+# Per-profile override for a specific generated profile.
+[abc.settings.prod-admin]
+region = "us-east-1"
+duration_seconds = "43200"
 
 # Used for generating account profiles under the SSO profile.
 #

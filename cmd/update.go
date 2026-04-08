@@ -216,15 +216,23 @@ func buildUpdatedManagedSections(
 
 	// Resolve per-profile overrides once so every generated [profile ...]
 	// block in this managed section shares the same values (Req 4.1, 4.2).
-	resolvedRegion := asmConfig.GetString(profileName + ".settings.region")
+	resolvedRegion := asmConfig.GetString(profileName + ".settings.global.region")
 	if resolvedRegion == "" {
 		resolvedRegion = ssoSection.String("sso_region")
 	}
 
-	resolvedOutput := asmConfig.GetString(profileName + ".settings.output")
+	resolvedOutput := asmConfig.GetString(profileName + ".settings.global.output")
 	if resolvedOutput == "" {
 		resolvedOutput = "json"
 	}
+
+	// Optional keys — only written to the INI when explicitly configured.
+	globalPrefix := profileName + ".settings.global."
+	resolvedDurationSeconds := asmConfig.GetString(globalPrefix + "duration_seconds")
+	resolvedSDKUAAppID := asmConfig.GetString(globalPrefix + "sdk_ua_app_id")
+	resolvedUseDualstack := asmConfig.GetString(globalPrefix + "use_dualstack_endpoint")
+	resolvedUseFIPS := asmConfig.GetString(globalPrefix + "use_fips_endpoint")
+	resolvedTCPKeepAlive := asmConfig.GetString(globalPrefix + "tcp_keepalive")
 
 	counter := 0
 
@@ -247,8 +255,44 @@ func buildUpdatedManagedSections(
 			m["sso_session"] = profileName
 			m["sso_account_id"] = role.AccountID
 			m["sso_role_name"] = role.Name
-			m["region"] = resolvedRegion
-			m["output"] = resolvedOutput
+
+			// Per-profile settings override the global defaults when non-empty.
+			perPrefix := profileName + ".settings." + role.Profile + "."
+
+			profileRegion := asmConfig.GetString(perPrefix + "region")
+			if profileRegion != "" {
+				m["region"] = profileRegion
+			} else {
+				m["region"] = resolvedRegion
+			}
+
+			profileOutput := asmConfig.GetString(perPrefix + "output")
+			if profileOutput != "" {
+				m["output"] = profileOutput
+			} else {
+				m["output"] = resolvedOutput
+			}
+
+			// Optional keys — written only when set at per-profile or global level.
+			optionalKeys := []struct {
+				iniKey       string
+				globalVal    string
+				configSuffix string
+			}{
+				{"duration_seconds", resolvedDurationSeconds, "duration_seconds"},
+				{"sdk_ua_app_id", resolvedSDKUAAppID, "sdk_ua_app_id"},
+				{"use_dualstack_endpoint", resolvedUseDualstack, "use_dualstack_endpoint"},
+				{"use_fips_endpoint", resolvedUseFIPS, "use_fips_endpoint"},
+				{"tcp_keepalive", resolvedTCPKeepAlive, "tcp_keepalive"},
+			}
+
+			for _, opt := range optionalKeys {
+				if v := asmConfig.GetString(perPrefix + opt.configSuffix); v != "" {
+					m[opt.iniKey] = v
+				} else if opt.globalVal != "" {
+					m[opt.iniKey] = opt.globalVal
+				}
+			}
 
 			for iniKey, iniValue := range m {
 				if v, err := configFile.NewStringValue(iniValue); err != nil {

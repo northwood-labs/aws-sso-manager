@@ -62,11 +62,34 @@ type RenameConfig struct {
 	Roles    RoleRenameConfig    `json:"roles,omitempty"    toml:"roles,omitempty"    jsonschema:"description=Rules for rewriting AWS role names in generated profile names."`
 }
 
-// SettingsConfig holds per-profile AWS CLI defaults that are applied to every
-// generated [profile ...] section for this SSO profile.
+// GlobalSettingsConfig holds per-profile AWS CLI defaults that are applied to
+// every generated [profile ...] section for this SSO profile.
+type GlobalSettingsConfig struct {
+	Region               string `json:"region,omitempty"                 toml:"region,omitempty"                 jsonschema:"description=Default AWS region for profiles generated under this SSO profile."`
+	Output               string `json:"output,omitempty"                 toml:"output,omitempty"                 jsonschema:"description=Default output format (json text table yaml yaml-stream) for profiles generated under this SSO profile.,enum=json,enum=text,enum=table,enum=yaml,enum=yaml-stream"`
+	DurationSeconds      string `json:"duration_seconds,omitempty"       toml:"duration_seconds,omitempty"       jsonschema:"description=Session duration in seconds for assumed roles."`
+	SDKUAAppID           string `json:"sdk_ua_app_id,omitempty"          toml:"sdk_ua_app_id,omitempty"          jsonschema:"description=Application ID appended to the SDK user-agent string."`
+	UseDualstackEndpoint string `json:"use_dualstack_endpoint,omitempty" toml:"use_dualstack_endpoint,omitempty" jsonschema:"description=Enable dual-stack (IPv4/IPv6) endpoints.,enum=true,enum=false"`
+	UseFIPSEndpoint      string `json:"use_fips_endpoint,omitempty"      toml:"use_fips_endpoint,omitempty"      jsonschema:"description=Enable FIPS-compliant endpoints.,enum=true,enum=false"`
+	TCPKeepAlive         string `json:"tcp_keepalive,omitempty"          toml:"tcp_keepalive,omitempty"          jsonschema:"description=Enable TCP keep-alive for connections.,enum=true,enum=false"`
+}
+
+// SettingsConfig groups settings scopes for a single SSO profile. The Global
+// sub-table holds defaults applied to every generated [profile ...] section.
+// Per-profile overrides live under dynamic keys that match generated AWS CLI
+// Any other key under settings is treated as a per-profile override keyed by
+// the generated AWS CLI profile name (e.g., [abc.settings.sandbox-admin]).
 type SettingsConfig struct {
-	Region string `json:"region,omitempty" toml:"region,omitempty" jsonschema:"description=Default AWS region for profiles generated under this SSO profile."`
-	Output string `json:"output,omitempty" toml:"output,omitempty" jsonschema:"description=Default output format (json text table yaml yaml-stream) for profiles generated under this SSO profile.,enum=json,enum=text,enum=table,enum=yaml,enum=yaml-stream"`
+	Global GlobalSettingsConfig `json:"global,omitempty" toml:"global,omitempty" jsonschema:"description=Global defaults applied to every generated profile under this SSO profile."`
+}
+
+// JSONSchemaExtend marks dynamic per-profile override keys under settings as
+// valid by referencing GlobalSettingsConfig as additionalProperties. This
+// mirrors the pattern used by ConfigFile for dynamic SSO profile keys.
+func (SettingsConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
+	schema.AdditionalProperties = &jsonschema.Schema{
+		Ref: "#/$defs/GlobalSettingsConfig",
+	}
 }
 
 // SSOProfileConfig represents the configuration for a single SSO profile
@@ -124,9 +147,18 @@ func validateConfigKey(key string) error {
 	return walkStructPath(reflect.TypeOf(SSOProfileConfig{}), parts[1:], key)
 }
 
+// additionalPropertiesTypes maps struct types that accept dynamic keys to the
+// type those keys should validate against. This mirrors the JSONSchemaExtend
+// additionalProperties pattern used for JSON Schema generation.
+var additionalPropertiesTypes = map[reflect.Type]reflect.Type{
+	reflect.TypeOf(SettingsConfig{}): reflect.TypeOf(GlobalSettingsConfig{}),
+}
+
 // walkStructPath recursively validates that a sequence of dot-split key
 // segments corresponds to a valid path through the given struct type. Map
 // fields (map[string]string) accept any remaining key as a map entry.
+// Struct types registered in additionalPropertiesTypes accept unknown keys
+// and validate remaining segments against the registered value type.
 func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 	if len(parts) == 0 {
 		return nil
@@ -189,6 +221,18 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 
 			return fmt.Errorf("key %q is not valid: cannot descend into %q", fullKey, segment)
 		}
+	}
+
+	// No struct field matched. If this struct type accepts dynamic keys
+	// (additional properties), treat the segment as a dynamic key and
+	// validate the remaining path against the registered value type.
+	if valueType, ok := additionalPropertiesTypes[t]; ok {
+		remaining := parts[1:]
+		if len(remaining) == 0 {
+			return nil
+		}
+
+		return walkStructPath(valueType, remaining, fullKey)
 	}
 
 	return fmt.Errorf("key %q is not valid: unknown config key %q", fullKey, segment)

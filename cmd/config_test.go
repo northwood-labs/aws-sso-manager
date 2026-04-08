@@ -937,22 +937,41 @@ func TestPropertySettingsKeyValidation(t *testing.T) {
 
 	rapid.Check(t, func(t *rapid.T) {
 		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
+		awsProfile := rapid.StringMatching(`[a-z][a-z0-9-]{2,14}`).Draw(t, "awsProfile")
 
-		// settings.region and settings.output must be accepted.
-		if err := validateConfigKey(profile + ".settings.region"); err != nil {
-			t.Fatalf("expected %q.settings.region to be valid, got: %v", profile, err)
-		}
-		if err := validateConfigKey(profile + ".settings.output"); err != nil {
-			t.Fatalf("expected %q.settings.output to be valid, got: %v", profile, err)
+		// All valid settings keys must be accepted at both global and per-profile scope.
+		validKeys := []string{
+			"region", "output", "duration_seconds", "sdk_ua_app_id",
+			"use_dualstack_endpoint", "use_fips_endpoint", "tcp_keepalive",
 		}
 
-		// An unknown leaf under settings must be rejected.
-		unknown := rapid.StringMatching(`[a-z]{3,10}`).
-			Filter(func(s string) bool { return s != "region" && s != "output" }).
+		for _, key := range validKeys {
+			if err := validateConfigKey(profile + ".settings.global." + key); err != nil {
+				t.Fatalf("expected %q.settings.global.%s to be valid, got: %v", profile, key, err)
+			}
+			if err := validateConfigKey(profile + ".settings." + awsProfile + "." + key); err != nil {
+				t.Fatalf("expected %q.settings.%s.%s to be valid, got: %v", profile, awsProfile, key, err)
+			}
+		}
+
+		// An unknown leaf under settings.global must be rejected.
+		validSet := map[string]bool{
+			"region": true, "output": true, "duration_seconds": true,
+			"sdk_ua_app_id": true, "use_dualstack_endpoint": true,
+			"use_fips_endpoint": true, "tcp_keepalive": true,
+		}
+
+		unknown := rapid.StringMatching(`[a-z_]{3,15}`).
+			Filter(func(s string) bool { return !validSet[s] }).
 			Draw(t, "unknownLeaf")
 
-		if err := validateConfigKey(profile + ".settings." + unknown); err == nil {
-			t.Fatalf("expected %q.settings.%s to be rejected, got nil", profile, unknown)
+		if err := validateConfigKey(profile + ".settings.global." + unknown); err == nil {
+			t.Fatalf("expected %q.settings.global.%s to be rejected, got nil", profile, unknown)
+		}
+
+		// An unknown leaf under a per-profile key must also be rejected.
+		if err := validateConfigKey(profile + ".settings." + awsProfile + "." + unknown); err == nil {
+			t.Fatalf("expected %q.settings.%s.%s to be rejected, got nil", profile, awsProfile, unknown)
 		}
 	})
 }
