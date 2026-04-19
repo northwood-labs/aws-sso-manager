@@ -111,9 +111,7 @@
   "no-empty-links": true,
   "required-headings": false,
   "proper-names": {
-    "names": [
-      "macOS"
-    ],
+    "names": [],
     "html_elements": false,
     "code_blocks": false
   },
