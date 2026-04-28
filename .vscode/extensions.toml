@@ -1,0 +1,6 @@
+##
+# Generate with:
+#   tomljson extensions.toml > extensions.json
+##
+
+recommendations = [  ]

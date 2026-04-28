@@ -1,0 +1,17 @@
+schema_version = '1'
+
+[files]
+[files.'.vscode/settings-standard.toml']
+last_sync_time = '2026-04-28T18:00:31Z'
+source_hash = ''
+dest_hash = 'sha256:413b05c1871f5c069047382f6ab4d28fc38adceefe7e7e613b0a72ba9b8d43d0'
+
+[files.'.vscode/settings.sh']
+last_sync_time = '2026-04-28T18:00:31Z'
+source_hash = ''
+dest_hash = 'sha256:199b7c6dd6ea109356c64443c4749ba739443bee98faf6c22769456863720221'
+
+[files.'ecrc.toml']
+last_sync_time = '2026-04-27T22:29:29Z'
+source_hash = ''
+dest_hash = 'sha256:e3ff16982dfd2815c9d1965ff7cc45e1a63de0cd24d7951dba4e75985375f3b2'

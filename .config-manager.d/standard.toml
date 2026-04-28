@@ -1,0 +1,117 @@
+#-------------------------------------------------------------------------------
+# DEFAULT FILES
+
+# Snyk: Ignore definition
+# https://snyk.io
+[[files]]
+stub        = 'configs/stubs/dcignore'
+source      = 'configs/templates/dcignore'
+destination = '.dcignore'
+
+# EditorConfig definition
+# https://editorconfig.org
+[[files]]
+stub        = 'configs/stubs/editorconfig.ini'
+source      = 'configs/templates/editorconfig.ini'
+destination = '.editorconfig'
+
+# How to handle files in Git
+# https://git-scm.com/docs/gitattributes
+[[files]]
+stub        = 'configs/stubs/gitattributes'
+source      = 'configs/templates/gitattributes'
+destination = '.gitattributes'
+
+# Taplo formatter for TOML files
+# https://taplo.tamasfe.dev
+[[files]]
+stub        = 'configs/stubs/taplo.toml'
+source      = 'configs/templates/taplo.toml'
+destination = '.taplo.toml'
+
+#-------------------------------------------------------------------------------
+# GITHUB DIRECTORY
+
+# GitHub CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+[[files]]
+stub        = 'configs/stubs/.github/CODEOWNERS'
+destination = '.github/CODEOWNERS'
+
+# Developer Certificate of Origin (DCO)
+# https://github.com/dcoapp/app
+[[files]]
+stub        = 'configs/stubs/.github/dco.yml'
+destination = '.github/dco.yml'
+
+# GitHub issue templates
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+[[files]]
+stub        = 'configs/stubs/.github/ISSUE_TEMPLATE/'
+destination = '.github/ISSUE_TEMPLATE/'
+
+# GitHub Dependabot config
+# https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/dependabot-quickstart-guide
+[[files]]
+stub        = 'configs/stubs/.github/dependabot.yml'
+destination = '.github/dependabot.yml'
+
+#-------------------------------------------------------------------------------
+# VSCODE DIRECTORY
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
+stub        = 'configs/stubs/.vscode/settings.sh'
+source      = 'configs/templates/.vscode/settings.sh'
+destination = '.vscode/settings.sh'
+# executable  = true
+
+[[files]]
+stub        = 'configs/stubs/.vscode/extensions.toml'
+source      = 'configs/templates/.vscode/extensions.toml'
+destination = '.vscode/extensions.toml'
+
+  [files.post_update_hook]
+  bash = 'tomljson .vscode/extensions.toml > .vscode/extensions.json'
+
+# This just creates the TOML header for `runonsave`, allowing VSCode to run
+# certain tasks on save.
+[[files]]
+stub        = 'configs/stubs/.vscode/settings-ros.toml'
+source      = 'configs/templates/.vscode/settings-ros.toml'
+destination = '.vscode/settings-ros.toml'
+
+  [files.post_update_hook]
+  bash = 'bash .vscode/settings.sh'
+
+# Standard configs that apply to every single project (Markdown, JSON, YAML, TOML).
+[[files]]
+stub        = 'configs/stubs/.vscode/settings-standard.toml'
+source      = 'configs/templates/.vscode/settings-standard.toml'
+destination = '.vscode/settings-standard.toml'
+
+  [files.post_update_hook]
+  bash = 'bash .vscode/settings.sh'
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS
+
+# EditorConfig Checker
+# https://editorconfig-checker.github.io
+[[files]]
+stub        = 'configs/stubs/ecrc.toml'
+source      = 'configs/templates/ecrc.toml'
+destination = 'ecrc.toml'
+
+  [files.post_update_hook]
+  bash = 'tomljson ecrc.toml > .editorconfig-checker.json'
+
+# Markdownlint
+# https://github.com/davidanson/markdownlint
+[[files]]
+stub        = 'configs/stubs/markdownlint.config.toml'
+source      = 'configs/templates/markdownlint.config.toml'
+destination = 'markdownlint.config.toml'
+
+  [files.post_update_hook]
+  bash = 'tomljson markdownlint.config.toml > .markdownlint.json'

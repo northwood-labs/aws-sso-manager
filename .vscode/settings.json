@@ -1,4 +1,156 @@
 {
-    "sarif-viewer.connectToGithubCodeScanning": "off",
-    "snyk.advanced.autoSelectOrganization": true
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "fcrespo82.markdown-table-formatter"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "bashIde.explainshellEndpoint": "http://localhost:5000",
+  "editor.codeActionsOnSave": {
+    "source.addMissingImports": "always",
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "emeraldwalk.runonsave": {},
+  "evenBetterToml.formatter.alignEntries": true,
+  "evenBetterToml.formatter.indentString": "  ",
+  "evenBetterToml.formatter.indentTables": true,
+  "evenBetterToml.schema.associations": {
+    "^(.*(/|\\)\\.?taplo\\.toml|\\.?taplo\\.toml)$": "taplo://taplo.toml"
+  },
+  "evenBetterToml.schema.links": true,
+  "files.associations": {
+    "*.chatmode.md": "markdown",
+    "*.hcl": "terraform",
+    "*.ini": "ini",
+    "*.instructions.md": "markdown",
+    "*.md": "markdown",
+    "*.prompt.md": "markdown",
+    "*.sh": "shellscript",
+    "*.tf": "terraform",
+    "*.tofu": "opentofu",
+    "*.toml": "toml",
+    ".style.yapf": "ini",
+    ".terraformrc": "hcl",
+    "config": "ini"
+  },
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "git.alwaysSignOff": true,
+  "git.autoStash": true,
+  "githubIssues.queries": [
+    {
+      "label": "My Issues",
+      "query": "default"
+    },
+    {
+      "label": "Created Issues",
+      "query": "author:${user} state:open repo:${owner}/${repository} sort:created-desc"
+    },
+    {
+      "label": "Recent Issues",
+      "query": "state:open repo:${owner}/${repository} sort:updated-desc"
+    }
+  ],
+  "gitlens.autolinks": [],
+  "json.schemas": [
+    {
+      "fileMatch": [
+        ".golangci.yml"
+      ],
+      "url": "https://golangci-lint.run/jsonschema/golangci.jsonschema.json"
+    },
+    {
+      "fileMatch": [
+        "*.dd.json"
+      ],
+      "url": "https://raw.githubusercontent.com/DataDog/datadog-cloudformation-resources/master/datadog-monitors-monitor-handler/datadog-monitors-monitor.json"
+    },
+    {
+      "fileMatch": [
+        "*taskdef.json"
+      ],
+      "url": "https://ecs-intellisense.s3-us-west-2.amazonaws.com/task-definition/schema.json"
+    },
+    {
+      "fileMatch": [
+        ".prettierrc",
+        "prettier.config.js"
+      ],
+      "url": "http://json.schemastore.org/prettierrc"
+    }
+  ],
+  "makefile.configureOnOpen": false,
+  "markdown-table-formatter.markdownGrammarScopes": [
+    "markdown",
+    "gohtml",
+    "gotmpl"
+  ],
+  "markdown-table-formatter.removeColonsIfSameAsDefault": true,
+  "markdown.extension.list.indentationSize": "inherit",
+  "markdown.extension.orderedList.marker": "one",
+  "markdown.extension.tableFormatter.normalizeIndentation": true,
+  "markdown.extension.toc.levels": "1..6",
+  "markdown.extension.toc.unorderedList.marker": "*",
+  "markdown.preview.fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif",
+  "markdown.updateLinksOnFileMove.enabled": "always",
+  "notebook.defaultFormatter": "yzhang.markdown-all-in-one",
+  "prettier.proseWrap": "never",
+  "rewrap.autoWrap.enabled": false,
+  "sarif-viewer.connectToGithubCodeScanning": "off",
+  "shellcheck.enableQuickFix": true,
+  "shellformat.effectLanguages": [
+    "azcli",
+    "bats",
+    "dotenv",
+    "gitignore",
+    "hosts",
+    "ignore",
+    "jvmoptions",
+    "properties",
+    "shellscript",
+    "spring-boot-properties"
+  ],
+  "shellformat.flag": "-s -ln=bash -i=4 -ci -sr",
+  "shellformat.useEditorConfig": true,
+  "snyk.advanced.autoScanOpenSourceSecurity": true,
+  "snyk.advanced.autoSelectOrganization": true,
+  "testExplorer.useNativeTesting": true,
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]"
+  ],
+  "workbench.editorAssociations": {
+    "*.copilotmd": "vscode.markdown.preview.editor",
+    "*.ipynb": "jupyter-notebook",
+    "*.svg": "default",
+    "git-rebase-todo": "default",
+    "{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json": "default"
+  },
+  "yaml.schemas": {
+    "https://goreleaser.com/static/schema-pro.json": ".goreleaser.yml"
+  },
+  "yaml.validate": false
 }
