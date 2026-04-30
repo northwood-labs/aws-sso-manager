@@ -21,9 +21,9 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/huh/v2/spinner"
 	"charm.land/lipgloss/v2"
 	"charm.land/lipgloss/v2/table"
-	"github.com/charmbracelet/huh/spinner"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
@@ -161,7 +161,7 @@ var (
 			if fNoCache {
 				// Fetch fresh data first, bypassing cache
 				err = spinner.New().
-					Output(os.Stderr).
+					WithOutput(os.Stderr).
 					Title("Looking up accounts and roles...").
 					Type(spinner.Dots).
 					Action(func(accounts *listAccounts) func() {
@@ -202,7 +202,7 @@ var (
 				}
 			} else {
 				err = spinner.New().
-					Output(os.Stderr).
+					WithOutput(os.Stderr).
 					Title("Looking up accounts and roles...").
 					Type(spinner.Dots).
 					Action(func(accounts *listAccounts) func() {

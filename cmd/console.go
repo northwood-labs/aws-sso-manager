@@ -25,8 +25,8 @@ import (
 	"strings"
 
 	"charm.land/huh/v2"
+	"charm.land/huh/v2/spinner"
 	nativeclipboard "github.com/aymanbagabas/go-nativeclipboard"
-	"github.com/charmbracelet/huh/spinner"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
@@ -165,7 +165,7 @@ var (
 			}
 
 			err = spinner.New().
-				Output(os.Stderr).
+				WithOutput(os.Stderr).
 				Title("Looking up accounts and roles...").
 				Type(spinner.Dots).
 				Action(func(accounts *listAccounts) func() {

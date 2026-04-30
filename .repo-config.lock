@@ -1,6 +1,11 @@
 schema_version = '1'
 
 [files]
+[files.'.shellcheckrc']
+last_sync_time = '2026-04-30T04:56:36Z'
+source_hash = ''
+dest_hash = 'sha256:64f0be43f9a3a049d5e56951767113f21900269f1f4ac33a63f9d19111142352'
+
 [files.'.vscode/settings-standard.toml']
 last_sync_time = '2026-04-28T18:00:31Z'
 source_hash = ''
@@ -15,3 +20,8 @@ dest_hash = 'sha256:199b7c6dd6ea109356c64443c4749ba739443bee98faf6c2276945686372
 last_sync_time = '2026-04-27T22:29:29Z'
 source_hash = ''
 dest_hash = 'sha256:e3ff16982dfd2815c9d1965ff7cc45e1a63de0cd24d7951dba4e75985375f3b2'
+
+[files.'tools/go-tool-standard.sh']
+last_sync_time = '2026-04-30T04:44:38Z'
+source_hash = ''
+dest_hash = 'sha256:4f526e3591fc43bbe86d81723bec99e16e465dfce77521b824d852697e04dc3f'

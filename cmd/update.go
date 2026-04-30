@@ -19,7 +19,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/huh/spinner"
+	"charm.land/huh/v2/spinner"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
@@ -117,7 +117,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		err = spinner.New().
-			Output(os.Stderr).
+			WithOutput(os.Stderr).
 			Title("Looking up accounts and roles...").
 			Type(spinner.Dots).
 			Action(func(accounts *listAccounts) func() {
