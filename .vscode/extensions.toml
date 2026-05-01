@@ -3,4 +3,132 @@
 #   tomljson extensions.toml > extensions.json
 ##
 
-recommendations = [  ]
+recommendations = [
+  # @config-manager:start standard
+  'albymor.increment-selection',
+  'anchoreinc.grype-vscode',
+  'annsk.alignment',
+  'aquasecurityofficial.trivy-vulnerability-scanner',
+  'arr.marksman',
+  'bierner.markdown-checkbox',
+  'bierner.markdown-preview-github-styles',
+  'bierner.markdown-yaml-preamble',
+  'chouzz.vscode-better-align',
+  'christian-kohler.path-intellisense',
+  'claui.email-addresses',
+  'cmacu.gotoanything',
+  'codezombiech.gitignore',
+  'davidanson.vscode-markdownlint',
+  'DavidWang.ini-for-vscode',
+  'eamodio.gitlens',
+  'editorconfig.editorconfig',
+  'emeraldwalk.runonsave',
+  'esbenp.prettier-vscode',
+  'fcrespo82.markdown-table-formatter',
+  'fnando.linter',
+  'foxundermoon.shell-format',
+  'geeebe.duplicate',
+  'gurumukhi.selected-lines-count',
+  'hbenl.vscode-test-explorer',
+  'jq-syntax-highlighting.jq-syntax-highlighting',
+  'kevinkyang.auto-comment-blocks',
+  'lamartire.git-indicators',
+  'mads-hartmann.bash-ide-vscode',
+  'melt-inc.yamlfmt-vscode',
+  'mohsen1.prettify-json',
+  'ms-vscode-remote.remote-containers',
+  'ms-vscode.test-adapter-converter',
+  'nhoizey.gremlins',
+  'oliversturm.fix-json',
+  'quicktype.quicktype',
+  'redhat.vscode-yaml',
+  'rogalmic.bash-debug',
+  'sidneys1.gitconfig',
+  'stkb.rewrap',
+  'tamasfe.even-better-toml',
+  'timonwong.shellcheck',
+  'tomoki1207.pdf',
+  'tyriar.sort-lines',
+  'usernamehw.errorlens',
+  'visualstudioexptteam.vscodeintellicode',
+  'vivaxy.vscode-conventional-commits',
+  'yzhang.markdown-all-in-one',
+  'zardoy.fix-all-json',
+  # @config-manager:end standard
+
+  # @config-manager:start github
+  'chdsbd.github-code-owners',
+  'dt.ghlink',
+  'github.vscode-github-actions',
+  'GitHub.vscode-pull-request-github',
+  # @config-manager:end github
+
+  # @config-manager:start golang
+  'casualjim.gotemplate',
+  'golang.go',
+  'maxmedia.go-prof',
+  'msyrus.go-doc',
+  'neverik.go-critic',
+  'premparihar.gotestexplorer',
+  'windmilleng.vscode-go-autotest',
+  # @config-manager:end golang
+
+  # @config-manager:start llm
+  'anthropic.claude-code',
+  'github.copilot-chat',
+  # @config-manager:end llm
+
+  # @config-manager:start terraform
+  'hashicorp.hcl',
+  'hashicorp.terraform',
+  'Infracost.infracost',
+  'opentofu.vscode-opentofu',
+  # @config-manager:end terraform
+
+  # @config-manager:start bats
+  'jetmartin.bats',
+  # @config-manager:end bats
+
+  # @config-manager:start deep-security
+  'ms-sarifvscode.sarif-viewer',
+  # @config-manager:end deep-security
+]
+
+
+# 1Password.op-vscode
+# Ariga.atlas-hcl (database)
+# formulahendry.auto-close-tag (frontend)
+# njpwerner.autodocstring (python)
+# kamikillerto.vscode-colorize (frontend)
+# pranaygp.vscode-css-peek (frontend)
+# wix.vscode-import-cost (frontend)
+# Zignd.html-css-class-completion (frontend)
+# ms-azuretools.vscode-containers (containers)
+# docker.docker (containers)
+# exiasr.hadolint (containers)
+# GraphQL.vscode-graphql-execution (graphql)
+# GraphQL.vscode-graphql (graphql)
+# GraphQL.vscode-graphql-syntax (graphql)
+# budparr.language-hugo-vscode (Hugo)
+# Orta.vscode-jest (frontend)
+# liamdawson.jsonnet-language
+# 42Crunch.vscode-openapi (rest apis)
+# DrBlury.protobuf-vsc (protobuf apis)
+# cipchk.cssrem (frontend)
+# ms-python.python (python)
+# thebutlah.reorder-python-imports (python)
+# charliermarsh.ruff (python)
+# littlefoxteam.vscode-python-test-adapter (python)
+# meta.relay (graphql)
+# stoplight.spectral (rest apis)
+# ReneSaarsoo.sql-formatter-vsc (database)
+# bradlc.vscode-tailwindcss (frontend)
+# AndrewButson.vscode-openapi-viewer (frontend)
+# dtsvet.vscode-wasm (wasm)
+# redhat.vscode-xml (xml)
+# DotJoshJohnson.xml (xml)
+# eeyore.yapf (python)
+# MikeBovenlander.formate (frontend)
+# dancheg97.grpc-clicker (protobuf)
+# mercari.grpc-federation (protobuf)
+# rust-lang.rust-analyzer (rust)
