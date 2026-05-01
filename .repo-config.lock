@@ -1,10 +1,25 @@
 schema_version = '1'
 
 [files]
+[files.'.kiro/steering/markdown-style.md']
+last_sync_time = '2026-05-01T15:33:52Z'
+source_hash = ''
+dest_hash = 'sha256:226605c439e3ced60e7c00a217e20595654ab734433a0c457aff99118b989b67'
+
 [files.'.shellcheckrc']
 last_sync_time = '2026-04-30T04:56:36Z'
 source_hash = ''
 dest_hash = 'sha256:64f0be43f9a3a049d5e56951767113f21900269f1f4ac33a63f9d19111142352'
+
+[files.'.vscode/README.md']
+last_sync_time = '2026-05-01T18:33:04Z'
+source_hash = ''
+dest_hash = 'sha256:d622d7189f6a48cbdb4e298ac0ac23e2801639d40c91d4b06eec4923b6ad11dc'
+
+[files.'.vscode/settings-llm.toml']
+last_sync_time = '2026-05-01T18:36:15Z'
+source_hash = ''
+dest_hash = 'sha256:b26b3ba9ddfffa97deae241fffab26d82827d59b0fcf336f028829086570bc8e'
 
 [files.'.vscode/settings-standard.toml']
 last_sync_time = '2026-04-28T18:00:31Z'

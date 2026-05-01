@@ -31,14 +31,14 @@ require (
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/northwood-labs/aws-config-parser v1.8.4
-	github.com/northwood-labs/aws-sso-manager v0.0.0-20260428195826-c7f76ae1fc00
+	github.com/northwood-labs/aws-sso-manager v0.0.0-20260430045941-ec60c2dd1217
 	github.com/northwood-labs/cli-helpers v0.0.0-20260428015633-ec689f4e2063
-	github.com/pelletier/go-toml/v2 v2.3.0
+	github.com/pelletier/go-toml/v2 v2.3.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	golang.org/x/sys v0.43.0
-	pgregory.net/rapid v1.2.0
+	pgregory.net/rapid v1.3.0
 )
 
 require (
@@ -68,7 +68,7 @@ require (
 	github.com/Sirupsen/logrus v0.0.0-00010101000000-000000000000 // indirect
 	github.com/aead/serpent v0.0.0-20160714141033-fba169763ea6 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/alecthomas/chroma/v2 v2.24.0 // indirect
+	github.com/alecthomas/chroma/v2 v2.24.1 // indirect
 	github.com/alecthomas/kong v1.14.0 // indirect
 	github.com/alecthomas/mango-kong v0.1.0 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect

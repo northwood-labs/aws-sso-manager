@@ -36,6 +36,18 @@
   source = 'configs/templates/taplo.toml'
   destination = '.taplo.toml'
 
+#-------------------------------------------------------------------------------
+# KIRO DIRECTORY
+
+[[files]]
+  stub = 'configs/stubs/.kirograph/'
+  destination = '.kirograph/'
+
+[[files]]
+  stub = 'configs/stubs/.kiro/steering/markdown-style.md'
+  source = 'configs/templates/.kiro/steering/markdown-style.md'
+  destination = '.kiro/steering/markdown-style.md'
+
   #-------------------------------------------------------------------------------
   # GITHUB DIRECTORY
 
@@ -66,12 +78,17 @@
   #-------------------------------------------------------------------------------
   # VSCODE DIRECTORY
 
+[[files]]
+  stub = 'configs/stubs/.vscode/README.md'
+  source = 'configs/templates/.vscode/README.md'
+  destination = '.vscode/README.md'
+
 # Merges multiple TOML files together using `dasel` and `jq`.
 [[files]]
   stub = 'configs/stubs/.vscode/settings.sh'
   source = 'configs/templates/.vscode/settings.sh'
   destination = '.vscode/settings.sh'
-  # executable  = true
+  executable  = true
 
 [[files]]
   stub = 'configs/stubs/.vscode/extensions.toml'
@@ -80,6 +97,15 @@
 
   [files.post_update_hook]
     bash = 'tomljson .vscode/extensions.toml > .vscode/extensions.json'
+
+# Standardized LLM rules.
+[[files]]
+  stub = 'configs/stubs/.vscode/settings-llm.toml'
+  source = 'configs/templates/.vscode/settings-llm.toml'
+  destination = '.vscode/settings-llm.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
 
 # This just creates the TOML header for `runonsave`, allowing VSCode to run
 # certain tasks on save.

@@ -18,6 +18,20 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "bashIde.explainshellEndpoint": "http://localhost:5000",
+  "chat.agent.enabled": true,
+  "chat.extensionTools.enabled": true,
+  "chat.mcp.access": "all",
+  "chat.mcp.autostart": "newAndOutdated",
+  "chat.mcp.discovery.enabled": {
+    "claude-desktop": true,
+    "cursor-global": true,
+    "cursor-workspace": true,
+    "windsurf": true
+  },
+  "chat.promptFilesLocations": {
+    "prompts": true
+  },
+  "chat.tools.autoApprove": false,
   "editor.codeActionsOnSave": {
     "source.addMissingImports": "always",
     "source.fixAll.eslint": "always",
@@ -55,6 +69,31 @@
   "files.trimTrailingWhitespace": true,
   "git.alwaysSignOff": true,
   "git.autoStash": true,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.copilotDebugCommand.enabled": false,
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+  "github.copilot.chat.edits.temporalContext.enabled": true,
+  "github.copilot.chat.reviewSelection.instructions": [],
+  "github.copilot.enable": {
+    "*": true,
+    "apex": true,
+    "erb": true,
+    "go": true,
+    "java": true,
+    "javascript": true,
+    "markdown": false,
+    "plaintext": false,
+    "python": true,
+    "ruby": true,
+    "rust": true,
+    "scala": true,
+    "scminput": false,
+    "shellscript": true,
+    "starlark": true,
+    "terraform": true,
+    "typescript": true,
+    "typescriptreact": true
+  },
   "githubIssues.queries": [
     {
       "label": "My Issues",
@@ -97,6 +136,19 @@
       "url": "http://json.schemastore.org/prettierrc"
     }
   ],
+  "kiroAgent.agentAutonomy": "Autopilot",
+  "kiroAgent.enableCodebaseIndexing": true,
+  "kiroAgent.enableTabAutocomplete": true,
+  "kiroAgent.modelSelection": "Auto",
+  "kiroAgent.notifications.agent.actionRequired": true,
+  "kiroAgent.notifications.agent.failure": true,
+  "kiroAgent.notifications.agent.success": true,
+  "kiroAgent.trustedCommands": [
+    "cat *",
+    "curl *",
+    "grep *"
+  ],
+  "kiroAgent.usageSummary": true,
   "makefile.configureOnOpen": false,
   "markdown-table-formatter.markdownGrammarScopes": [
     "markdown",
@@ -113,6 +165,11 @@
   "markdown.updateLinksOnFileMove.enabled": "always",
   "notebook.defaultFormatter": "yzhang.markdown-all-in-one",
   "prettier.proseWrap": "never",
+  "remote.defaultExtensionsIfInstalledLocally": [
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "GitHub.vscode-pull-request-github"
+  ],
   "rewrap.autoWrap.enabled": false,
   "sarif-viewer.connectToGithubCodeScanning": "off",
   "shellcheck.enableQuickFix": true,
