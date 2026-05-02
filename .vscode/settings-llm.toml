@@ -10,6 +10,14 @@
 'github.copilot.chat.editor.temporalContext.enabled' = true
 'github.copilot.chat.edits.temporalContext.enabled' = true
 'github.copilot.chat.reviewSelection.instructions' = [  ]
+'kiroAgent.agentAutonomy' = 'Autopilot'
+'kiroAgent.enableCodebaseIndexing' = true
+'kiroAgent.enableTabAutocomplete' = true
+'kiroAgent.modelSelection' = "Auto"
+'kiroAgent.usageSummary' = true
+'kiroAgent.notifications.agent.actionRequired' = true
+'kiroAgent.notifications.agent.failure' = true
+'kiroAgent.notifications.agent.success' = true
 'kiroAgent.trustedCommands' = [ 'cat *', 'curl *', 'grep *' ]
 'remote.defaultExtensionsIfInstalledLocally' = [
   'GitHub.copilot',

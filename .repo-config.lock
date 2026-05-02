@@ -17,12 +17,12 @@ source_hash = ''
 dest_hash = 'sha256:d622d7189f6a48cbdb4e298ac0ac23e2801639d40c91d4b06eec4923b6ad11dc'
 
 [files.'.vscode/settings-llm.toml']
-last_sync_time = '2026-05-01T18:36:15Z'
+last_sync_time = '2026-05-02T01:36:50Z'
 source_hash = ''
-dest_hash = 'sha256:b26b3ba9ddfffa97deae241fffab26d82827d59b0fcf336f028829086570bc8e'
+dest_hash = 'sha256:9bbb97fe94ba1deff426840fdb4a00d198edb1986d09c682eae32ad637d7f244'
 
 [files.'.vscode/settings-standard.toml']
-last_sync_time = '2026-04-28T18:00:31Z'
+last_sync_time = '2026-05-02T01:36:50Z'
 source_hash = ''
 dest_hash = 'sha256:413b05c1871f5c069047382f6ab4d28fc38adceefe7e7e613b0a72ba9b8d43d0'
 
