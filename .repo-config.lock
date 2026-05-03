@@ -16,6 +16,16 @@ last_sync_time = '2026-05-01T18:33:04Z'
 source_hash = ''
 dest_hash = 'sha256:d622d7189f6a48cbdb4e298ac0ac23e2801639d40c91d4b06eec4923b6ad11dc'
 
+[files.'.vscode/extensions-standard.toml']
+last_sync_time = '2026-05-03T00:14:02Z'
+source_hash = ''
+dest_hash = 'sha256:46d43f82a44423ae763e549a1a0080666de64efc13cbdfc18959d22566392f13'
+
+[files.'.vscode/extensions.sh']
+last_sync_time = '2026-05-03T00:14:02Z'
+source_hash = ''
+dest_hash = 'sha256:ae6e2dc189e07fc8b3883e08a77c1b137a0edafa806534a93d9b34a6b2d38aac'
+
 [files.'.vscode/settings-llm.toml']
 last_sync_time = '2026-05-02T01:36:50Z'
 source_hash = ''

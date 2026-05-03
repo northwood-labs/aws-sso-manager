@@ -36,8 +36,8 @@
   source = 'configs/templates/taplo.toml'
   destination = '.taplo.toml'
 
-#-------------------------------------------------------------------------------
-# KIRO DIRECTORY
+  #-------------------------------------------------------------------------------
+  # KIRO DIRECTORY
 
 [[files]]
   stub = 'configs/stubs/.kirograph/'
@@ -85,18 +85,26 @@
 
 # Merges multiple TOML files together using `dasel` and `jq`.
 [[files]]
+  stub = 'configs/stubs/.vscode/extensions.sh'
+  source = 'configs/templates/.vscode/extensions.sh'
+  destination = '.vscode/extensions.sh'
+  executable = true
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
   stub = 'configs/stubs/.vscode/settings.sh'
   source = 'configs/templates/.vscode/settings.sh'
   destination = '.vscode/settings.sh'
-  executable  = true
+  executable = true
 
+# Merges multiple TOML files together using `dasel` and `jq`.
 [[files]]
-  stub = 'configs/stubs/.vscode/extensions.toml'
-  source = 'configs/templates/.vscode/extensions.toml'
-  destination = '.vscode/extensions.toml'
+  stub = 'configs/stubs/.vscode/extensions-standard.toml'
+  source = 'configs/templates/.vscode/extensions-standard.toml'
+  destination = '.vscode/extensions-standard.toml'
 
   [files.post_update_hook]
-    bash = 'tomljson .vscode/extensions.toml > .vscode/extensions.json'
+    bash = 'bash .vscode/extensions.sh'
 
 # Standardized LLM rules.
 [[files]]
