@@ -1,6 +1,16 @@
 schema_version = '1'
 
 [files]
+[files.'.githooks/commit-msg.sh']
+last_sync_time = '2026-05-03T01:39:29Z'
+source_hash = ''
+dest_hash = 'sha256:218fec635ae77d9c3c2a41ee622e1a1698f693c979fee090789e012ac533c13a'
+
+[files.'.gommit.toml']
+last_sync_time = '2026-05-04T05:39:52Z'
+source_hash = ''
+dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
+
 [files.'.kiro/steering/markdown-style.md']
 last_sync_time = '2026-05-01T15:33:52Z'
 source_hash = ''
@@ -10,6 +20,11 @@ dest_hash = 'sha256:226605c439e3ced60e7c00a217e20595654ab734433a0c457aff99118b98
 last_sync_time = '2026-04-30T04:56:36Z'
 source_hash = ''
 dest_hash = 'sha256:64f0be43f9a3a049d5e56951767113f21900269f1f4ac33a63f9d19111142352'
+
+[files.'.trivyignore']
+last_sync_time = '2026-05-03T01:41:18Z'
+source_hash = ''
+dest_hash = 'sha256:918c071d276f59e46cc0d08544c3dc43f12426c192456d8bdf0ec4213629f446'
 
 [files.'.vscode/README.md']
 last_sync_time = '2026-05-01T18:33:04Z'
@@ -41,6 +56,11 @@ last_sync_time = '2026-04-28T18:00:31Z'
 source_hash = ''
 dest_hash = 'sha256:199b7c6dd6ea109356c64443c4749ba739443bee98faf6c22769456863720221'
 
+[files.'.yamlfmt.yml']
+last_sync_time = '2026-05-03T01:45:01Z'
+source_hash = ''
+dest_hash = 'sha256:976dc44e80ad09b5dc28fc020566782e9f9845371091f540b64628592f92c291'
+
 [files.'ecrc.toml']
 last_sync_time = '2026-04-27T22:29:29Z'
 source_hash = ''
@@ -50,3 +70,13 @@ dest_hash = 'sha256:e3ff16982dfd2815c9d1965ff7cc45e1a63de0cd24d7951dba4e75985375
 last_sync_time = '2026-04-30T04:44:38Z'
 source_hash = ''
 dest_hash = 'sha256:4f526e3591fc43bbe86d81723bec99e16e465dfce77521b824d852697e04dc3f'
+
+[files.'trivy-license.yaml']
+last_sync_time = '2026-05-04T05:00:35Z'
+source_hash = ''
+dest_hash = 'sha256:6cbd995d6cef5371d37176a5c912d867044eaa48881bcd728b1a74c2911964b5'
+
+[files.'trivy-vuln.yaml']
+last_sync_time = '2026-05-04T05:00:35Z'
+source_hash = ''
+dest_hash = 'sha256:5a4cf755416da735cf71fba08e55953dcf178beae08a7153fd029b8eeb8b5f72'

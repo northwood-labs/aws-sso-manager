@@ -22,6 +22,13 @@
   source = 'configs/templates/gitattributes'
   destination = '.gitattributes'
 
+# Enforce conventional commit messages.
+# https://github.com/antham/gommit
+[[files]]
+  stub = 'configs/stubs/gommit.toml'
+  source = 'configs/templates/gommit.toml'
+  destination = '.gommit.toml'
+
 # Shellcheck for shell scripts
 # https://github.com/koalaman/shellcheck
 [[files]]
@@ -35,6 +42,28 @@
   stub = 'configs/stubs/taplo.toml'
   source = 'configs/templates/taplo.toml'
   destination = '.taplo.toml'
+
+# Trivy for vulnerability and license scanning
+# https://trivy.dev
+[[files]]
+  stub = 'configs/stubs/trivyignore'
+  destination = '.trivyignore'
+
+[[files]]
+  stub = 'configs/stubs/trivy-license.yaml'
+  source = 'configs/templates/trivy-license.yaml'
+  destination = 'trivy-license.yaml'
+
+[[files]]
+  stub = 'configs/stubs/trivy-vuln.yaml'
+  source = 'configs/templates/trivy-vuln.yaml'
+  destination = 'trivy-vuln.yaml'
+
+# Standardized formatter for YAML files.
+# https://github.com/google/yamlfmt
+[[files]]
+  stub = 'configs/stubs/yamlfmt.yml'
+  destination = '.yamlfmt.yml'
 
   #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
@@ -161,6 +190,16 @@ tools/go-tool-standard.sh
 go mod tidy -modfile go.tools.mod
 go get -modfile go.tools.mod -u -t -v ./...
 """
+
+# Git hooks
+[[files]]
+  stub = 'configs/stubs/.githooks/commit-msg.sh'
+  source = 'configs/templates/.githooks/commit-msg.sh'
+  destination = '.githooks/commit-msg.sh'
+  executable = true
+
+  [files.post_update_hook]
+    bash = 'cp -vf .githooks/commit-msg.sh .git/hooks/commit-msg'
 
 # Markdownlint
 # https://github.com/davidanson/markdownlint
