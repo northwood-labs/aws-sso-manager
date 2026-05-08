@@ -22,9 +22,9 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-01T15:33:52Z'
+last_sync_time = '2026-05-08T22:34:54Z'
 source_hash = ''
-dest_hash = 'sha256:226605c439e3ced60e7c00a217e20595654ab734433a0c457aff99118b989b67'
+dest_hash = 'sha256:33ef9405a863b0750fa74db94b1435d75ef6897c51c27748dd357b832889fbe6'
 
 [files.'.rumdl.toml']
 last_sync_time = '2026-05-08T18:35:25Z'

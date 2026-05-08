@@ -15,8 +15,6 @@ This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`
 * End every file with a single trailing newline.
 * Maximum one consecutive blank line (no double blanks).
 * One blank line above and below headings, lists, tables, fenced code blocks, and horizontal rules.
-* No multiple consecutive spaces within text content.
-* Sentences must start with a capital letter.
 <!-- @config-manager:end whitespace -->
 
 ## Headings
@@ -28,9 +26,7 @@ This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`
 * Headings must start at column 0 (no indentation).
 * No trailing punctuation (`.`, `,`, `;`, `:`) on headings.
 * One space after `#` — no multiple spaces.
-* Do not use emphasis (bold/italic) as a substitute for headings.
-* Duplicate headings are allowed only among siblings (same parent level), not across the entire document.
-* The `# H1` heading should use Title Case formatting (lowercase words: `a`, `an`, `and`, `as`, `at`, `but`, `by`, `for`, `in`, `into`, `nor`, `of`, `on`, `onto`, `or`, `so`, `the`, `to`, `up`, `upon`, `via`, `vs`, `with`, `without`, `yet`).
+* The `# H1` heading should use Title Case formatting (conjunctions and other connector words should always be lowercase — `but`, `and`, `or`, `to`, `from`).
 * All other headings (`## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`) should use sentence case formatting.
 <!-- @config-manager:end headings -->
 
@@ -50,7 +46,6 @@ This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`
 * One space after the list marker.
 * Indent nested unordered lists by 2 spaces (matching `ul-indent` config).
 * Blank line before and after list blocks.
-* Use consistent spacing within list items (all loose or all tight).
 <!-- @config-manager:end lists -->
 
 ## Code
@@ -61,7 +56,6 @@ This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`
 * Always specify a language identifier on fenced code blocks (e.g., ` ```go `, ` ```text `, ` ```bash `).
 * Use ` ```text ` for plain-text diagrams, pipeline flows, and non-executable pseudocode.
 * No spaces inside inline code spans.
-* Dollar-sign prefixed commands in code blocks should show output or use a non-prefixed style.
 <!-- @config-manager:end code-pre -->
 
 ## Tables
@@ -70,7 +64,6 @@ This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`
 * Use leading and trailing pipes on every row.
 * Align column delimiters (pad cells with spaces so pipes line up).
 * Blank line before and after tables.
-* Every row must have the same number of columns.
 
 Example:
 
@@ -79,7 +72,6 @@ Example:
 |----------|----------|
 | value    | value    |
 ```
-
 <!-- @config-manager:end tables -->
 
 ## Links and images
@@ -90,8 +82,6 @@ Example:
 * No reversed link syntax (`(url)[text]`).
 * No spaces inside link brackets or parentheses.
 * All images must have alt text.
-* Relative links must point to existing files.
-* Reference-style link definitions must be used if defined.
 <!-- @config-manager:end links-images -->
 
 ## Proper names
@@ -121,7 +111,7 @@ Inline HTML is restricted to these allowed elements: `a`, `b`, `br`, `code`, `de
 <!-- @config-manager:start blockquotes -->
 * No blank lines inside blockquotes.
 * No multiple spaces after `>`.
-* Consecutive blockquotes should be separated by a horizontal rule.
+* Consecutive blockquotes should be separated Horizontal Rule.
 <!-- @config-manager:end blockquotes -->
 
 ## Horizontal rules
@@ -145,39 +135,3 @@ Inline HTML is restricted to these allowed elements: `a`, `b`, `br`, `code`, `de
 <!-- @config-manager:start frontmatter -->
 * Include a blank line after YAML front matter closing `---`.
 <!-- @config-manager:end frontmatter -->
-
-## Spec document patterns
-
-This project uses structured spec documents under `.kiro/specs/`. Follow these patterns:
-
-### Requirements.md
-
-<!-- @config-manager:start spec-requirements -->
-* Start with `# Requirements Document`.
-* Include `## Introduction`, `## Glossary`, and `## Requirements` sections.
-* Each requirement gets `### Requirement N: Title` with a `**User story:**` line and `#### Acceptance criteria` numbered list.
-* Glossary entries use `* **Term**: Definition` format.
-* Acceptance criteria use WHEN/THEN/SHALL phrasing.
-<!-- @config-manager:end spec-requirements -->
-
-### Design.md
-
-<!-- @config-manager:start spec-design -->
-* Start with `# Design Document: Feature Name`.
-* Include `## Overview`, `## Architecture`, `## Components and Interfaces`, `## Data Models`, `## Correctness Properties`, `## Error Handling`, `## Testing Strategy`.
-* Use mermaid code blocks (` ```mermaid `) for architecture diagrams.
-* Use tables for impact analysis, supported styles, and test matrices.
-* Properties use _italic_ universal quantifiers: _For any_ valid input...
-<!-- @config-manager:end spec-design -->
-
-### Tasks.md
-
-<!-- @config-manager:start spec-tasks -->
-* Start with `# Implementation Plan: Feature Name`.
-* Include `## Overview` and `## Tasks` sections.
-* Use `* [ ] N. Task title` for top-level tasks (asterisk list marker, checkbox).
-* Use `  * [ ] N.M Subtask title` for subtasks (2-space indent). <!-- markdownlint-disable-line MD038 -->
-* Bullet points under subtasks describe implementation details.
-* End subtasks with `* _Validates: Requirements X.Y, X.Z._` for traceability.
-* Checkpoint tasks have no subtasks — just a description paragraph.
-<!-- @config-manager:end spec-tasks -->
