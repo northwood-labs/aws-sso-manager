@@ -4,9 +4,9 @@
 
 The marker detection regex in `config-manager/internal/marker/lexer.go` only matches the parenthesized marker format (`@config-manager:start(name)`) but all real-world configuration files in the repository use the space-separated format (`@config-manager:start name`). This causes `DetectMarkers` to return zero markers for every file that uses the space-separated format, which cascades through `ParseBlocks`, `ReplaceBlocks`, and `SyncFile` — resulting in the sync engine reporting files as "Unchanged" even when source content should be merged into the destination.
 
-## Bug Analysis
+## Bug analysis
 
-### Current Behavior (Defect)
+### Current behavior (Defect)
 
 1.1 WHEN a marker line uses the space-separated format (e.g., `# @config-manager:start block_name`) THEN the system fails to detect the marker and `DetectMarkers` returns an empty result for that line
 
@@ -14,7 +14,7 @@ The marker detection regex in `config-manager/internal/marker/lexer.go` only mat
 
 1.3 WHEN a source file contains content between space-separated markers (e.g., a list of HTML element names between `# @config-manager:start html_elements` and `# @config-manager:end html_elements`) THEN the system fails to merge that content into the corresponding destination block, leaving the destination block empty
 
-### Expected Behavior (Correct)
+### Expected behavior (Correct)
 
 2.1 WHEN a marker line uses the space-separated format (e.g., `# @config-manager:start block_name`) THEN the system SHALL detect the marker and return a valid `MarkerLine` with the correct `BlockName` and `IsStart`/`IsEnd` classification
 
@@ -22,7 +22,7 @@ The marker detection regex in `config-manager/internal/marker/lexer.go` only mat
 
 2.3 WHEN a source file contains content between space-separated markers THEN the system SHALL extract and merge that content into the matching destination block, identical to how it would behave with parenthesized markers
 
-### Unchanged Behavior (Regression Prevention)
+### Unchanged behavior (Regression prevention)
 
 3.1 WHEN a file contains no marker lines at all THEN the system SHALL CONTINUE TO return an empty marker list from `DetectMarkers` and empty block maps from `ParseBlocks`
 
@@ -32,7 +32,7 @@ The marker detection regex in `config-manager/internal/marker/lexer.go` only mat
 
 ---
 
-### Bug Condition
+### Bug condition
 
 ```pascal
 FUNCTION isBugCondition(X)
@@ -46,7 +46,7 @@ FUNCTION isBugCondition(X)
 END FUNCTION
 ```
 
-### Fix Checking Property
+### Fix checking property
 
 ```pascal
 // Property: Fix Checking — Space-separated markers are detected
@@ -58,7 +58,7 @@ FOR ALL X WHERE isBugCondition(X) DO
 END FOR
 ```
 
-### Preservation Checking Property
+### Preservation checking property
 
 ```pascal
 // Property: Preservation Checking — Non-marker lines still ignored

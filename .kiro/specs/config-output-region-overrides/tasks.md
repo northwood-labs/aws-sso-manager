@@ -21,16 +21,16 @@ Surgically modify `buildUpdatedManagedSections` in `cmd/update.go` to read `%.se
     * Generate random profile names, sso_region values, and optional settings.region values (including empty string and absent)
     * Assert every generated profile's `region` field equals `settings.region` when non-empty, else `sso_region`
     * Reuse `genListAccounts(1, 5)` from `cmd/testhelpers_test.go`
-    * **Validates: Requirements 1.1, 1.2, 1.3, 4.1**
+    * **Validates: Requirements 1.1, 1.2, 1.3, 4.1.**
 
   * [x] 1.3 Write property test for output override resolution
-    * **Property 2: Output resolution respects config override with "json" fallback**
+    * **Property 2: Output resolution respects config override with "JSON" fallback**
     * Test function: `TestPropertyOutputOverrideResolution`
     * Save/restore `asmConfig` via `t.Cleanup`; set `<profile>.settings.output` on a fresh Viper instance
     * Generate random profile names and optional settings.output values (including empty string and absent)
     * Assert every generated profile's `output` field equals `settings.output` when non-empty, else `"json"`
     * Reuse `genListAccounts(1, 5)` from `cmd/testhelpers_test.go`
-    * **Validates: Requirements 2.1, 2.2, 2.3, 4.2**
+    * **Validates: Requirements 2.1, 2.2, 2.3, 4.2.**
 
 * [x] 2. Checkpoint — Ensure all tests pass
   * Ensure all tests pass, ask the user if questions arise.
@@ -41,7 +41,7 @@ Surgically modify `buildUpdatedManagedSections` in `cmd/update.go` to read `%.se
     * Test function: `TestPropertySettingsKeyValidation`
     * Generate random profile names; assert `validateConfigKey("<profile>.settings.region")` and `validateConfigKey("<profile>.settings.output")` return nil
     * Generate random unknown leaf names (not `"region"` or `"output"`); assert `validateConfigKey("<profile>.settings.<unknown>")` returns non-nil error
-    * **Validates: Requirements 3.1, 3.2, 3.3**
+    * **Validates: Requirements 3.1, 3.2, 3.3.**
 
   * [x] 3.2 Write property test for update idempotence with overrides
     * **Property 4: Update idempotence with settings overrides**
@@ -50,7 +50,7 @@ Surgically modify `buildUpdatedManagedSections` in `cmd/update.go` to read `%.se
     * Call `buildUpdatedManagedSections` twice with identical inputs
     * Assert both calls produce identical output sections and counts
     * Reuse `genListAccounts(1, 5)` from `cmd/testhelpers_test.go`
-    * **Validates: Requirements 5.1**
+    * **Validates: Requirements 5.1.**
 
 * [x] 4. Checkpoint — Ensure all tests pass
   * Ensure all tests pass, ask the user if questions arise.

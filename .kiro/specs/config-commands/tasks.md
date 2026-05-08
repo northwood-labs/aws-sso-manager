@@ -20,19 +20,19 @@ Implement `config set`, `config get`, and `config del` subcommands in a single f
 
   * [x] 1.2 Write property test: Set-then-get round trip
     * **Property 1: Set-then-get round trip**
-    * **Validates: Requirements 2.2, 2.3, 3.2, 6.1**
+    * **Validates: Requirements 2.2, 2.3, 3.2, 6.1.**
 
   * [x] 1.3 Write property test: Set confirmation output contains key and value
     * **Property 5: Set confirmation output contains key and value**
-    * **Validates: Requirements 2.6**
+    * **Validates: Requirements 2.6.**
 
   * [x] 1.4 Write property test: Backup retention limit
     * **Property 7: Backup retention limit**
-    * **Validates: Requirements 8.4**
+    * **Validates: Requirements 8.4.**
 
   * [x] 1.5 Write property test: Backup content matches pre-mutation state
     * **Property 8: Backup content matches pre-mutation state**
-    * **Validates: Requirements 8.1, 8.2**
+    * **Validates: Requirements 8.1, 8.2.**
 
 * [x] 2. Checkpoint
   * Ensure all tests pass, ask the user if questions arise.
@@ -47,11 +47,11 @@ Implement `config set`, `config get`, and `config del` subcommands in a single f
 
   * [x] 3.2 Write property test: Nonexistent key returns error
     * **Property 4: Nonexistent key returns error**
-    * **Validates: Requirements 3.3, 4.6**
+    * **Validates: Requirements 3.3, 4.6.**
 
   * [x] 3.3 Write property test: Wrong argument count returns error
     * **Property 3: Wrong argument count returns error**
-    * **Validates: Requirements 2.4, 3.4, 4.4**
+    * **Validates: Requirements 2.4, 3.4, 4.4.**
 
 * [x] 4. Implement `config del` with TOML-level deletion
   * [x] 4.1 Add `configDelCmd`, `deleteConfigKey`, and `deleteNestedKey` to `cmd/config.go`
@@ -69,11 +69,11 @@ Implement `config set`, `config get`, and `config del` subcommands in a single f
 
   * [x] 4.2 Write property test: Set-then-delete-then-get round trip
     * **Property 2: Set-then-delete-then-get round trip**
-    * **Validates: Requirements 4.4, 4.5, 6.2**
+    * **Validates: Requirements 4.4, 4.5, 6.2.**
 
   * [x] 4.3 Write property test: Del confirmation output contains key
     * **Property 6: Del confirmation output contains key**
-    * **Validates: Requirements 4.8**
+    * **Validates: Requirements 4.8.**
 
 * [x] 5. Checkpoint
   * Ensure all tests pass, ask the user if questions arise.

@@ -6,11 +6,11 @@ This design adds three subcommands — `config set`, `config get`, and `config d
 
 The implementation follows the existing project conventions: all code lives in `cmd/`, commands use `RunE`, errors use `fmt.Errorf` with `%w`, and file mutations use atomic write-to-temp-then-rename. The existing `asmConfig` Viper instance handles `set` and `get` operations natively. Deletion requires direct TOML manipulation because Viper has no `Delete` method — we use `pelletier/go-toml/v2` (already a transitive dependency) to parse, remove the key, and write back atomically.
 
-### Key Design Decisions
+### Key design decisions
 
-1. **Viper for set/get, go-toml for delete**: Viper's `Set` + `WriteConfigAs` handles `config set` cleanly. For `config del`, Viper cannot remove keys, so we parse the TOML file directly with `pelletier/go-toml/v2`, delete the key from the tree, and marshal back. This avoids patching Viper internals.
+1. **Viper for set/get, go-TOML for delete**: Viper's `Set` + `WriteConfigAs` handles `config set` cleanly. For `config del`, Viper cannot remove keys, so we parse the TOML file directly with `pelletier/go-toml/v2`, delete the key from the tree, and marshal back. This avoids patching Viper internals.
 
-2. **No locking for config.toml**: The existing advisory lock (`acquireAWSConfigLock`) protects `~/.aws/config`, not the app's own TOML config. Since `config set`/`del` mutate `config.toml` (not `~/.aws/config`), and concurrent CLI invocations editing the same TOML file is unlikely, we rely on atomic rename for crash safety without adding a second lock. If concurrent access becomes a concern later, a lock can be added.
+2. **No locking for config.TOML**: The existing advisory lock (`acquireAWSConfigLock`) protects `~/.aws/config`, not the app's own TOML config. Since `config set`/`del` mutate `config.toml` (not `~/.aws/config`), and concurrent CLI invocations editing the same TOML file is unlikely, we rely on atomic rename for crash safety without adding a second lock. If concurrent access becomes a concern later, a lock can be added.
 
 3. **Atomic writes via same-directory temp file**: Consistent with `init.go` and `update.go`, we write to a temp file in the same directory as `config.toml`, then `os.Rename` over the target. This ensures the rename is a same-filesystem atomic operation.
 
@@ -42,7 +42,7 @@ graph TD
     E -->|"deleteConfigKey + writeConfigAtomic"| F
 ```
 
-### Data Flow
+### Data flow
 
 **`config set <key> <value>`**:
 
@@ -68,7 +68,7 @@ graph TD
 5. `deleteConfigKey(configFilePath, key)` — parse TOML, remove key, write back atomically
 6. Print confirmation to stdout
 
-## Components and Interfaces
+## Components and interfaces
 
 ### configCmd (parent)
 
@@ -267,104 +267,104 @@ func deleteConfigKey(configPath, key string) error {
 
 Recursive helper that walks the dot-delimited key path and deletes the leaf. Returns `false` if the key path doesn't exist. Prunes empty parent tables after deletion.
 
-## Data Models
+## Data models
 
-### Config Key Format
+### Config key format
 
 Keys are dot-delimited strings that map to TOML's nested table structure:
 
-| Key Example                    | TOML Equivalent                                |
-|--------------------------------|------------------------------------------------|
-| `profile-name`                 | `profile-name = "value"`                       |
-| `abc.rename.prefix`            | `[abc.rename]` → `prefix = "value"`            |
+| Key Example                    | TOML Equivalent |
+| ------------------------------ | --------------- |
+| `profile-name`                 | `profile-name = "value"` |
+| `abc.rename.prefix`            | `[abc.rename]` → `prefix = "value"` |
 | `abc.rename.pattern.delimiter` | `[abc.rename.pattern]` → `delimiter = "value"` |
 
-### Config Value Format
+### Config value format
 
 All values passed via `config set` are stored as strings. Viper handles type coercion when values are read by other commands. This is consistent with how CLI arguments work — the user passes a string, and the consuming code interprets it.
 
-### TOML Tree (for deletion)
+### TOML tree (for deletion)
 
 The `deleteConfigKey` function works with `map[string]any` — the standard representation produced by `pelletier/go-toml/v2`'s `Unmarshal`. Nested tables become nested `map[string]any` values. The `deleteNestedKey` helper walks this tree using the dot-split key parts.
 
-## Correctness Properties
+## Correctness properties
 
 _A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
-### Property 1: Set-then-get round trip
+### Property 1: set-then-get round trip
 
 _For any_ valid config key (matching `[a-z][a-z0-9.-]{0,30}`) and any non-empty string value, calling `config set <key> <value>` followed by `config get <key>` shall return the exact same value that was set.
 
-**Validates: Requirements 2.2, 2.3, 3.2, 6.1**
+**Validates: Requirements 2.2, 2.3, 3.2, 6.1.**
 
-### Property 2: Set-then-delete-then-get round trip
+### Property 2: set-then-delete-then-get round trip
 
 _For any_ valid config key and any non-empty string value, calling `config set <key> <value>`, then `config del --force <key>`, then `config get <key>` shall return an error indicating the key is not set.
 
-**Validates: Requirements 4.4, 4.5, 6.2**
+**Validates: Requirements 4.4, 4.5, 6.2.**
 
-### Property 3: Wrong argument count returns error
+### Property 3: wrong argument count returns error
 
 _For any_ config subcommand (`set`, `get`, `del`) and any argument count that does not match the expected arity (2 for `set`, 1 for `get`, 1 for `del`), the command shall return an error.
 
-**Validates: Requirements 2.4, 3.4, 4.4**
+**Validates: Requirements 2.4, 3.4, 4.4.**
 
-### Property 4: Nonexistent key returns error
+### Property 4: nonexistent key returns error
 
 _For any_ config key that has not been set, calling `config get <key>` or `config del --force <key>` shall return an error indicating the key is not set.
 
-**Validates: Requirements 3.3, 4.6**
+**Validates: Requirements 3.3, 4.6.**
 
-### Property 5: Set confirmation output contains key and value
+### Property 5: set confirmation output contains key and value
 
 _For any_ valid config key and any non-empty string value, the stdout output of a successful `config set <key> <value>` shall contain both the key and the value.
 
-**Validates: Requirements 2.6**
+**Validates: Requirements 2.6.**
 
-### Property 6: Del confirmation output contains key
+### Property 6: del confirmation output contains key
 
 _For any_ valid config key that exists, the stdout output of a successful `config del --force <key>` shall contain the key.
 
-**Validates: Requirements 4.8**
+**Validates: Requirements 4.8.**
 
-### Property 7: Backup retention limit
+### Property 7: backup retention limit
 
 _For any_ sequence of N mutations (set or delete) where N > 5, the number of `config-*.toml.bak` files in the config directory shall never exceed 5. The retained backups shall be the 5 most recent by timestamp.
 
-**Validates: Requirements 8.4**
+**Validates: Requirements 8.4.**
 
-### Property 8: Backup content matches pre-mutation state
+### Property 8: backup content matches pre-mutation state
 
 _For any_ config mutation (set or delete), the backup file created immediately before the mutation shall contain the exact same bytes as the config file had before the mutation.
 
-**Validates: Requirements 8.1, 8.2**
+**Validates: Requirements 8.1, 8.2.**
 
-## Error Handling
+## Error handling
 
-| Scenario                            | Error Message                                          | Source               |
-|-------------------------------------|--------------------------------------------------------|----------------------|
+| Scenario                            | Error Message                                          | Source |
+| ----------------------------------- | ------------------------------------------------------ | ------ |
 | `config set` with wrong arg count   | Cobra auto-generated: `"accepts 2 arg(s), received N"` | `cobra.ExactArgs(2)` |
 | `config get` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
 | `config del` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
-| `config get` on nonexistent key     | `"key %q is not set"`                                  | `configGetCmd.RunE`  |
-| `config del` on nonexistent key     | `"key %q is not set"`                                  | `configDelCmd.RunE`  |
-| `config del` declined by user       | (no error — prints `"Deletion canceled."`)             | `configDelCmd.RunE`  |
-| Config directory creation fails     | `"could not create config directory: %w"`              | `writeConfigAtomic`  |
-| Temp file creation fails            | `"could not create temporary config file: %w"`         | `writeConfigAtomic`  |
-| Viper write fails                   | `"could not write config: %w"`                         | `writeConfigAtomic`  |
-| Atomic rename fails                 | `"could not replace config file: %w"`                  | `writeConfigAtomic`  |
-| TOML parse fails during delete      | `"could not parse config file: %w"`                    | `deleteConfigKey`    |
-| Key not found in TOML during delete | `"key %q not found in config file"`                    | `deleteConfigKey`    |
-| TOML marshal fails during delete    | `"could not marshal config: %w"`                       | `deleteConfigKey`    |
-| Backup read fails                   | (warning logged, mutation proceeds)                    | `backupConfigFile`   |
-| Backup write fails                  | (warning logged, mutation proceeds)                    | `backupConfigFile`   |
+| `config get` on nonexistent key     | `"key %q is not set"`                                  | `configGetCmd.RunE` |
+| `config del` on nonexistent key     | `"key %q is not set"`                                  | `configDelCmd.RunE` |
+| `config del` declined by user       | (no error — prints `"Deletion canceled."`)             | `configDelCmd.RunE` |
+| Config directory creation fails     | `"could not create config directory: %w"`              | `writeConfigAtomic` |
+| Temp file creation fails            | `"could not create temporary config file: %w"`         | `writeConfigAtomic` |
+| Viper write fails                   | `"could not write config: %w"`                         | `writeConfigAtomic` |
+| Atomic rename fails                 | `"could not replace config file: %w"`                  | `writeConfigAtomic` |
+| TOML parse fails during delete      | `"could not parse config file: %w"`                    | `deleteConfigKey` |
+| Key not found in TOML during delete | `"key %q not found in config file"`                    | `deleteConfigKey` |
+| TOML marshal fails during delete    | `"could not marshal config: %w"`                       | `deleteConfigKey` |
+| Backup read fails                   | (warning logged, mutation proceeds)                    | `backupConfigFile` |
+| Backup write fails                  | (warning logged, mutation proceeds)                    | `backupConfigFile` |
 | Backup prune fails                  | (warning logged per file, mutation proceeds)           | `pruneConfigBackups` |
 
 All errors are returned via `RunE` and propagated through Cobra's error handling. No `panic` or `os.Exit` in command logic. Temp files are cleaned up on error paths via `os.Remove`.
 
-## Testing Strategy
+## Testing strategy
 
-### Unit Tests
+### Unit tests
 
 Unit tests cover specific examples, edge cases, and structural checks:
 
@@ -381,24 +381,24 @@ Unit tests cover specific examples, edge cases, and structural checks:
 * **Backup skipped on first set**: Verify no backup is created when the config file doesn't exist yet.
 * **Backup failure non-fatal**: Verify that when the backup directory is read-only, the mutation still succeeds (backup failure logged as warning).
 
-### Property-Based Tests
+### Property-Based tests
 
 Property-based tests use `pgregory.net/rapid` with a minimum of 100 iterations per property. Each test references its design document property.
 
 Tests operate against a fresh Viper instance and a temp directory for the config file, following the existing pattern in `configutils_test.go` (save `asmConfig`, replace with fresh instance, restore via `defer`).
 
-| Test Function                          | Design Property | Tag                                                                                  |
-|----------------------------------------|-----------------|--------------------------------------------------------------------------------------|
-| `TestPropertyConfigSetGetRoundTrip`    | Property 1      | Feature: config-commands, Property 1: Set-then-get round trip                        |
-| `TestPropertyConfigSetDelGetRoundTrip` | Property 2      | Feature: config-commands, Property 2: Set-then-delete-then-get round trip            |
-| `TestPropertyConfigWrongArgCount`      | Property 3      | Feature: config-commands, Property 3: Wrong argument count returns error             |
-| `TestPropertyConfigNonexistentKey`     | Property 4      | Feature: config-commands, Property 4: Nonexistent key returns error                  |
+| Test Function                          | Design Property | Tag |
+| -------------------------------------- | --------------- | --- |
+| `TestPropertyConfigSetGetRoundTrip`    | Property 1      | Feature: config-commands, Property 1: Set-then-get round trip |
+| `TestPropertyConfigSetDelGetRoundTrip` | Property 2      | Feature: config-commands, Property 2: Set-then-delete-then-get round trip |
+| `TestPropertyConfigWrongArgCount`      | Property 3      | Feature: config-commands, Property 3: Wrong argument count returns error |
+| `TestPropertyConfigNonexistentKey`     | Property 4      | Feature: config-commands, Property 4: Nonexistent key returns error |
 | `TestPropertyConfigSetConfirmation`    | Property 5      | Feature: config-commands, Property 5: Set confirmation output contains key and value |
-| `TestPropertyConfigDelConfirmation`    | Property 6      | Feature: config-commands, Property 6: Del confirmation output contains key           |
-| `TestPropertyConfigBackupRetention`    | Property 7      | Feature: config-commands, Property 7: Backup retention limit                         |
-| `TestPropertyConfigBackupContent`      | Property 8      | Feature: config-commands, Property 8: Backup content matches pre-mutation state      |
+| `TestPropertyConfigDelConfirmation`    | Property 6      | Feature: config-commands, Property 6: Del confirmation output contains key |
+| `TestPropertyConfigBackupRetention`    | Property 7      | Feature: config-commands, Property 7: Backup retention limit |
+| `TestPropertyConfigBackupContent`      | Property 8      | Feature: config-commands, Property 8: Backup content matches pre-mutation state |
 
-### Generator Strategy
+### Generator strategy
 
 Generators for property tests:
 

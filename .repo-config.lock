@@ -6,6 +6,16 @@ last_sync_time = '2026-05-03T01:39:29Z'
 source_hash = ''
 dest_hash = 'sha256:218fec635ae77d9c3c2a41ee622e1a1698f693c979fee090789e012ac533c13a'
 
+[files.'.github/dco.yml']
+last_sync_time = '2026-05-04T19:51:03Z'
+source_hash = ''
+dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
+
+[files.'.golangci.yml']
+last_sync_time = '2026-05-04T20:02:42Z'
+source_hash = ''
+dest_hash = 'sha256:a1c6dfbecdb0538e828395281c5f7d6645b43ae341c42379be0c9423ac25f421'
+
 [files.'.gommit.toml']
 last_sync_time = '2026-05-04T05:39:52Z'
 source_hash = ''
@@ -15,6 +25,11 @@ dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5
 last_sync_time = '2026-05-01T15:33:52Z'
 source_hash = ''
 dest_hash = 'sha256:226605c439e3ced60e7c00a217e20595654ab734433a0c457aff99118b989b67'
+
+[files.'.rumdl.toml']
+last_sync_time = '2026-05-08T18:35:25Z'
+source_hash = ''
+dest_hash = 'sha256:752174cb9061c19c1bd18db11feb701f45e8dc322f2e90cedc36f6744aab48ba'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-04-30T04:56:36Z'
@@ -65,6 +80,11 @@ dest_hash = 'sha256:976dc44e80ad09b5dc28fc020566782e9f9845371091f540b64628592f92
 last_sync_time = '2026-04-27T22:29:29Z'
 source_hash = ''
 dest_hash = 'sha256:e3ff16982dfd2815c9d1965ff7cc45e1a63de0cd24d7951dba4e75985375f3b2'
+
+[files.'osv-scanner.toml']
+last_sync_time = '2026-05-04T19:51:03Z'
+source_hash = ''
+dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
 
 [files.'tools/go-tool-standard.sh']
 last_sync_time = '2026-04-30T04:44:38Z'

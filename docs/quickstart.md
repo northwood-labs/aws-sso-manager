@@ -1,12 +1,12 @@
 # Quick Flow Summary
 
-## 1. Entry point
+## 1. entry point
 
 * Startup begins in [main.go](../main.go), where `main` calls `Execute` in [cmd/root.go](../cmd/root.go).
 * `Execute` delegates CLI dispatch to fang/cobra through `runRootCommand`, using the root command registered in `rootCmd`.
 * Before any subcommand runs, `PersistentPreRunE` initializes logging (with verbosity-dependent caller info) and loads config via `initializeConfig`.
 
-## 2. Primary flow
+## 2. primary flow
 
 1. Process starts in `main` ([main.go](../main.go)) and enters the root `Execute` function.
 2. `runRootCommand` calls `fangExecute` with `rootCmd`, which resolves which subcommand to run.
@@ -17,7 +17,7 @@
 7. It fetches accounts/roles through `listAWSAccounts` (cache-aside: reads cache first, falls back to AWS SSO API on miss), then rebuilds profile sections from scratch via `buildUpdatedManagedSections` and injects them back via `setManagedSection`.
 8. The rewritten config is atomically committed via `os.Rename`, then the temporary files and lock are released. A note is printed to stderr reminding the user that cached data was used.
 
-## 3. Module roles (short bullets)
+## 3. module roles (short bullets)
 
 * [main.go](../main.go): minimal process entry; forwards control to cmd package.
 * [cmd/root.go](../cmd/root.go): root command, global flags (`--config`, `--cache-duration`, `--verbose`), pre-run config/bootstrap, CLI execution via `Execute` and `runRootCommand`. Environment variables use the `ASM_` prefix.
@@ -33,7 +33,7 @@
 * [cmd/console.go](../cmd/console.go): generates AWS Console deep-link URLs with pre-selected account and role. Strips account subdomains from pasted URLs.
 * [cmd/init.go](../cmd/init.go): first-run setup that creates the SSO session section inside managed block markers. Normalizes SSO start URLs from shorthand formats.
 
-## 4. Design decisions — why we built it this way
+## 4. design decisions — why we built it this way
 
 ### Why managed block markers?
 
@@ -67,7 +67,7 @@ Environment variables let users override config file values without editing file
 
 Users rarely remember exact account names. Typing `lookup account internal` should find `internal-prod` without requiring the full name. Exact matches are tried first (by ID, profile name, account name) so that a user who types a complete name always gets a single result. Substring matching is the fallback.
 
-## 5. Risks or unknowns
+## 5. risks or unknowns
 
 * Command dispatch is runtime-dynamic through cobra/fang in `runRootCommand`, so exact branch depends on argv.
 * `update` and `init` depend on marker comment integrity; `validateManagedMarkers` (called inside `getManagedSection`) and the `validate` command guard against malformed markers via `inspectManagedMarkers`.

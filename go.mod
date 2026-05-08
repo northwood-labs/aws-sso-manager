@@ -1,6 +1,6 @@
 module github.com/northwood-labs/aws-sso-manager
 
-go 1.26.0
+go 1.26.2
 
 replace github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.9.4
 
@@ -62,6 +62,7 @@ require (
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
@@ -96,6 +97,8 @@ require (
 	github.com/yuin/goldmark v1.8.2 // indirect
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
 	go.nwlabs.dev/x/arch/v2 v2.0.0-20260427005957-61faa759ff42 // indirect
+	go.nwlabs.dev/x/debug/v2 v2.0.0-20260427005957-61faa759ff42 // indirect
+	go.nwlabs.dev/x/maps/v2 v2.0.0-20260427005957-61faa759ff42 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect

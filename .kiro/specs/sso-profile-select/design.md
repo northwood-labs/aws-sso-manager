@@ -22,13 +22,13 @@ flowchart TD
     B -->|console| I[Existing huh.NewSelect - unchanged]
 ```
 
-### Design Rationale
+### Design rationale
 
 * Reuse `getAllManagedSections()` rather than introducing a new parser. This function is battle-tested in `console.go` and already returns sorted, deduplicated profile names.
 * Extract the select prompt into a shared helper function (`promptProfileSelect`) to avoid duplicating the `huh.NewSelect` setup across three commands.
 * Keep `init` on `huh.NewInput()` because the profile being created doesn't exist in the config file yet.
 
-## Components and Interfaces
+## Components and interfaces
 
 ### New: `promptProfileSelect` helper function
 
@@ -49,12 +49,12 @@ Internally it:
 
 ### Modified commands
 
-| Command   | Current prompt           | New prompt                    |
-|-----------|--------------------------|-------------------------------|
-| `auth`    | `huh.NewInput()`         | `promptProfileSelect()`       |
-| `list`    | `huh.NewInput()`         | `promptProfileSelect()`       |
-| `update`  | `huh.NewInput()`         | `promptProfileSelect()`       |
-| `init`    | `huh.NewInput()`         | No change                     |
+| Command   | Current prompt           | New prompt |
+| --------- | ------------------------ | ---------- |
+| `auth`    | `huh.NewInput()`         | `promptProfileSelect()` |
+| `list`    | `huh.NewInput()`         | `promptProfileSelect()` |
+| `update`  | `huh.NewInput()`         | `promptProfileSelect()` |
+| `init`    | `huh.NewInput()`         | No change  |
 | `console` | inline `huh.NewSelect()` | Refactor to use shared helper |
 
 ### Existing: `getAllManagedSections()` (unchanged)
@@ -73,7 +73,7 @@ func minMaxRows[T any](rows []T) int
 
 Clamps TUI select height between 5 and 10. Already used by `console.go`.
 
-## Data Models
+## Data models
 
 No new data models are introduced. The feature operates on:
 
@@ -82,7 +82,7 @@ No new data models are introduced. The feature operates on:
 
 The AWS config file format (`[sso-session <name>]` INI headers) is the data source and is already parsed by existing code.
 
-## Correctness Properties
+## Correctness properties
 
 _A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
@@ -90,37 +90,37 @@ _A property is a characteristic or behavior that should hold true across all val
 
 _For any_ valid AWS config file containing N `[sso-session <name>]` sections with distinct profile names, `getAllManagedSections()` SHALL return exactly those N names in sorted alphabetical order, with no duplicates and no omissions.
 
-**Validates: Requirements 3.1, 3.2**
+**Validates: Requirements 3.1, 3.2.**
 
-## Error Handling
+## Error handling
 
-| Scenario                                                   | Behavior                                                                                                                         |
-|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| AWS config file does not exist or is unreadable            | `getAllManagedSections()` returns the underlying `os.Open` error. The calling command surfaces this to the user via `RunE`.      |
-| AWS config file contains zero `[sso-session ...]` sections | `promptProfileSelect()` returns a descriptive error: no SSO profiles found, suggests running `aws-sso-manager init`.             |
-| User cancels the select prompt (Ctrl+C / Esc)              | `huh.NewSelect.Run()` returns an error which propagates through `RunE` to Cobra's error handling.                                |
+| Scenario                                                   | Behavior |
+| ---------------------------------------------------------- | -------- |
+| AWS config file does not exist or is unreadable            | `getAllManagedSections()` returns the underlying `os.Open` error. The calling command surfaces this to the user via `RunE`. |
+| AWS config file contains zero `[sso-session ...]` sections | `promptProfileSelect()` returns a descriptive error: no SSO profiles found, suggests running `aws-sso-manager init`. |
+| User cancels the select prompt (Ctrl+C / Esc)              | `huh.NewSelect.Run()` returns an error which propagates through `RunE` to Cobra's error handling. |
 | `getAllManagedSections()` returns an error                 | `promptProfileSelect()` propagates the error to the caller without wrapping (the original error already has sufficient context). |
 
-## Testing Strategy
+## Testing strategy
 
-### Property-Based Tests (pgregory.net/rapid)
+### Property-Based tests (pgregory.net/rapid)
 
 One property test covering Property 1:
 
 * **TestPropertySSOSessionParsing**: Generate random AWS config file content with 1–5 `[sso-session <name>]` sections (names drawn from `[a-z][a-z0-9]{2,10}`), optionally interleaved with `[profile ...]` sections and `[default]` preamble. Write to a temp file, call `getAllManagedSections()`, assert the returned slice matches the input names in sorted order. Minimum 100 iterations.
   * Tag: `Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names`
 
-### Unit Tests (example-based)
+### Unit tests (example-based)
 
-| Test                                                | Validates                                                         |
-|-----------------------------------------------------|-------------------------------------------------------------------|
+| Test                                                | Validates |
+| --------------------------------------------------- | --------- |
 | `TestPromptProfileSelectReturnsErrorWhenNoProfiles` | Req 3.3 — empty config yields descriptive error mentioning `init` |
-| `TestAuthCommandUsesSelectPrompt`                   | Req 1.1 — auth command triggers select widget                     |
-| `TestListCommandUsesSelectPrompt`                   | Req 1.2 — list command triggers select widget                     |
-| `TestUpdateCommandUsesSelectPrompt`                 | Req 1.3 — update command triggers select widget                   |
-| `TestInitCommandUsesInputPrompt`                    | Req 2.1, 2.2 — init command still uses free-text input            |
+| `TestAuthCommandUsesSelectPrompt`                   | Req 1.1 — auth command triggers select widget |
+| `TestListCommandUsesSelectPrompt`                   | Req 1.2 — list command triggers select widget |
+| `TestUpdateCommandUsesSelectPrompt`                 | Req 1.3 — update command triggers select widget |
+| `TestInitCommandUsesInputPrompt`                    | Req 2.1, 2.2 — init command still uses free-text input |
 
-### Testing Approach for TUI Prompts
+### Testing approach for TUI prompts
 
 The `promptProfileSelect` function will be implemented as a package-level function variable (consistent with the project's test seam pattern). This allows tests to verify that commands call the correct prompt function without actually rendering TUI widgets:
 

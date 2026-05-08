@@ -22,11 +22,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 
 ## Requirements
 
-### Requirement 1: SSO Profile Initialization
+### Requirement 1: SSO profile initialization
 
 **User Story:** As a developer, I want to initialize an SSO configuration for an AWS Organization, so that I can set up my AWS CLI config for SSO-based authentication.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `init` with an SSO_Profile argument, THE CLI SHALL use that argument as the SSO_Profile name
 2. WHEN the user runs `init` without an SSO_Profile argument and a `profile-name` value exists in the Config_File, THE CLI SHALL use the configured default as the SSO_Profile name
@@ -41,11 +41,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 11. THE CLI SHALL write the new SSO_Session_Section inside a Managed_Block appended to the AWS_Config_File using an atomic file operation (write to temp file, then rename)
 12. THE CLI SHALL release the File_Lock after the write operation completes
 
-### Requirement 2: SSO Authentication
+### Requirement 2: SSO authentication
 
 **User Story:** As a developer, I want to authenticate with AWS Identity Center, so that I can obtain temporary credentials for AWS CLI and SDK usage.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `auth` with an SSO_Profile argument, THE CLI SHALL use that argument as the SSO_Profile name
 2. WHEN the user runs `auth` without an SSO_Profile argument and a default is configured, THE CLI SHALL use the configured default
@@ -63,11 +63,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 14. WHEN the user approves the authorization, THE CLI SHALL save the access token, client credentials, and expiration timestamps to the Auth_Cache
 15. WHEN another command (list, update, console) requires authentication and the Auth_Cache is missing or expired, THE CLI SHALL automatically trigger the authentication flow before proceeding
 
-### Requirement 3: Account and Role Listing
+### Requirement 3: account and role listing
 
 **User Story:** As a developer, I want to list all AWS accounts and roles available through my SSO session, so that I can see what access I have.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `list` with an SSO_Profile argument, THE CLI SHALL use that argument as the SSO_Profile name
 2. WHEN the user runs `list` without an SSO_Profile argument and a default is configured, THE CLI SHALL use the configured default
@@ -89,11 +89,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 18. WHEN the `--no-cache` flag is set, THE CLI SHALL fetch fresh data (to ensure it is available) before deleting the existing Accounts_Cache and Lookup_Index
 19. THE CLI SHALL build and persist a Lookup_Index alongside the Accounts_Cache when no account or role filters are applied
 
-### Requirement 4: AWS Config Update
+### Requirement 4: AWS config update
 
 **User Story:** As a developer, I want to synchronize my AWS CLI config with the current set of accounts and roles from AWS Identity Center, so that my local profiles stay up to date.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `update` with an SSO_Profile argument, THE CLI SHALL use that argument as the SSO_Profile name
 2. WHEN the user runs `update` without an SSO_Profile argument and a default is configured, THE CLI SHALL use the configured default
@@ -109,11 +109,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 12. THE CLI SHALL release the File_Lock after the write operation completes
 13. THE CLI SHALL print the count of updated profiles and the SSO_Profile name upon completion
 
-### Requirement 5: Console URL Generation
+### Requirement 5: console URL generation
 
 **User Story:** As a developer, I want to generate AWS Console URLs with a pre-selected account and role, so that I can quickly access the AWS Console for a specific context.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `console` with two arguments, THE CLI SHALL treat the first as the SSO_Profile and the second as the console URL
 2. WHEN the user runs `console` with one argument that contains `://`, THE CLI SHALL treat the argument as the console URL
@@ -129,11 +129,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 12. THE CLI SHALL print the generated URL to stdout
 13. WHEN the `--region` flag is set, THE CLI SHALL use the specified region for AWS API calls instead of the SSO session region
 
-### Requirement 6: Shell-Friendly Data Retrieval
+### Requirement 6: Shell-Friendly data retrieval
 
 **User Story:** As a developer, I want to retrieve account IDs and role names as line-delimited output, so that I can pipe them to tools like fzf for interactive selection.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `get accounts`, THE CLI SHALL print one account ID per line from the Lookup_Index, sorted numerically
 2. WHEN the user runs `get roles --for <account-id>`, THE CLI SHALL print one role name per line for the specified account, sorted alphabetically (case-insensitive)
@@ -144,11 +144,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 7. IF no SSO_Profile can be resolved, THEN THE CLI SHALL return an error instructing the user to set a profile
 8. THE CLI SHALL read from the Lookup_Index cache, building it from the Accounts_Cache if the Lookup_Index is missing
 
-### Requirement 7: Account and Role Lookup
+### Requirement 7: account and role lookup
 
 **User Story:** As a developer, I want to look up account details and search for roles by substring, so that I can quickly find specific accounts and roles from my local cache.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `lookup account <identifier>`, THE CLI SHALL resolve the identifier against the Lookup_Index by matching account ID, profile name (case-insensitive), or account name (case-insensitive)
 2. WHEN the identifier matches exactly one account and `--json` is not set, THE CLI SHALL print the account ID
@@ -162,11 +162,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 10. IF the `--for` flag is not provided for `lookup role`, THEN THE CLI SHALL return an error stating the flag is required
 11. THE CLI SHALL resolve the SSO_Profile from the `--profile` flag or the Config_File default
 
-### Requirement 8: Configuration Validation
+### Requirement 8: configuration validation
 
 **User Story:** As a developer, I want to validate the integrity of managed block markers in my AWS config file, so that I can detect and fix configuration problems before they cause update failures.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL support the aliases `check` and `lint` for the `validate` command
 2. THE CLI SHALL inspect the AWS_Config_File for all managed block start and end markers
@@ -181,11 +181,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 11. WHEN any check fails, THE CLI SHALL print "FAIL" for the affected profile with details and exit with code 1
 12. WHEN no managed profiles are found, THE CLI SHALL inform the user and suggest running `init`
 
-### Requirement 9: Profile Name Generation
+### Requirement 9: profile name generation
 
 **User Story:** As a developer, I want to customize how AWS CLI profile names are generated, so that I can use short, meaningful names that fit my workflow across multiple AWS Organizations.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL generate profile names using the Profile_Name_Pattern defined in the Config_File under `<SSO_Profile>.rename.pattern.order`
 2. THE CLI SHALL support the pattern tokens PREFIX, ACCOUNT, ROLE, and SUFFIX in any order
@@ -200,11 +200,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 11. WHEN empty tokens cause the generated name to be empty, THE CLI SHALL fall back to the default profile name generation
 12. THE CLI SHALL omit PREFIX and SUFFIX tokens from the pattern when their values are empty strings
 
-### Requirement 10: Caching System
+### Requirement 10: caching system
 
 **User Story:** As a developer, I want account and role data to be cached locally, so that repeated commands are fast and do not require network calls.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL cache account and role data in JSON files under `~/.config/aws-sso-manager/cache/`
 2. THE CLI SHALL derive cache file names from a SHA-256 hash of the SSO_Profile name and any active filters
@@ -219,11 +219,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 11. THE CLI SHALL build and persist a Lookup_Index alongside the Accounts_Cache when no filters are applied
 12. THE CLI SHALL set cache file permissions to 0600
 
-### Requirement 11: File Locking
+### Requirement 11: file locking
 
 **User Story:** As a developer, I want concurrent access to the AWS config file to be safe, so that simultaneous runs of the tool do not corrupt my configuration.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL acquire an exclusive advisory file lock at `~/.config/.aws-sso-manager/.config.lock` before any write operation to the AWS_Config_File
 2. THE CLI SHALL use non-blocking lock acquisition with a retry interval of 100 milliseconds
@@ -234,11 +234,11 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 7. IF the lock file directory does not exist, THEN THE CLI SHALL create the directory with permissions 0755
 8. THE CLI SHALL set lock file permissions to 0600
 
-### Requirement 12: Global CLI Configuration
+### Requirement 12: global CLI configuration
 
 **User Story:** As a developer, I want to configure global settings for the CLI tool, so that I can customize its behavior across all commands.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL read configuration from a TOML file at the path specified by the `--config` flag (default: `~/.config/aws-sso-manager/config.toml`)
 2. WHEN the default config file does not exist, THE CLI SHALL create the config directory and an empty config file
@@ -248,10 +248,10 @@ AWS SSO Manager is a Go CLI tool that manages AWS Identity Center (formerly AWS 
 6. THE CLI SHALL log to stderr with timestamps and caller information when verbosity is enabled
 7. THE CLI SHALL use the `profile-name` config key as the default SSO_Profile when no profile argument is provided to a command
 
-### Requirement 13: Version Information
+### Requirement 13: version information
 
 **User Story:** As a developer, I want to check the version of the tool, so that I can verify I am running the expected release.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the user runs `version`, THE CLI SHALL display version information

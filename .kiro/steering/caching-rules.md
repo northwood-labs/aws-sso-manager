@@ -7,14 +7,14 @@ fileMatchPattern: "cmd/awsutils*,cmd/list*"
 
 Loaded because an awsutils or list file is in context.
 
-## Cache Layout
+## Cache layout
 
 * Accounts cache: `~/.config/aws-sso-manager/cache/accounts-<sha256>.json`
 * Lookup index: same path with `-lookup.json` suffix.
 * SHA-256 key: `"listAWSAccounts.v1\x00<profile>\x00<accountFilter>\x00<roleFilter>"`.
 * Filtered and unfiltered results are cached independently — never serve a filtered cache for an unfiltered request.
 
-## Cache-Aside Pattern
+## Cache-Aside pattern
 
 `listAWSAccounts()` implements: check cache → return on hit → fetch from AWS API on miss → write to cache → return.
 
@@ -24,7 +24,7 @@ Loaded because an awsutils or list file is in context.
 * Expiry is checked on read via `cached_at + cacheDuration`. Expired files are deleted proactively.
 * Zero and negative durations are rejected by `parseCacheDurationFlag`.
 
-## --no-cache Ordering
+## --no-cache ordering
 
 When `--no-cache` is set on the `list` command, the flow is:
 
@@ -34,12 +34,12 @@ When `--no-cache` is set on the `list` command, the flow is:
 
 This ordering ensures old data survives a failed fresh fetch.
 
-## Lookup Index
+## Lookup index
 
 * Only written when no account/role filters are active (`shouldWriteLookupCache`).
 * Built by `buildListAWSAccountsLookupIndex` — three maps: by ID, by name (CI), by profile (CI).
 * Consumed by `get` and `lookup` commands for offline resolution.
 
-## Atomic Writes
+## Atomic writes
 
 All cache writes use write-to-`.tmp`-then-rename. Cache file permissions: 0600.

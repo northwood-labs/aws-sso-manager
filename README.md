@@ -37,7 +37,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 * Not meant for solutions that do not leverage _AWS Identity Center_, e.g., `saml2aws`.
 * Chooses to let _AWS Vault_ do what it does best, and doesn't try to replicate its functionality.
 
-## Adding your AWS Identity Center account
+## Adding your AWS identity center account
 
 > [!NOTE]
 > If you have a file called `~/.aws/credentials`, the goal is to **delete** it so that only `~/.aws/config` remains. We will NOT be storing credentials in plain text.
@@ -63,7 +63,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     ; -------- aws-sso-manager: end abc --------
     ```
 
-## Authenticate with your AWS Identity Center account
+## Authenticate with your AWS identity center account
 
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
@@ -124,7 +124,7 @@ aws s3 ls --profile {PROFILE}
 AWS_PROFILE={PROFILE} aws s3 ls
 ```
 
-### With [AWS Vault](https://github.com/ByteNess/aws-vault/blob/master/USAGE.md) (via `exec` or `login`)
+### With [AWS vault](https://github.com/ByteNess/aws-vault/blob/master/USAGE.md) (via `exec` or `login`)
 
 ```bash
 aws-vault exec {PROFILE} -- aws s3 ls
@@ -147,7 +147,7 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 ## Comparison
 
 | Feature                                      | ASM (Us)                    | [aws-sso-cli] [^1] |
-|----------------------------------------------|-----------------------------|--------------------|
+| -------------------------------------------- | --------------------------- | ------------------ |
 | AWS SSO support                              | ✓                           | ✓                  |
 | Bulk SSO Role discovery                      | ✓                           | ✓                  |
 | Write `~/.aws/config`                        | ✓                           | ✓                  |

@@ -17,20 +17,20 @@ Add `config set`, `config get`, and `config del` subcommands to the `aws-sso-man
 
 ## Requirements
 
-### Requirement 1: Config parent command
+### Requirement 1: config parent command
 
 **User Story:** As a CLI user, I want a `config` parent command that groups configuration subcommands, so that the CLI namespace is organized and discoverable.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE CLI SHALL register a `config` command under the root command with the use-string `config`.
 2. WHEN `config` is invoked without a subcommand, THE CLI SHALL display the help text listing available subcommands (`set`, `get`, `del`).
 
-### Requirement 2: Set a configuration value
+### Requirement 2: set a configuration value
 
 **User Story:** As a CLI user, I want to run `config set <key> <value>` to persist a configuration value, so that I can modify my config without editing TOML by hand.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE `config set` command SHALL accept exactly two positional arguments: a Config_Key and a Config_Value.
 2. WHEN `config set <key> <value>` is invoked, THE CLI SHALL store the Config_Value under the Config_Key in the Viper_Instance.
@@ -39,22 +39,22 @@ Add `config set`, `config get`, and `config del` subcommands to the `aws-sso-man
 5. WHEN the Config_File parent directory does not exist, THE CLI SHALL create the directory with mode 0755 before writing.
 6. WHEN `config set` completes successfully, THE CLI SHALL print a confirmation message to stdout that includes the Config_Key and Config_Value that were set.
 
-### Requirement 3: Get a configuration value
+### Requirement 3: get a configuration value
 
 **User Story:** As a CLI user, I want to run `config get <key>` to retrieve a configuration value, so that I can inspect my current settings from scripts or the terminal.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE `config get` command SHALL accept exactly one positional argument: a Config_Key.
 2. WHEN `config get <key>` is invoked and the Config_Key exists, THE CLI SHALL print the value to stdout followed by a newline.
 3. WHEN `config get <key>` is invoked and the Config_Key does not exist in the Viper_Instance, THE CLI SHALL return an error indicating the key is not set.
 4. IF fewer than one or more than one positional argument is provided, THEN THE CLI SHALL return a descriptive error indicating the expected usage.
 
-### Requirement 4: Delete a configuration value
+### Requirement 4: delete a configuration value
 
 **User Story:** As a CLI user, I want to run `config del <key>` to remove a configuration value, so that I can reset a setting to its default or clean up stale entries.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE `config del` command SHALL accept exactly one positional argument: a Config_Key.
 2. WHEN `config del <key>` is invoked and the Config_Key exists and the `--force` flag is not set, THE CLI SHALL prompt the user for confirmation before deleting using a TUI confirm form.
@@ -65,11 +65,11 @@ Add `config set`, `config get`, and `config del` subcommands to the `aws-sso-man
 7. IF fewer than one or more than one positional argument is provided, THEN THE CLI SHALL return a descriptive error indicating the expected usage.
 8. WHEN `config del` completes successfully, THE CLI SHALL print a confirmation message to stdout that includes the Config_Key that was deleted.
 
-### Requirement 5: Atomic write for config mutations
+### Requirement 5: atomic write for config mutations
 
 **User Story:** As a CLI user, I want config file writes to be atomic, so that an interrupted write does not leave a corrupt or empty config file.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. WHEN the CLI persists changes to the Config_File, THE CLI SHALL write the full content to a temporary file in the same directory as the Config_File.
 2. WHEN the temporary file is fully written, THE CLI SHALL rename the temporary file over the Config_File in a single OS operation.
@@ -79,26 +79,26 @@ Add `config set`, `config get`, and `config del` subcommands to the `aws-sso-man
 
 **User Story:** As a CLI user, I want `config set` followed by `config get` on the same key to return the value I set, so that I can trust the config commands are consistent.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. FOR ALL valid Config_Key and Config_Value pairs, setting a value with `config set` then reading it with `config get` SHALL return the same Config_Value.
 2. FOR ALL valid Config_Key values that exist, deleting with `config del` then reading with `config get` SHALL return an error indicating the key is not set.
 
-### Requirement 7: Command uses RunE pattern
+### Requirement 7: command uses RunE pattern
 
 **User Story:** As a developer, I want all config subcommands to use the `RunE` pattern, so that errors propagate correctly through Cobra.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. THE `config set` command SHALL use `RunE` (not `Run`) for its execution function.
 2. THE `config get` command SHALL use `RunE` (not `Run`) for its execution function.
 3. THE `config del` command SHALL use `RunE` (not `Run`) for its execution function.
 
-### Requirement 8: Config file backups
+### Requirement 8: config file backups
 
 **User Story:** As a CLI user, I want the tool to keep backups of my config file before mutations, so that I can recover from accidental changes.
 
-#### Acceptance Criteria
+#### Acceptance criteria
 
 1. BEFORE persisting a mutation to the Config_File (`config set` or `config del`), THE CLI SHALL create a Config_Backup of the current Config_File.
 2. THE Config_Backup filename SHALL follow the pattern `config-<timestamp>.toml.bak` where `<timestamp>` is an ISO-8601 formatted timestamp (e.g., `config-2026-04-02T143022Z.toml.bak`).

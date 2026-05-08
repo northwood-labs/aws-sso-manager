@@ -59,7 +59,7 @@ Replace the free-text `huh.NewInput()` SSO profile prompt in `auth`, `list`, and
 * [x] 6. Property-based test for SSO session parsing
   * [x] 6.1 Write property test `TestPropertySSOSessionParsing`
     * **Property 1: SSO session parsing extracts correct sorted profile names**
-    * **Validates: Requirements 3.1, 3.2**
+    * **Validates: Requirements 3.1, 3.2.**
     * Add to `cmd/prompt_test.go` (or `cmd/configutils_test.go` if more appropriate)
     * Generate random AWS config content with 1–5 `[sso-session <name>]` sections using names from `[a-z][a-z0-9]{2,10}`, optionally interleaved with `[profile ...]` sections and `[default]` preamble
     * Write to a temp file, point `awsConfigFilePath` at it, call `getAllManagedSections()`, assert the returned slice matches the input names in sorted order

@@ -7,7 +7,7 @@ fileMatchPattern: "cmd/configutils*,cmd/update*,cmd/init*,cmd/validate*"
 
 This document covers the marker-delimited regions of `~/.aws/config` that `aws-sso-manager` owns. Loaded when config-manipulation, update, init, or validate files are in context.
 
-## Marker Format
+## Marker format
 
 Markers are INI comments (prefixed with `;`), invisible to the AWS CLI and other INI parsers.
 
@@ -30,7 +30,7 @@ Constraints:
 * Content outside markers is never modified.
 * The prefix constants `managedStartMarkerPrefix` and `managedEndMarkerPrefix` (in `configutils.go`) define the marker strings used for scanning.
 
-## Function Call Chain
+## Function call chain
 
 Operations on managed blocks follow a strict ordering:
 
@@ -41,11 +41,11 @@ Operations on managed blocks follow a strict ordering:
 
 Always call validate before get; always call get before set. Do not bypass this chain.
 
-## Init Guard
+## Init guard
 
 `init` calls `markersExist(profileName)` before writing. If markers already exist for the profile (even without a matching `[sso-session]` header), `init` refuses to proceed. This prevents orphaned marker accumulation from repeated init runs.
 
-## Update Semantics
+## Update semantics
 
 `update` rebuilds the managed block from scratch on every run:
 
@@ -55,7 +55,7 @@ Always call validate before get; always call get before set. Do not bypass this 
 4. Writes the new content to a temp file, then calls `setManagedSection` to splice it back.
 5. Atomic rename replaces the config file.
 
-## Validate Command
+## Validate command
 
 `validate` (aliases: `check`, `lint`) performs a comprehensive check across all profiles:
 
@@ -65,21 +65,21 @@ Always call validate before get; always call get before set. Do not bypass this 
 * Every `[sso-session]` section has markers (detects unmanaged sections).
 * Exit code 0 when all checks pass, 1 when any problem is found.
 
-## Profile Name Generation
+## Profile name generation
 
 `getProfileName(profileName, account, role)` reads pattern config from Viper under the `<profileName>.rename` namespace:
 
-| Config key                      | Purpose                                               |
-|---------------------------------|-------------------------------------------------------|
+| Config key                      | Purpose |
+| ------------------------------- | ------- |
 | `pattern.order`                 | Token sequence: `account`, `role`, `prefix`, `suffix` |
-| `pattern.delimiter`             | Separator between tokens (default: `-`)               |
-| `prefix` / `suffix`             | Static strings prepended/appended to the name         |
-| `accounts.substr_match_replace` | Map of substring → replacement for account names      |
-| `roles.substr_match_replace`    | Map of substring → replacement for role names         |
+| `pattern.delimiter`             | Separator between tokens (default: `-`) |
+| `prefix` / `suffix`             | Static strings prepended/appended to the name |
+| `accounts.substr_match_replace` | Map of substring → replacement for account names |
+| `roles.substr_match_replace`    | Map of substring → replacement for role names |
 
 Fallback: when no pattern is configured or all tokens resolve to empty, `buildDefaultProfileName(account, role)` produces `<account>-<role>` using `toProfileToken` on each part.
 
-### `toProfileToken` Contract
+### `toProfileToken` contract
 
 * Lowercases input, replaces non-alphanumeric runs with a single `-`, trims leading/trailing dashes.
 * Must be idempotent: `toProfileToken(toProfileToken(x)) == toProfileToken(x)`.

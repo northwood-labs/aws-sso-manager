@@ -66,93 +66,93 @@ This plan covers four areas: (1) intentional behavior changes from the requireme
     * **Property 1: SSO Start URL Normalization Round Trip**
     * Generate random bare subdomains, dot-containing strings, slash-containing strings, and full URLs; verify output starts with `https://` and bare subdomains end with `.awsapps.com/start`; verify output is parseable by `url.Parse`
     * Add in `cmd/init_test.go`
-    * **Validates: Requirements 1.5, 1.6, 1.7**
+    * **Validates: Requirements 1.5, 1.6, 1.7.**
   * [x] 7.2 Write property test for account and role sorting (Property 2)
     * **Property 2: Account and Role Sorting**
     * Generate random `listAccounts`; sort using the same `sort.SliceStable` logic; verify accounts are sorted by name (CI) and roles within each account are sorted by name (CI)
     * Add in `cmd/awsutils_test.go`
-    * **Validates: Requirements 3.7**
+    * **Validates: Requirements 3.7.**
   * [x] 7.3 Write property test for output formats containing all data (Property 3)
     * **Property 3: Output Formats Contain All Data**
     * Generate random `listAccounts` and profile name; render CSV via `renderCSVTable`, markdown via `renderMarkdownTable`, and JSON via `json.Marshal`; verify every account ID, name, role name, and profile name appears in each output
     * Add in `cmd/list_test.go`
-    * **Validates: Requirements 3.9, 3.10, 3.11**
+    * **Validates: Requirements 3.9, 3.10, 3.11.**
   * [x] 7.4 Write property test for account and role filtering (Property 4)
     * **Property 4: Account and Role Filtering**
     * Generate random accounts and a non-empty filter substring; apply case-insensitive substring filtering; verify the result is a subset of the original and every result contains the filter substring
     * Add in `cmd/awsutils_test.go`
-    * **Validates: Requirements 3.13, 3.14**
+    * **Validates: Requirements 3.13, 3.14.**
 
 * [x] 8. Property-based tests: Lookup and cache
   * [x] 8.1 Write property test for lookup index round trip (Property 5)
     * **Property 5: Lookup Index Round Trip**
     * Generate random `listAccounts` and profile name; build `listAWSAccountsLookupIndex`; verify each account is findable by ID, by lowercased name, and by lowercased profile name; verify roles and profiles match
     * Add in `cmd/awsutils_test.go`
-    * **Validates: Requirements 3.19, 7.1, 10.11**
+    * **Validates: Requirements 3.19, 7.1, 10.11.**
   * [x] 8.2 Write property test for cache file path determinism (Property 10)
     * **Property 10: Cache File Path Determinism**
     * Generate random profile names and filter combinations; verify `cacheFilePath()` returns the same path for the same inputs and different paths for different inputs
     * Add in `cmd/awsutils_test.go`
-    * **Validates: Requirements 10.2**
+    * **Validates: Requirements 10.2.**
   * [x] 8.3 Write property test for cache expiry detection (Property 11)
     * **Property 11: Cache Expiry Detection**
     * Generate random timestamps and positive durations; write a cache file with the generated `cached_at`; verify `readListAWSAccountsCache` returns data when not expired and returns not-found when expired
     * Add in `cmd/awsutils_test.go`
-    * **Validates: Requirements 10.4**
+    * **Validates: Requirements 10.4.**
   * [x] 8.4 Write property test for cache duration parsing (Property 12)
     * **Property 12: Cache Duration Parsing**
     * Generate random valid Go duration strings with optional `Nd` day tokens; verify `parseCacheDurationFlag` returns a positive duration; verify day tokens are converted to hours; verify empty/zero/negative inputs return errors
     * Add in `cmd/root_test.go`
-    * **Validates: Requirements 10.6, 10.8**
+    * **Validates: Requirements 10.6, 10.8.**
 
 * [x] 9. Property-based tests: Config validation and profile naming
   * [x] 9.1 Write property test for managed block marker validation (Property 6)
     * **Property 6: Managed Block Marker Validation**
     * Generate random AWS config file content with well-formed and malformed managed block markers; verify `inspectManagedMarkers` detects mismatched counts, duplicates, overlaps, unmatched ends, and unclosed starts; verify well-formed configs produce empty issues
     * Add in `cmd/configutils_test.go`
-    * **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
+    * **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7.**
   * [x] 9.2 Write property test for profile name generation with pattern (Property 7)
     * **Property 7: Profile Name Generation with Pattern**
     * Generate random pattern configs (non-empty order, delimiter, prefix, suffix); verify `getProfileName` output is lowercased, contains expected tokens joined by delimiter, and omits empty prefix/suffix
     * Add in `cmd/configutils_test.go`
-    * **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
+    * **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12.**
   * [x] 9.3 Write property test for substring match replacement (Property 8)
     * **Property 8: Substring Match Replacement in Profile Names**
     * Generate random account names and `substr_match_replace` maps where a key is a CI substring of the name; verify `getProfileName` replaces the account token with the replacement value
     * Add in `cmd/configutils_test.go`
-    * **Validates: Requirements 9.6, 9.8**
+    * **Validates: Requirements 9.6, 9.8.**
   * [x] 9.4 Write property test for default profile name / toProfileToken idempotence (Property 9)
     * **Property 9: Default Profile Name Generation**
     * Generate random strings; verify `toProfileToken(toProfileToken(x)) == toProfileToken(x)` (idempotence); verify `buildDefaultProfileName` output is lowercased with non-alphanumeric chars replaced by hyphens
     * Add in `cmd/configutils_test.go`
-    * **Validates: Requirements 9.10**
+    * **Validates: Requirements 9.10.**
 
 * [x] 10. Property-based tests: Console, get, lookup, update
   * [x] 10.1 Write property test for console URL account subdomain stripping (Property 13)
     * **Property 13: Console URL Account Subdomain Stripping**
     * Generate random AWS Console URLs with account subdomains; verify `stripAccountFromURL` removes the account subdomain; verify URLs without account subdomains pass through unchanged
     * Add in `cmd/console_test.go` (new file)
-    * **Validates: Requirements 5.9**
+    * **Validates: Requirements 5.9.**
   * [x] 10.2 Write property test for account ID validation (Property 14)
     * **Property 14: Account ID Validation**
     * Generate random strings that are not 12 digits; verify `getRoleNamesForAccountID` returns an error; generate valid 12-digit IDs present in the index; verify roles are returned
     * Add in `cmd/get_test.go`
-    * **Validates: Requirements 6.3**
+    * **Validates: Requirements 6.3.**
   * [x] 10.3 Write property test for lookup account resolution (Property 15)
     * **Property 15: Lookup Account Resolution Correctness**
     * Generate random lookup indexes and identifiers; verify `resolveLookupAccount` returns exactly one account for unique matches, ambiguity error for multiple matches, and not-found error for no matches
     * Add in `cmd/lookup_test.go`
-    * **Validates: Requirements 7.4, 7.5**
+    * **Validates: Requirements 7.4, 7.5.**
   * [x] 10.4 Write property test for lookup role substring search (Property 16)
     * **Property 16: Lookup Role Substring Search**
     * Generate random accounts with roles and a non-empty search substring; verify role lookup returns only roles containing the substring (CI), sorted alphabetically (CI), and the result is a subset of the account's roles
     * Add in `cmd/lookup_test.go`
-    * **Validates: Requirements 7.6, 7.7**
+    * **Validates: Requirements 7.6, 7.7.**
   * [x] 10.5 Write property test for update managed section generation (Property 17)
     * **Property 17: Update Managed Section Generation**
     * Generate random `listAccounts` with roles and a valid SSO session section; verify `buildUpdatedManagedSections` produces sections where each account-role has a `[profile <name>]` with exactly the keys `sso_session`, `sso_account_id`, `sso_role_name`, `region`, `output`; verify count equals total account-role combinations
     * Add in `cmd/update_test.go`
-    * **Validates: Requirements 4.9**
+    * **Validates: Requirements 4.9.**
 
 * [x] 11. Checkpoint - Verify property tests
   * Ensure all tests pass, ask the user if questions arise.

@@ -1,0 +1,27 @@
+#-------------------------------------------------------------------------------
+# DEFAULT FILES
+
+[[files]]
+  stub = 'configs/stubs/golangci.yml'
+  source = 'configs/templates/golangci.yml'
+  destination = '.golangci.yml'
+
+[[files]]
+  stub = 'configs/stubs/osv-scanner.toml'
+  destination = 'osv-scanner.toml'
+
+  #-------------------------------------------------------------------------------
+  # KIRO DIRECTORY
+
+[[files]]
+  stub = 'configs/stubs/.kiro/steering/go-zero-diagnostics.md'
+  destination = '.kiro/steering/go-zero-diagnostics.md'
+
+  #-------------------------------------------------------------------------------
+  # GITHUB DIRECTORY
+
+  #-------------------------------------------------------------------------------
+  # VSCODE DIRECTORY
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS

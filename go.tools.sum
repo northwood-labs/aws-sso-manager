@@ -594,8 +594,8 @@ github.com/neurosnap/sentences v1.0.6 h1:iBVUivNtlwGkYsJblWV8GGVFmXzZzak907Ci8aA
 github.com/neurosnap/sentences v1.0.6/go.mod h1:pg1IapvYpWCJJm/Etxeh0+gtMf1rI1STY9S7eUCPbDc=
 github.com/northwood-labs/aws-config-parser v1.8.4 h1:TUCKoEjpyDFlGiOBM0lmM6NenjtoXg3WgzYoH503Fek=
 github.com/northwood-labs/aws-config-parser v1.8.4/go.mod h1:CLIYC0JmElW3kT4WS67uY8DZBqf/z8aNiOeDBeiI+2A=
-github.com/northwood-labs/aws-sso-manager v0.0.0-20260503001454-576f53d504a0 h1:LQFPM4RQWZLqFEygPHd9qkT783FFMAMsah2Ak7I6sDg=
-github.com/northwood-labs/aws-sso-manager v0.0.0-20260503001454-576f53d504a0/go.mod h1:dGUOxioZd/nxeU82puMZw8+aGwBGcUom1XrGVcvyLLI=
+github.com/northwood-labs/aws-sso-manager v0.0.0-20260504054127-7ef843622e56 h1:Fy1lglvPV4jdTh8b9nureapo2DDyoSmjobEVEqoJRGQ=
+github.com/northwood-labs/aws-sso-manager v0.0.0-20260504054127-7ef843622e56/go.mod h1:K+YZpSfbgKpnxko+bKFUsZ62AIGDQDTAi7zeiphVjWU=
 github.com/northwood-labs/cli-helpers v0.0.0-20260428015633-ec689f4e2063 h1:hpehhTJuwXcwGGZwY8uT/hPxOqpOO5XuBqaqJ/63IDc=
 github.com/northwood-labs/cli-helpers v0.0.0-20260428015633-ec689f4e2063/go.mod h1:RxzlMkYAdUdnLWQxkbteV9ijSEmzeOCiPNG19FDq4/s=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=

@@ -40,25 +40,25 @@ Implement the `logout` command in a single new file `cmd/logout.go` with tests i
     * **Property 1: Cache file deletion**
     * Generate random profile names, create temp AWS config + cache files, run logout, assert file no longer exists
     * Minimum 100 iterations via `rapid.Check`
-    * **Validates: Requirements 4.1**
+    * **Validates: Requirements 4.1.**
 
   * [x] 4.2 Write property test `TestPropertyLogoutMissingFileNoError`
     * **Property 2: Missing cache file is not an error**
     * Generate random profile names, create temp AWS config without cache file, stub `removeFile` to return `os.ErrNotExist`, run logout, assert nil return
     * Minimum 100 iterations via `rapid.Check`
-    * **Validates: Requirements 4.3**
+    * **Validates: Requirements 4.3.**
 
   * [x] 4.3 Write property test `TestPropertyLogoutOutputContainsProfileName`
     * **Property 3: Output always contains the profile name**
     * Generate random profile names, capture stdout, assert output contains the profile name regardless of cache file existence
     * Minimum 100 iterations via `rapid.Check`
-    * **Validates: Requirements 4.2, 4.3**
+    * **Validates: Requirements 4.2, 4.3.**
 
   * [x] 4.4 Write property test `TestPropertyLogoutInvalidProfileReturnsError`
     * **Property 4: getSsoSession error propagation**
     * Generate random strings not matching any `[sso-session]` in config, run logout, assert error returned and `removeFile` was never called
     * Minimum 100 iterations via `rapid.Check`
-    * **Validates: Requirements 3.3**
+    * **Validates: Requirements 3.3.**
 
 * [x] 5. Final checkpoint
   * Ensure all tests pass, ask the user if questions arise.

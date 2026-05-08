@@ -31,7 +31,7 @@ require (
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/northwood-labs/aws-config-parser v1.8.4
-	github.com/northwood-labs/aws-sso-manager v0.0.0-20260503001454-576f53d504a0
+	github.com/northwood-labs/aws-sso-manager v0.0.0-20260504054127-7ef843622e56
 	github.com/northwood-labs/cli-helpers v0.0.0-20260428015633-ec689f4e2063
 	github.com/pelletier/go-toml/v2 v2.3.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c

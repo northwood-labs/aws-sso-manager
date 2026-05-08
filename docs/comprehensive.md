@@ -1,6 +1,6 @@
 # Deep Architecture Audit
 
-## 1. Entry points
+## 1. entry points
 
 1. Primary binary entrypoint is [main.go](../main.go), where `main` calls `cmd.Execute`.
 2. CLI runtime entrypoint is in [cmd/root.go](../cmd/root.go), where `Execute` calls `runRootCommand`, which delegates to `fangExecute` with `rootCmd`.
@@ -12,14 +12,14 @@ Confidence: High for concrete startup path and command registration points.
 
 ## 2. CLI startup and initialization flow
 
-### A. Startup flow from process launch to command execution
+### A. startup flow from process launch to command execution
 
 1. Process starts in `main` ([main.go](../main.go)) and immediately invokes `cmd.Execute`.
 2. `Execute` calls `runRootCommand` (a test-seam variable), which calls `fangExecute` with `rootCmd` and exits non-zero on error via `osExit`.
 3. Root-level `init` has already run at package load time: sets `userHomeDir`, resolves `awsConfigFilePath`, and defines persistent flags (`--config`, `--verbose`, `--json`).
 4. Before any subcommand logic, `PersistentPreRunE` executes: `logger` is already a package-level var; the hook sets log level by verbosity count, then calls `initializeConfig`.
 
-### B. Configuration bootstrap and precedence
+### B. configuration bootstrap and precedence
 
 1. `asvConfig` is a package-level Viper instance in [cmd/root.go](../cmd/root.go).
 2. `initializeConfig` enables environment variable support with prefix `ASM` and maps hyphens/dots to underscores for env var lookup (e.g., `profile-name` → `ASM_PROFILE_NAME`).
@@ -49,7 +49,7 @@ K --> L[Subcommand RunE]
 
 Confidence: High for order and control transfer; medium for exact Fang internals (external library).
 
-## 3. Command-specific flows
+## 3. command-specific flows
 
 ### A. `init` command
 
@@ -77,12 +77,12 @@ Branch behavior:
 3. Gets SSO session profile from AWS config via `getSsoSession`; finds cache file path via `getCacheFilePath`.
 4. If `cacheData.read` succeeds and the token is still valid, reports remaining validity and exits.
 5. If cache read fails or is expired, triggers device authorization flow:
-    * builds SDK config with `getSDKConfig(requestCtx, ...)`,
-    * starts auth via `authenticateSSOProfile`,
-    * extracts user code,
-    * optionally opens browser,
-    * polls token endpoint via `waitForCustomerToAuthenticate`,
-    * saves result via `cacheData.save`.
+  * builds SDK config with `getSDKConfig(requestCtx, ...)`,
+  * starts auth via `authenticateSSOProfile`,
+  * extracts user code,
+  * optionally opens browser,
+  * polls token endpoint via `waitForCustomerToAuthenticate`,
+  * saves result via `cacheData.save`.
 
 Branch behavior:
 
@@ -143,12 +143,12 @@ Branch behavior:
 3. Calls `getAllManagedSections()` to collect all `[sso-session <profile>]` section names from the AWS config.
 4. Builds a union of both sets to cover the full population: marker-only profiles and sso-session-only profiles.
 5. For each profile in the union, reports:
-    * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
-    * orphaned markers (marker present but no matching `sso-session` section);
-    * unmanaged sections (`sso-session` section present but no markers).
+  * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
+  * orphaned markers (marker present but no matching `sso-session` section);
+  * unmanaged sections (`sso-session` section present but no markers).
 6. Exits 0 when all checks pass, exits 1 when any problem is found.
 
-## 4. File and module responsibilities
+## 4. file and module responsibilities
 
 1. [main.go](../main.go)
    Process bootstrap only; intentionally thin entrypoint forwarding to the cmd package.
@@ -193,9 +193,9 @@ Branch behavior:
 14. [docs/config_file.md](config_file.md)
     Config schema contract for profile naming behavior, directly consumed by `getProfileName` in [cmd/configutils.go](../cmd/configutils.go).
 
-## 5. Decision points and side effects
+## 5. decision points and side effects
 
-### A. Major decision points
+### A. major decision points
 
 1. Config source selection: custom config path strict-exists check vs auto-create default, in `initializeConfig`.
 2. Profile resolution: positional arg, then config default, then prompt across all interactive commands (init/auth/list/update/console).
@@ -206,7 +206,7 @@ Branch behavior:
 7. Lock acquisition: `init` and `update` both call `acquireAWSConfigLock` before writes; context cancellation or timeout aborts cleanly.
 8. Lookup resolution: exact match by ID/name/profile tried first, then substring fallback for partial matches.
 
-### B. External integrations
+### B. external integrations
 
 1. AWS SDK v2 config loader and SSO APIs:
    `config.LoadDefaultConfig` in `getSDKConfig`,
@@ -219,13 +219,13 @@ Branch behavior:
    atomic config replace via `os.CreateTemp` (init) and `os.Rename` (init, update),
    exclusive locking via `acquireAWSConfigLock` / `Release`.
 
-### C. State transitions
+### C. state transitions
 
 1. Local state: global config/logger/path variables initialized once in root package scope.
 2. Auth state: unauthenticated to authenticated via `cacheData.save` in `auth` command.
 3. Config state: AWS config managed section evolves through `init` and `update` runs, keyed by marker comments; structural validity enforced by `validateManagedMarkers` before extraction.
 
-### D. Error pivots
+### D. error pivots
 
 1. Mixed error handling model: some paths return errors; others call `cobra.CheckErr` or `logger.Fatal`, causing immediate exit.
 2. OIDC polling in `waitForCustomerToAuthenticate` explicitly classifies many AWS exception types (authorization pending, slow down, expired, access denied).
@@ -234,20 +234,20 @@ Branch behavior:
 
 Confidence: High for side effects and error pivots directly visible in code.
 
-## 6. Risks, gaps, and follow-up inspections
+## 6. risks, gaps, and follow-up inspections
 
 Items previously flagged have been resolved in the current codebase. The table below reflects current status.
 
-| # | Risk / Gap                                                                                                   | Status                                                                                                                                                                                                                                                                                           |
-|---|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1 | Update rewrite left trailing stale bytes (`O_WRONLY` without truncate)                                       | **Resolved** — `update` now uses `os.Rename` for atomic replacement; no truncate needed.                                                                                                                                                                                                         |
-| 2 | Incorrect error message context when `sso-session` missing in `update` (`profileHeaderName` used before set) | **Resolved** — error now uses the resolved `ssoProfile` variable.                                                                                                                                                                                                                                |
-| 3 | Potential injection duplication in managed section merge                                                     | **Resolved** — `setManagedSection` uses an `injectedInBlock` guard ensuring exactly one injection per block encounter.                                                                                                                                                                           |
-| 4 | `fRegion` flag unused in `console` flow                                                                      | **Resolved** — `sessionProfile.Region = fRegion` applied before `getSDKConfig` call.                                                                                                                                                                                                             |
-| 5 | Global mutable variables can complicate future concurrency/tests                                             | **Partially mitigated** — test seams (`runRootCommand`, `fangExecute`, `osExit`) added; global `asvConfig`, `logger`, `awsConfigFilePath` remain package-level.                                                                                                                                  |
-| 6 | Marker contract only documented behaviorally; no validation enforced                                         | **Resolved** — `inspectManagedMarkers` performs whole-file structural validation; `validate` command exposes it as a user-facing tool.                                                                                                                                                           |
-| 7 | No explicit safeguards around concurrent writes to AWS config                                                | **Resolved** — `acquireAWSConfigLock` in [cmd/lockutils.go](../cmd/lockutils.go) provides exclusive locking via `golang.org/x/sys/unix` (flock) on Unix and `golang.org/x/sys/windows` (LockFileEx) on Windows, with a 5-second timeout. Lock file at `~/.config/.aws-sso-manager/.config.lock`. |
-| 8 | Fang wrapper behavior and signal handling uncertain                                                          | **Resolved** — `fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}` is explicit; `runRootCommand` and `fangExecute` are testable seams.                                                                                                                                            |
+| #   | Risk / Gap                                                                                                   | Status |
+| --- | ------------------------------------------------------------------------------------------------------------ | ------ |
+| 1   | Update rewrite left trailing stale bytes (`O_WRONLY` without truncate)                                       | **Resolved** — `update` now uses `os.Rename` for atomic replacement; no truncate needed. |
+| 2   | Incorrect error message context when `sso-session` missing in `update` (`profileHeaderName` used before set) | **Resolved** — error now uses the resolved `ssoProfile` variable. |
+| 3   | Potential injection duplication in managed section merge                                                     | **Resolved** — `setManagedSection` uses an `injectedInBlock` guard ensuring exactly one injection per block encounter. |
+| 4   | `fRegion` flag unused in `console` flow                                                                      | **Resolved** — `sessionProfile.Region = fRegion` applied before `getSDKConfig` call. |
+| 5   | Global mutable variables can complicate future concurrency/tests                                             | **Partially mitigated** — test seams (`runRootCommand`, `fangExecute`, `osExit`) added; global `asvConfig`, `logger`, `awsConfigFilePath` remain package-level. |
+| 6   | Marker contract only documented behaviorally; no validation enforced                                         | **Resolved** — `inspectManagedMarkers` performs whole-file structural validation; `validate` command exposes it as a user-facing tool. |
+| 7   | No explicit safeguards around concurrent writes to AWS config                                                | **Resolved** — `acquireAWSConfigLock` in [cmd/lockutils.go](../cmd/lockutils.go) provides exclusive locking via `golang.org/x/sys/unix` (flock) on Unix and `golang.org/x/sys/windows` (LockFileEx) on Windows, with a 5-second timeout. Lock file at `~/.config/.aws-sso-manager/.config.lock`. |
+| 8   | Fang wrapper behavior and signal handling uncertain                                                          | **Resolved** — `fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}` is explicit; `runRootCommand` and `fangExecute` are testable seams. |
 
 ### Residual considerations
 
@@ -264,7 +264,7 @@ Assumptions and confidence levels:
 3. Assumption: AWS shared config path from SDK helper maps to intended user file in all environments.
    Confidence: Medium; behavior likely correct but environment override handling is not explicit in this codebase.
 
-## 7. Design rationale — why we built it this way
+## 7. design rationale — why we built it this way
 
 This section explains the reasoning behind key architectural and implementation decisions. Where the quickstart doc covers the "what", this section covers the "why" in depth.
 
@@ -284,7 +284,7 @@ An incremental approach (add new profiles, update changed ones, leave the rest) 
 
 Even with atomic renames, two concurrent `update` runs could each read the config, generate their own version, and then race to rename — the second rename would silently overwrite the first. The advisory lock serializes writers. We use a separate lock file (`~/.config/.aws-sso-manager/.config.lock`) rather than locking the config file itself because: (a) locking a file that other tools read could interfere with those tools on some platforms, and (b) the lock file can persist across config file replacements without issue.
 
-### Why implement cross-platform locking (Unix flock + Windows LockFileEx)?
+### Why implement cross-platform locking (Unix flock + windows LockFileEx)?
 
 The tool targets macOS, Linux, and Windows. Rather than using a lowest-common-denominator approach (e.g., mkdir-based locking), we use each platform's native advisory locking mechanism for correctness and performance. The platform-specific code is isolated behind Go build tags (`lockutils_unix.go` and `lockutils_windows.go`) so the shared logic in `lockutils.go` remains clean and testable. Both implementations expose the same three-function interface: `lockFileNB`, `unlockFile`, and `isLockBusy`.
 

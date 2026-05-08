@@ -8,7 +8,7 @@ Pull this in with `#config-schema` when working on configuration-related code.
 
 Full documentation: #[[file:docs/config_file.md]]
 
-## Quick Reference
+## Quick reference
 
 ```toml
 # Default SSO profile when no argument is provided
@@ -27,7 +27,7 @@ suffix = ""
   "AdministratorAccess" = "admin"
 ```
 
-## Key Rules
+## Key rules
 
 * Config path: `~/.config/aws-sso-manager/config.toml` (created automatically if missing).
 * All settings are scoped per SSO profile (the `%` in `%.rename.*`).
@@ -36,7 +36,7 @@ suffix = ""
 * Empty replacement value means "omit this token entirely".
 * When no pattern is configured, `buildDefaultProfileName` produces `<account>-<role>` with non-alphanumeric chars replaced by hyphens.
 
-## Environment Variable Override
+## Environment variable override
 
 * Prefix: `ASM_`
 * Key mapping: hyphens and dots become underscores (e.g., `profile-name` → `ASM_PROFILE_NAME`).

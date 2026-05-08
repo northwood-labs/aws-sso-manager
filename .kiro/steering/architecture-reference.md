@@ -6,7 +6,7 @@ inclusion: manual
 
 Pull this in with `#architecture-reference` when you need to understand the overall system structure.
 
-## Module Map
+## Module map
 
 ```text
 main.go → cmd.Execute()
@@ -27,7 +27,7 @@ cmd/lockutils_unix.go    — Unix flock implementation
 cmd/lockutils_windows.go — Windows LockFileEx implementation
 ```
 
-## Data Flow
+## Data flow
 
 ```text
 User runs command
@@ -39,7 +39,7 @@ User runs command
   → Output (stdout for data, stderr for spinners/logs/notes)
 ```
 
-## Key Data Structures
+## Key data structures
 
 * `listAccounts` / `listAccount` / `listRole` — account/role hierarchy from AWS API.
 * `listAWSAccountsLookupIndex` — O(1) lookup maps by ID, name (CI), profile (CI).
@@ -48,7 +48,7 @@ User runs command
 * `managedMarkerReport` — structural health of managed blocks.
 * `ssoProfile` — parsed [sso-session] config.
 
-## Design Documents
+## Design documents
 
 * #[[file:docs/quickstart.md]] — quick flow summary with design decision rationale.
 * #[[file:docs/comprehensive.md]] — deep architecture audit with full design rationale.

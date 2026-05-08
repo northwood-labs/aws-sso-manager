@@ -6,7 +6,7 @@ This feature makes the `region` and `output` values in generated `[profile ...]`
 
 The change is surgically scoped to `buildUpdatedManagedSections` in `cmd/update.go`. The schema types (`SettingsConfig`, `SSOProfileConfig`) and config key validation (`validateConfigKey`) already support these keys — no schema changes are needed.
 
-### Design Rationale
+### Design rationale
 
 The simplest correct approach: read the Viper config at profile-generation time and fall back to the existing defaults when no override is set. This keeps the change to a single function and preserves full backward compatibility.
 
@@ -29,18 +29,18 @@ flowchart TD
 
 The override resolution happens once per `buildUpdatedManagedSections` call (not per profile), ensuring all profiles in a managed section share the same resolved values. This matches Requirement 4.
 
-### Change Surface
+### Change surface
 
-| File                  | Change                                                                                                                                                                                                                           |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| File                  | Change |
+| --------------------- | ------ |
 | `cmd/update.go`       | `buildUpdatedManagedSections`: read `asmConfig.GetString(profileName + ".settings.region")` and `asmConfig.GetString(profileName + ".settings.output")` before the profile loop; use resolved values in the `m[...]` assignments |
-| `docs/config_file.md` | Add `%.settings.region` and `%.settings.output` to the TOML key tree diagram, add description sections for both keys, and add a `[%.settings]` table to the sample config                                                        |
+| `docs/config_file.md` | Add `%.settings.region` and `%.settings.output` to the TOML key tree diagram, add description sections for both keys, and add a `[%.settings]` table to the sample config |
 
 No changes to: `cmd/configschema.go` (structs already define the fields), `cmd/configutils.go`, `cmd/config.go` (validation already works via reflection).
 
-## Components and Interfaces
+## Components and interfaces
 
-### Modified Function
+### Modified function
 
 **`buildUpdatedManagedSections`** (`cmd/update.go`)
 
@@ -80,22 +80,22 @@ m["region"] = resolvedRegion
 m["output"] = resolvedOutput
 ```
 
-### Existing Components (No Changes)
+### Existing components (No changes)
 
-| Component                                  | Why No Change                                                                                                    |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `SettingsConfig` struct                    | Already has `Region` and `Output` fields with correct JSON/TOML tags                                             |
-| `SSOProfileConfig` struct                  | Already embeds `Settings SettingsConfig`                                                                         |
+| Component                                  | Why No Change |
+| ------------------------------------------ | ------------- |
+| `SettingsConfig` struct                    | Already has `Region` and `Output` fields with correct JSON/TOML tags |
+| `SSOProfileConfig` struct                  | Already embeds `Settings SettingsConfig` |
 | `validateConfigKey()`                      | Already walks `SSOProfileConfig` via reflection — `%.settings.region` and `%.settings.output` validate correctly |
-| `config set` / `config get` / `config del` | Already work with any valid schema key                                                                           |
+| `config set` / `config get` / `config del` | Already work with any valid schema key |
 
-### Documentation Changes (`docs/config_file.md`)
+### Documentation changes (`docs/config_file.md`)
 
 Requirement 6 adds user-facing documentation for the new settings keys. Three areas of `docs/config_file.md` need updates:
 
 **1. TOML key tree diagram** — Add a `settings.` subtree as a sibling of `rename.` under the `%.` node:
 
-```plain
+```text
 └── %.
     ├── settings.
     │   ├── region (string)
@@ -119,7 +119,7 @@ output = "json"
 
 These are purely documentation changes — no code, no tests. Requirement 6 acceptance criteria (6.1–6.5) are all documentation-only and are not suitable for property-based testing or automated unit tests.
 
-## Data Models
+## Data models
 
 No new data models. The existing `SettingsConfig` struct in `cmd/configschema.go` already models the relevant config:
 
@@ -143,60 +143,60 @@ output = "yaml"
 # ... existing rename config ...
 ```
 
-## Correctness Properties
+## Correctness properties
 
 _A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
-### Property 1: Region resolution respects config override with sso_region fallback
+### Property 1: region resolution respects config override with sso_region fallback
 
 _For any_ SSO profile name, any `sso_region` value in the `[sso-session]` section, any (possibly empty or absent) `settings.region` config value, and any non-empty set of accounts/roles: calling `buildUpdatedManagedSections` SHALL produce profile sections where every profile's `region` field equals `settings.region` when it is non-empty, and equals `sso_region` otherwise.
 
-**Validates: Requirements 1.1, 1.2, 1.3, 4.1**
+**Validates: Requirements 1.1, 1.2, 1.3, 4.1.**
 
-### Property 2: Output resolution respects config override with "json" fallback
+### Property 2: output resolution respects config override with "JSON" fallback
 
 _For any_ SSO profile name, any (possibly empty or absent) `settings.output` config value, and any non-empty set of accounts/roles: calling `buildUpdatedManagedSections` SHALL produce profile sections where every profile's `output` field equals `settings.output` when it is non-empty, and equals `"json"` otherwise.
 
-**Validates: Requirements 2.1, 2.2, 2.3, 4.2**
+**Validates: Requirements 2.1, 2.2, 2.3, 4.2.**
 
-### Property 3: Settings key validation accepts region/output and rejects unknown keys
+### Property 3: settings key validation accepts region/output and rejects unknown keys
 
 _For any_ profile name: `validateConfigKey("<profile>.settings.region")` and `validateConfigKey("<profile>.settings.output")` SHALL return no error, while `validateConfigKey("<profile>.settings.<unknown>")` (where `<unknown>` is neither `"region"` nor `"output"`) SHALL return a non-nil error.
 
-**Validates: Requirements 3.1, 3.2, 3.3**
+**Validates: Requirements 3.1, 3.2, 3.3.**
 
-### Property 4: Update idempotence with settings overrides
+### Property 4: update idempotence with settings overrides
 
 _For any_ valid config state (with or without settings overrides) and any set of accounts/roles: calling `buildUpdatedManagedSections` twice with identical inputs SHALL produce identical output sections.
 
-**Validates: Requirements 5.1**
+**Validates: Requirements 5.1.**
 
-## Error Handling
+## Error handling
 
 This feature introduces no new error paths. The existing error handling in `buildUpdatedManagedSections` (INI value creation failures, section update failures) remains unchanged.
 
-| Scenario                                                | Behavior                                                                         |
-|---------------------------------------------------------|----------------------------------------------------------------------------------|
-| `settings.region` is empty or absent                    | Falls back to `sso_region` (existing behavior)                                   |
-| `settings.output` is empty or absent                    | Falls back to `"json"` (existing behavior)                                       |
+| Scenario                                                | Behavior |
+| ------------------------------------------------------- | -------- |
+| `settings.region` is empty or absent                    | Falls back to `sso_region` (existing behavior) |
+| `settings.output` is empty or absent                    | Falls back to `"json"` (existing behavior) |
 | `settings.region` contains an invalid AWS region string | Passed through as-is — AWS CLI will report the error at runtime, not our concern |
-| `settings.output` contains an invalid format            | Passed through as-is — AWS CLI will report the error at runtime                  |
-| `config set` with unknown settings key                  | Rejected by `validateConfigKey` with descriptive error (existing behavior)       |
+| `settings.output` contains an invalid format            | Passed through as-is — AWS CLI will report the error at runtime |
+| `config set` with unknown settings key                  | Rejected by `validateConfigKey` with descriptive error (existing behavior) |
 
 No new `error` returns, no new `fmt.Errorf` calls. The Viper `GetString` call returns `""` for missing keys, which triggers the fallback path naturally.
 
-## Testing Strategy
+## Testing strategy
 
-### Property-Based Tests (pgregory.net/rapid)
+### Property-Based tests (pgregory.net/rapid)
 
 Four property tests, each running rapid's default 100+ iterations:
 
-| Property                   | Test Function                                | What It Exercises                                            |
-|----------------------------|----------------------------------------------|--------------------------------------------------------------|
+| Property                   | Test Function                                | What It Exercises |
+| -------------------------- | -------------------------------------------- | ----------------- |
 | 1: Region resolution       | `TestPropertyRegionOverrideResolution`       | `buildUpdatedManagedSections` with/without `settings.region` |
 | 2: Output resolution       | `TestPropertyOutputOverrideResolution`       | `buildUpdatedManagedSections` with/without `settings.output` |
-| 3: Settings key validation | `TestPropertySettingsKeyValidation`          | `validateConfigKey` for `%.settings.*` paths                 |
-| 4: Update idempotence      | `TestPropertyUpdateIdempotenceWithOverrides` | Double-call to `buildUpdatedManagedSections`                 |
+| 3: Settings key validation | `TestPropertySettingsKeyValidation`          | `validateConfigKey` for `%.settings.*` paths |
+| 4: Update idempotence      | `TestPropertyUpdateIdempotenceWithOverrides` | Double-call to `buildUpdatedManagedSections` |
 
 Each test tagged with: `// Feature: config-output-region-overrides, Property N: <title>`
 
@@ -204,14 +204,14 @@ Each test tagged with: `// Feature: config-output-region-overrides, Property N: 
 
 **Generators**: Reuse existing `genListAccounts(1, 5)` and `genAccountID()` from `testhelpers_test.go`. Generate settings values with `rapid.SampledFrom` for realistic AWS regions and output formats, plus `rapid.StringMatching` for arbitrary strings.
 
-### Unit Tests
+### Unit tests
 
 Minimal additional unit tests for edge cases not covered by property tests:
 
 * Verify existing `TestBuildUpdatedManagedSectionsUpdatesRoleFields` still passes (regression)
 * Verify `TestValidateConfigKey` already covers `settings.region` and `settings.output` paths (add cases if missing)
 
-### What's NOT Tested
+### What's NOT tested
 
 * AWS CLI behavior with invalid region/output values (out of scope — that's AWS CLI's responsibility)
 * End-to-end `update` command execution (already covered by existing integration test `TestUpdateManagedBlockRewriteIntegration`)
