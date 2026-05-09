@@ -29,6 +29,19 @@
   source = 'configs/templates/gommit.toml'
   destination = '.gommit.toml'
 
+# OSV Scanner
+# https://osv.dev
+[[files]]
+  stub = 'configs/stubs/osv-scanner.toml'
+  destination = 'osv-scanner.toml'
+
+# rumdl replaces Markdownlint
+# https://rumdl.dev
+[[files]]
+  stub = 'configs/stubs/rumdl.toml'
+  source = 'configs/templates/rumdl.toml'
+  destination = '.rumdl.toml'
+
 # Shellcheck for shell scripts
 # https://github.com/koalaman/shellcheck
 [[files]]
@@ -64,6 +77,16 @@
 [[files]]
   stub = 'configs/stubs/yamlfmt.yml'
   destination = '.yamlfmt.yml'
+
+  #-------------------------------------------------------------------------------
+  # MISE
+
+# Install core packages
+# https://mise.jdx.dev
+[[files]]
+  stub = 'configs/stubs/.config/mise/conf.d/tools.standard.toml'
+  source = 'configs/templates/.config/mise/conf.d/tools.standard.toml'
+  destination = '.config/mise/conf.d/tools.standard.toml'
 
   #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
@@ -202,10 +225,3 @@ go get -modfile go.tools.mod -u -t -v ./...
 
   [files.post_update_hook]
     bash = 'cp -vf .githooks/commit-msg.sh .git/hooks/commit-msg'
-
-# rumdl
-# https://rumdl.dev
-[[files]]
-  stub = 'configs/stubs/rumdl.toml'
-  source = 'configs/templates/rumdl.toml'
-  destination = '.rumdl.toml'

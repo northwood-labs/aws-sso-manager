@@ -6,9 +6,15 @@
   source = 'configs/templates/golangci.yml'
   destination = '.golangci.yml'
 
+  #-------------------------------------------------------------------------------
+  # MISE
+
+# Install packages
+# https://mise.jdx.dev
 [[files]]
-  stub = 'configs/stubs/osv-scanner.toml'
-  destination = 'osv-scanner.toml'
+  stub = 'configs/stubs/.config/mise/conf.d/tools.golang.toml'
+  source = 'configs/templates/.config/mise/conf.d/tools.golang.toml'
+  destination = '.config/mise/conf.d/tools.golang.toml'
 
   #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
@@ -23,5 +29,13 @@
   #-------------------------------------------------------------------------------
   # VSCODE DIRECTORY
 
-  #-------------------------------------------------------------------------------
-  # FILES WITH HOOKS
+[[files]]
+  stub = 'configs/stubs/.vscode/extensions-golang.toml'
+  source = 'configs/templates/.vscode/extensions-golang.toml'
+  destination = '.vscode/extensions-golang.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/extensions.sh'
+
+    #-------------------------------------------------------------------------------
+    # FILES WITH HOOKS

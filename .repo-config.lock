@@ -1,6 +1,16 @@
 schema_version = '1'
 
 [files]
+[files.'.config/mise/conf.d/tools.golang.toml']
+last_sync_time = '2026-05-09T00:46:51Z'
+source_hash = ''
+dest_hash = 'sha256:c2ce6ad92c2715f0a73008378b0e59a359d279578082226306c04ec9abb946c8'
+
+[files.'.config/mise/conf.d/tools.standard.toml']
+last_sync_time = '2026-05-09T00:43:13Z'
+source_hash = ''
+dest_hash = 'sha256:d8cf64527dafe44ed42add567cab7faa7fd9076e670d5532bc4a225c5a4f09ee'
+
 [files.'.githooks/commit-msg.sh']
 last_sync_time = '2026-05-03T01:39:29Z'
 source_hash = ''
@@ -46,10 +56,15 @@ last_sync_time = '2026-05-01T18:33:04Z'
 source_hash = ''
 dest_hash = 'sha256:d622d7189f6a48cbdb4e298ac0ac23e2801639d40c91d4b06eec4923b6ad11dc'
 
-[files.'.vscode/extensions-standard.toml']
-last_sync_time = '2026-05-03T00:14:02Z'
+[files.'.vscode/extensions-golang.toml']
+last_sync_time = '2026-05-09T00:54:05Z'
 source_hash = ''
-dest_hash = 'sha256:46d43f82a44423ae763e549a1a0080666de64efc13cbdfc18959d22566392f13'
+dest_hash = 'sha256:ba41fd7a129dcd20d898700c97b5bee143d7a832eb6d0fb959d7a9a2f3361810'
+
+[files.'.vscode/extensions-standard.toml']
+last_sync_time = '2026-05-09T00:40:30Z'
+source_hash = ''
+dest_hash = 'sha256:036bd5cd077eddc5896822af6493fdffc27c91eaea2d18ed1649bd86a91bbc57'
 
 [files.'.vscode/extensions.sh']
 last_sync_time = '2026-05-03T00:14:02Z'

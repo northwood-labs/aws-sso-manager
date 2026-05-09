@@ -1,0 +1,9 @@
+[tools]
+  # @config-manager:start golang
+  gofumpt = "latest"
+  golangci-lint = "latest"
+  golines = "latest"
+  gotestsum = "latest"
+  mockery = "latest"
+  sqlc = "latest"
+  # @config-manager:end golang
