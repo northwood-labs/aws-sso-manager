@@ -2,14 +2,14 @@ schema_version = '1'
 
 [files]
 [files.'.config/mise/conf.d/tools.golang.toml']
-last_sync_time = '2026-05-09T00:46:51Z'
+last_sync_time = '2026-05-09T07:23:07Z'
 source_hash = ''
-dest_hash = 'sha256:c2ce6ad92c2715f0a73008378b0e59a359d279578082226306c04ec9abb946c8'
+dest_hash = 'sha256:242b7f9c4e6f485696f076a048887c3fb95b9805a0cb91a8d49ed99647f7660a'
 
 [files.'.config/mise/conf.d/tools.standard.toml']
-last_sync_time = '2026-05-09T00:43:13Z'
+last_sync_time = '2026-05-09T07:23:07Z'
 source_hash = ''
-dest_hash = 'sha256:d8cf64527dafe44ed42add567cab7faa7fd9076e670d5532bc4a225c5a4f09ee'
+dest_hash = 'sha256:499fd2567225f60cd4b5c153a8b3f351b15159519e967d13ac06707dc2580bb9'
 
 [files.'.githooks/commit-msg.sh']
 last_sync_time = '2026-05-03T01:39:29Z'
