@@ -77,12 +77,12 @@ Branch behavior:
 3. Gets SSO session profile from AWS config via `getSsoSession`; finds cache file path via `getCacheFilePath`.
 4. If `cacheData.read` succeeds and the token is still valid, reports remaining validity and exits.
 5. If cache read fails or is expired, triggers device authorization flow:
-  * builds SDK config with `getSDKConfig(requestCtx, ...)`,
-  * starts auth via `authenticateSSOProfile`,
-  * extracts user code,
-  * optionally opens browser,
-  * polls token endpoint via `waitForCustomerToAuthenticate`,
-  * saves result via `cacheData.save`.
+   * builds SDK config with `getSDKConfig(requestCtx, ...)`,
+   * starts auth via `authenticateSSOProfile`,
+   * extracts user code,
+   * optionally opens browser,
+   * polls token endpoint via `waitForCustomerToAuthenticate`,
+   * saves result via `cacheData.save`.
 
 Branch behavior:
 
@@ -143,9 +143,9 @@ Branch behavior:
 3. Calls `getAllManagedSections()` to collect all `[sso-session <profile>]` section names from the AWS config.
 4. Builds a union of both sets to cover the full population: marker-only profiles and sso-session-only profiles.
 5. For each profile in the union, reports:
-  * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
-  * orphaned markers (marker present but no matching `sso-session` section);
-  * unmanaged sections (`sso-session` section present but no markers).
+   * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
+   * orphaned markers (marker present but no matching `sso-session` section);
+   * unmanaged sections (`sso-session` section present but no markers).
 6. Exits 0 when all checks pass, exits 1 when any problem is found.
 
 ## 4. file and module responsibilities
@@ -238,16 +238,16 @@ Confidence: High for side effects and error pivots directly visible in code.
 
 Items previously flagged have been resolved in the current codebase. The table below reflects current status.
 
-| #   | Risk / Gap                                                                                                   | Status |
-| --- | ------------------------------------------------------------------------------------------------------------ | ------ |
-| 1   | Update rewrite left trailing stale bytes (`O_WRONLY` without truncate)                                       | **Resolved** — `update` now uses `os.Rename` for atomic replacement; no truncate needed. |
-| 2   | Incorrect error message context when `sso-session` missing in `update` (`profileHeaderName` used before set) | **Resolved** — error now uses the resolved `ssoProfile` variable. |
-| 3   | Potential injection duplication in managed section merge                                                     | **Resolved** — `setManagedSection` uses an `injectedInBlock` guard ensuring exactly one injection per block encounter. |
-| 4   | `fRegion` flag unused in `console` flow                                                                      | **Resolved** — `sessionProfile.Region = fRegion` applied before `getSDKConfig` call. |
-| 5   | Global mutable variables can complicate future concurrency/tests                                             | **Partially mitigated** — test seams (`runRootCommand`, `fangExecute`, `osExit`) added; global `asvConfig`, `logger`, `awsConfigFilePath` remain package-level. |
-| 6   | Marker contract only documented behaviorally; no validation enforced                                         | **Resolved** — `inspectManagedMarkers` performs whole-file structural validation; `validate` command exposes it as a user-facing tool. |
+| #   | Risk / Gap                                                                                                   | Status                                                                                                                                                                                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Update rewrite left trailing stale bytes (`O_WRONLY` without truncate)                                       | **Resolved** — `update` now uses `os.Rename` for atomic replacement; no truncate needed.                                                                                                                                                                                                         |
+| 2   | Incorrect error message context when `sso-session` missing in `update` (`profileHeaderName` used before set) | **Resolved** — error now uses the resolved `ssoProfile` variable.                                                                                                                                                                                                                                |
+| 3   | Potential injection duplication in managed section merge                                                     | **Resolved** — `setManagedSection` uses an `injectedInBlock` guard ensuring exactly one injection per block encounter.                                                                                                                                                                           |
+| 4   | `fRegion` flag unused in `console` flow                                                                      | **Resolved** — `sessionProfile.Region = fRegion` applied before `getSDKConfig` call.                                                                                                                                                                                                             |
+| 5   | Global mutable variables can complicate future concurrency/tests                                             | **Partially mitigated** — test seams (`runRootCommand`, `fangExecute`, `osExit`) added; global `asvConfig`, `logger`, `awsConfigFilePath` remain package-level.                                                                                                                                  |
+| 6   | Marker contract only documented behaviorally; no validation enforced                                         | **Resolved** — `inspectManagedMarkers` performs whole-file structural validation; `validate` command exposes it as a user-facing tool.                                                                                                                                                           |
 | 7   | No explicit safeguards around concurrent writes to AWS config                                                | **Resolved** — `acquireAWSConfigLock` in [cmd/lockutils.go](../cmd/lockutils.go) provides exclusive locking via `golang.org/x/sys/unix` (flock) on Unix and `golang.org/x/sys/windows` (LockFileEx) on Windows, with a 5-second timeout. Lock file at `~/.config/.aws-sso-manager/.config.lock`. |
-| 8   | Fang wrapper behavior and signal handling uncertain                                                          | **Resolved** — `fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}` is explicit; `runRootCommand` and `fangExecute` are testable seams. |
+| 8   | Fang wrapper behavior and signal handling uncertain                                                          | **Resolved** — `fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}` is explicit; `runRootCommand` and `fangExecute` are testable seams.                                                                                                                                            |
 
 ### Residual considerations
 

@@ -69,9 +69,10 @@ Example:
 
 ```markdown
 | Column A | Column B |
-|----------|----------|
+| -------- | -------- |
 | value    | value    |
 ```
+
 <!-- @config-manager:end tables -->
 
 ## Links and images

@@ -6,11 +6,11 @@ It is also designed to help you manage configs across multiple AWS Organizations
 
 ## Lexicon
 
-| Term        | Meaning |
-| ----------- | ------- |
-| Account     | The represents the individual AWS account. This can be given a friendly name like `prod`, `nonprod`, `sandbox`, etc. |
-| Profile     | This is the AWS profile name as listed in the `~/.aws/config` file. It's what the `AWS_PROFILE` environment variable would point to. |
-| Role        | When working with AWS Organizations, the default roles typically include `*AdministratorAccess` or `*ReadOnlyAccess`. |
+| Term        | Meaning                                                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account     | The represents the individual AWS account. This can be given a friendly name like `prod`, `nonprod`, `sandbox`, etc.                                                                        |
+| Profile     | This is the AWS profile name as listed in the `~/.aws/config` file. It's what the `AWS_PROFILE` environment variable would point to.                                                        |
+| Role        | When working with AWS Organizations, the default roles typically include `*AdministratorAccess` or `*ReadOnlyAccess`.                                                                       |
 | SSO Profile | This is a short, user-defined identifier for the AWS Organization. For example, _Northwood Labs_ might use `nwl`. _Cloudflare_ might use `cfl`. _Stripe_ might use `strp` or even `stripe`. |
 
 ## General documentation

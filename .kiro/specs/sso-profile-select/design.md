@@ -49,12 +49,12 @@ Internally it:
 
 ### Modified commands
 
-| Command   | Current prompt           | New prompt |
-| --------- | ------------------------ | ---------- |
-| `auth`    | `huh.NewInput()`         | `promptProfileSelect()` |
-| `list`    | `huh.NewInput()`         | `promptProfileSelect()` |
-| `update`  | `huh.NewInput()`         | `promptProfileSelect()` |
-| `init`    | `huh.NewInput()`         | No change  |
+| Command   | Current prompt           | New prompt                    |
+| --------- | ------------------------ | ----------------------------- |
+| `auth`    | `huh.NewInput()`         | `promptProfileSelect()`       |
+| `list`    | `huh.NewInput()`         | `promptProfileSelect()`       |
+| `update`  | `huh.NewInput()`         | `promptProfileSelect()`       |
+| `init`    | `huh.NewInput()`         | No change                     |
 | `console` | inline `huh.NewSelect()` | Refactor to use shared helper |
 
 ### Existing: `getAllManagedSections()` (unchanged)
@@ -94,11 +94,11 @@ _For any_ valid AWS config file containing N `[sso-session <name>]` sections wit
 
 ## Error handling
 
-| Scenario                                                   | Behavior |
-| ---------------------------------------------------------- | -------- |
-| AWS config file does not exist or is unreadable            | `getAllManagedSections()` returns the underlying `os.Open` error. The calling command surfaces this to the user via `RunE`. |
-| AWS config file contains zero `[sso-session ...]` sections | `promptProfileSelect()` returns a descriptive error: no SSO profiles found, suggests running `aws-sso-manager init`. |
-| User cancels the select prompt (Ctrl+C / Esc)              | `huh.NewSelect.Run()` returns an error which propagates through `RunE` to Cobra's error handling. |
+| Scenario                                                   | Behavior                                                                                                                         |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| AWS config file does not exist or is unreadable            | `getAllManagedSections()` returns the underlying `os.Open` error. The calling command surfaces this to the user via `RunE`.      |
+| AWS config file contains zero `[sso-session ...]` sections | `promptProfileSelect()` returns a descriptive error: no SSO profiles found, suggests running `aws-sso-manager init`.             |
+| User cancels the select prompt (Ctrl+C / Esc)              | `huh.NewSelect.Run()` returns an error which propagates through `RunE` to Cobra's error handling.                                |
 | `getAllManagedSections()` returns an error                 | `promptProfileSelect()` propagates the error to the caller without wrapping (the original error already has sufficient context). |
 
 ## Testing strategy
@@ -112,13 +112,13 @@ One property test covering Property 1:
 
 ### Unit tests (example-based)
 
-| Test                                                | Validates |
-| --------------------------------------------------- | --------- |
+| Test                                                | Validates                                                         |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
 | `TestPromptProfileSelectReturnsErrorWhenNoProfiles` | Req 3.3 — empty config yields descriptive error mentioning `init` |
-| `TestAuthCommandUsesSelectPrompt`                   | Req 1.1 — auth command triggers select widget |
-| `TestListCommandUsesSelectPrompt`                   | Req 1.2 — list command triggers select widget |
-| `TestUpdateCommandUsesSelectPrompt`                 | Req 1.3 — update command triggers select widget |
-| `TestInitCommandUsesInputPrompt`                    | Req 2.1, 2.2 — init command still uses free-text input |
+| `TestAuthCommandUsesSelectPrompt`                   | Req 1.1 — auth command triggers select widget                     |
+| `TestListCommandUsesSelectPrompt`                   | Req 1.2 — list command triggers select widget                     |
+| `TestUpdateCommandUsesSelectPrompt`                 | Req 1.3 — update command triggers select widget                   |
+| `TestInitCommandUsesInputPrompt`                    | Req 2.1, 2.2 — init command still uses free-text input            |
 
 ### Testing approach for TUI prompts
 

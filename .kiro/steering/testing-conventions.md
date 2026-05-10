@@ -36,12 +36,12 @@ listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) 
 
 Available seams and their purposes:
 
-| Seam                     | Purpose |
-| ------------------------ | ------- |
-| `listAWSAccountsFetcher` | Mock AWS SSO API calls |
+| Seam                     | Purpose                                         |
+| ------------------------ | ----------------------------------------------- |
+| `listAWSAccountsFetcher` | Mock AWS SSO API calls                          |
 | `osExit`                 | Capture exit codes without killing test process |
-| `runRootCommand`         | Test CLI dispatch without real execution |
-| `fangExecute`            | Test Fang integration without real execution |
+| `runRootCommand`         | Test CLI dispatch without real execution        |
+| `fangExecute`            | Test Fang integration without real execution    |
 
 The same save/restore pattern applies to package-level state variables (`asvConfig`, `logger`, `awsConfigFilePath`, `awsManagerCacheDir`, `userHomeDir`, `cacheDuration`). Always restore via `t.Cleanup` or `defer`.
 
@@ -93,13 +93,13 @@ Each property must run at least 100 iterations (rapid's default). Do not reduce 
 
 Shared generators live in `cmd/testhelpers_test.go`. Reuse them instead of creating ad-hoc generators:
 
-| Generator                         | Produces |
-| --------------------------------- | -------- |
-| `genAccountID()`                  | Valid 12-digit numeric account ID string |
-| `genListAccount()`                | Random account with valid ID, 1–5 roles, realistic fields |
-| `genListAccounts(min, max)`       | Pre-sorted `listAccounts` matching production sort order |
-| `genLookupIndex()`                | Lookup index built via real `buildListAWSAccountsLookupIndex` |
-| `genManagedBlockConfig(profiles)` | Well-formed AWS config content with managed block markers |
+| Generator                         | Produces                                                        |
+| --------------------------------- | --------------------------------------------------------------- |
+| `genAccountID()`                  | Valid 12-digit numeric account ID string                        |
+| `genListAccount()`                | Random account with valid ID, 1–5 roles, realistic fields       |
+| `genListAccounts(min, max)`       | Pre-sorted `listAccounts` matching production sort order        |
+| `genLookupIndex()`                | Lookup index built via real `buildListAWSAccountsLookupIndex`   |
+| `genManagedBlockConfig(profiles)` | Well-formed AWS config content with managed block markers       |
 | `genProfilePatternConfig()`       | Random profile naming config (order, delimiter, prefix, suffix) |
 
 When a test needs data that an existing generator covers, use the generator. Only create new generators for genuinely new data shapes, and add them to `testhelpers_test.go`.

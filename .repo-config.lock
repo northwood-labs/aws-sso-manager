@@ -37,14 +37,19 @@ source_hash = ''
 dest_hash = 'sha256:33ef9405a863b0750fa74db94b1435d75ef6897c51c27748dd357b832889fbe6'
 
 [files.'.rumdl.toml']
-last_sync_time = '2026-05-08T18:35:25Z'
+last_sync_time = '2026-05-09T18:23:13Z'
 source_hash = ''
-dest_hash = 'sha256:752174cb9061c19c1bd18db11feb701f45e8dc322f2e90cedc36f6744aab48ba'
+dest_hash = 'sha256:46fd90c45c421e21e51df2f18f562fc1aae7579355a733154e7e009111c00329'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-04-30T04:56:36Z'
 source_hash = ''
 dest_hash = 'sha256:64f0be43f9a3a049d5e56951767113f21900269f1f4ac33a63f9d19111142352'
+
+[files.'.taplo.toml']
+last_sync_time = '2026-05-09T18:23:13Z'
+source_hash = ''
+dest_hash = 'sha256:b13a8fa7b9904b47331b6bf49cbdd913dcef25db116765aa946da9e12c502c15'
 
 [files.'.trivyignore']
 last_sync_time = '2026-05-03T01:41:18Z'

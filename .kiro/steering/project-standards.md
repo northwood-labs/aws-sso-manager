@@ -19,12 +19,12 @@ Go CLI tool (`github.com/northwood-labs/aws-sso-manager`, Go 1.26+) that manages
 
 Package-level variables are the intentional design for shared state. Do not refactor into dependency injection.
 
-| Variable             | Purpose |
-| -------------------- | ------- |
+| Variable             | Purpose                                     |
+| -------------------- | ------------------------------------------- |
 | `asvConfig`          | Viper instance merging TOML, env, and flags |
-| `logger`             | Charmbracelet structured logger (stderr) |
-| `awsConfigFilePath`  | Resolved path to `~/.aws/config` |
-| `awsManagerCacheDir` | Cache directory path |
+| `logger`             | Charmbracelet structured logger (stderr)    |
+| `awsConfigFilePath`  | Resolved path to `~/.aws/config`            |
+| `awsManagerCacheDir` | Cache directory path                        |
 
 ## Test seams
 
@@ -43,12 +43,12 @@ See `testing-conventions.md` for full testing rules (loaded automatically with `
 
 ## Naming conventions
 
-| Item                        | Convention |
-| --------------------------- | ---------- |
-| Environment variable prefix | `ASM_` (not `ASV_`) |
-| Config file                 | `~/.config/aws-sso-manager/config.toml` |
-| Cache directory             | `~/.config/aws-sso-manager/cache/` |
-| Lock file                   | `~/.config/.aws-sso-manager/.config.lock` |
+| Item                        | Convention                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| Environment variable prefix | `ASM_` (not `ASV_`)                                                             |
+| Config file                 | `~/.config/aws-sso-manager/config.toml`                                         |
+| Cache directory             | `~/.config/aws-sso-manager/cache/`                                              |
+| Lock file                   | `~/.config/.aws-sso-manager/.config.lock`                                       |
 | Env key mapping             | Dots and hyphens become underscores (e.g., `profile-name` → `ASM_PROFILE_NAME`) |
 
 ## File operations

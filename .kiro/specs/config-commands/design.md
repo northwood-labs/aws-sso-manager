@@ -273,10 +273,10 @@ Recursive helper that walks the dot-delimited key path and deletes the leaf. Ret
 
 Keys are dot-delimited strings that map to TOML's nested table structure:
 
-| Key Example                    | TOML Equivalent |
-| ------------------------------ | --------------- |
-| `profile-name`                 | `profile-name = "value"` |
-| `abc.rename.prefix`            | `[abc.rename]` → `prefix = "value"` |
+| Key Example                    | TOML Equivalent                                |
+| ------------------------------ | ---------------------------------------------- |
+| `profile-name`                 | `profile-name = "value"`                       |
+| `abc.rename.prefix`            | `[abc.rename]` → `prefix = "value"`            |
 | `abc.rename.pattern.delimiter` | `[abc.rename.pattern]` → `delimiter = "value"` |
 
 ### Config value format
@@ -341,23 +341,23 @@ _For any_ config mutation (set or delete), the backup file created immediately b
 
 ## Error handling
 
-| Scenario                            | Error Message                                          | Source |
-| ----------------------------------- | ------------------------------------------------------ | ------ |
+| Scenario                            | Error Message                                          | Source               |
+| ----------------------------------- | ------------------------------------------------------ | -------------------- |
 | `config set` with wrong arg count   | Cobra auto-generated: `"accepts 2 arg(s), received N"` | `cobra.ExactArgs(2)` |
 | `config get` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
 | `config del` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
-| `config get` on nonexistent key     | `"key %q is not set"`                                  | `configGetCmd.RunE` |
-| `config del` on nonexistent key     | `"key %q is not set"`                                  | `configDelCmd.RunE` |
-| `config del` declined by user       | (no error — prints `"Deletion canceled."`)             | `configDelCmd.RunE` |
-| Config directory creation fails     | `"could not create config directory: %w"`              | `writeConfigAtomic` |
-| Temp file creation fails            | `"could not create temporary config file: %w"`         | `writeConfigAtomic` |
-| Viper write fails                   | `"could not write config: %w"`                         | `writeConfigAtomic` |
-| Atomic rename fails                 | `"could not replace config file: %w"`                  | `writeConfigAtomic` |
-| TOML parse fails during delete      | `"could not parse config file: %w"`                    | `deleteConfigKey` |
-| Key not found in TOML during delete | `"key %q not found in config file"`                    | `deleteConfigKey` |
-| TOML marshal fails during delete    | `"could not marshal config: %w"`                       | `deleteConfigKey` |
-| Backup read fails                   | (warning logged, mutation proceeds)                    | `backupConfigFile` |
-| Backup write fails                  | (warning logged, mutation proceeds)                    | `backupConfigFile` |
+| `config get` on nonexistent key     | `"key %q is not set"`                                  | `configGetCmd.RunE`  |
+| `config del` on nonexistent key     | `"key %q is not set"`                                  | `configDelCmd.RunE`  |
+| `config del` declined by user       | (no error — prints `"Deletion canceled."`)             | `configDelCmd.RunE`  |
+| Config directory creation fails     | `"could not create config directory: %w"`              | `writeConfigAtomic`  |
+| Temp file creation fails            | `"could not create temporary config file: %w"`         | `writeConfigAtomic`  |
+| Viper write fails                   | `"could not write config: %w"`                         | `writeConfigAtomic`  |
+| Atomic rename fails                 | `"could not replace config file: %w"`                  | `writeConfigAtomic`  |
+| TOML parse fails during delete      | `"could not parse config file: %w"`                    | `deleteConfigKey`    |
+| Key not found in TOML during delete | `"key %q not found in config file"`                    | `deleteConfigKey`    |
+| TOML marshal fails during delete    | `"could not marshal config: %w"`                       | `deleteConfigKey`    |
+| Backup read fails                   | (warning logged, mutation proceeds)                    | `backupConfigFile`   |
+| Backup write fails                  | (warning logged, mutation proceeds)                    | `backupConfigFile`   |
 | Backup prune fails                  | (warning logged per file, mutation proceeds)           | `pruneConfigBackups` |
 
 All errors are returned via `RunE` and propagated through Cobra's error handling. No `panic` or `os.Exit` in command logic. Temp files are cleaned up on error paths via `os.Remove`.
@@ -387,16 +387,16 @@ Property-based tests use `pgregory.net/rapid` with a minimum of 100 iterations p
 
 Tests operate against a fresh Viper instance and a temp directory for the config file, following the existing pattern in `configutils_test.go` (save `asmConfig`, replace with fresh instance, restore via `defer`).
 
-| Test Function                          | Design Property | Tag |
-| -------------------------------------- | --------------- | --- |
-| `TestPropertyConfigSetGetRoundTrip`    | Property 1      | Feature: config-commands, Property 1: Set-then-get round trip |
-| `TestPropertyConfigSetDelGetRoundTrip` | Property 2      | Feature: config-commands, Property 2: Set-then-delete-then-get round trip |
-| `TestPropertyConfigWrongArgCount`      | Property 3      | Feature: config-commands, Property 3: Wrong argument count returns error |
-| `TestPropertyConfigNonexistentKey`     | Property 4      | Feature: config-commands, Property 4: Nonexistent key returns error |
+| Test Function                          | Design Property | Tag                                                                                  |
+| -------------------------------------- | --------------- | ------------------------------------------------------------------------------------ |
+| `TestPropertyConfigSetGetRoundTrip`    | Property 1      | Feature: config-commands, Property 1: Set-then-get round trip                        |
+| `TestPropertyConfigSetDelGetRoundTrip` | Property 2      | Feature: config-commands, Property 2: Set-then-delete-then-get round trip            |
+| `TestPropertyConfigWrongArgCount`      | Property 3      | Feature: config-commands, Property 3: Wrong argument count returns error             |
+| `TestPropertyConfigNonexistentKey`     | Property 4      | Feature: config-commands, Property 4: Nonexistent key returns error                  |
 | `TestPropertyConfigSetConfirmation`    | Property 5      | Feature: config-commands, Property 5: Set confirmation output contains key and value |
-| `TestPropertyConfigDelConfirmation`    | Property 6      | Feature: config-commands, Property 6: Del confirmation output contains key |
-| `TestPropertyConfigBackupRetention`    | Property 7      | Feature: config-commands, Property 7: Backup retention limit |
-| `TestPropertyConfigBackupContent`      | Property 8      | Feature: config-commands, Property 8: Backup content matches pre-mutation state |
+| `TestPropertyConfigDelConfirmation`    | Property 6      | Feature: config-commands, Property 6: Del confirmation output contains key           |
+| `TestPropertyConfigBackupRetention`    | Property 7      | Feature: config-commands, Property 7: Backup retention limit                         |
+| `TestPropertyConfigBackupContent`      | Property 8      | Feature: config-commands, Property 8: Backup content matches pre-mutation state      |
 
 ### Generator strategy
 

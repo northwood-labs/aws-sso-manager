@@ -69,13 +69,13 @@ Always call validate before get; always call get before set. Do not bypass this 
 
 `getProfileName(profileName, account, role)` reads pattern config from Viper under the `<profileName>.rename` namespace:
 
-| Config key                      | Purpose |
-| ------------------------------- | ------- |
+| Config key                      | Purpose                                               |
+| ------------------------------- | ----------------------------------------------------- |
 | `pattern.order`                 | Token sequence: `account`, `role`, `prefix`, `suffix` |
-| `pattern.delimiter`             | Separator between tokens (default: `-`) |
-| `prefix` / `suffix`             | Static strings prepended/appended to the name |
-| `accounts.substr_match_replace` | Map of substring → replacement for account names |
-| `roles.substr_match_replace`    | Map of substring → replacement for role names |
+| `pattern.delimiter`             | Separator between tokens (default: `-`)               |
+| `prefix` / `suffix`             | Static strings prepended/appended to the name         |
+| `accounts.substr_match_replace` | Map of substring → replacement for account names      |
+| `roles.substr_match_replace`    | Map of substring → replacement for role names         |
 
 Fallback: when no pattern is configured or all tokens resolve to empty, `buildDefaultProfileName(account, role)` produces `<account>-<role>` using `toProfileToken` on each part.
 
