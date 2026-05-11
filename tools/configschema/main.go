@@ -32,6 +32,7 @@ func main() {
 	}
 
 	schema := r.Reflect(&cmd.ConfigFile{})
+
 	schema.Title = "aws-sso-manager configuration"
 	schema.Description = "Schema for ~/.config/aws-sso-manager/config.toml"
 

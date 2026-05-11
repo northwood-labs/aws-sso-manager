@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@contextlint/cli": "^1.1.1"
+  }
+}

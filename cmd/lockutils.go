@@ -58,6 +58,7 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	}
 
 	lockPath := filepath.Join(lockDir, ".config.lock")
+
 	lockFile, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0o0600)
 	if err != nil {
 		return nil, fmt.Errorf("open AWS config lock file %q: %w", lockPath, err)
@@ -120,6 +121,7 @@ func (l *awsConfigLock) Release() error {
 	if unlockErr != nil {
 		return fmt.Errorf("unlock AWS config lock: %w", unlockErr)
 	}
+
 	if closeErr != nil {
 		return fmt.Errorf("close AWS config lock file: %w", closeErr)
 	}

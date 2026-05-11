@@ -4,6 +4,6 @@
   golangci-lint = "2.12.2"
   golines = "0.13.0"
   gotestsum = "1.13.0"
-  mockery = "3.7.0"
-  sqlc = "1.31.1"
+  # mockery = "3.7.0"
+  # sqlc = "1.31.1"
   # @config-manager:end golang

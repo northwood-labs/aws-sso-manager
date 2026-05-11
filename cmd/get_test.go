@@ -105,7 +105,9 @@ func TestPropertyAccountIDValidation(t *testing.T) {
 		// --- Part 1: Invalid account IDs must return an error ---
 		// Generate a string that is NOT a valid 12-digit numeric string.
 		invalidKind := rapid.IntRange(0, 4).Draw(t, "invalidKind")
+
 		var invalidID string
+
 		switch invalidKind {
 		case 0:
 			// Empty string
@@ -113,10 +115,12 @@ func TestPropertyAccountIDValidation(t *testing.T) {
 		case 1:
 			// Too short: 1-11 digits
 			length := rapid.IntRange(1, 11).Draw(t, "shortLen")
+
 			invalidID = rapid.StringMatching(fmt.Sprintf(`[0-9]{%d}`, length)).Draw(t, "shortID")
 		case 2:
 			// Too long: 13-20 digits
 			length := rapid.IntRange(13, 20).Draw(t, "longLen")
+
 			invalidID = rapid.StringMatching(fmt.Sprintf(`[0-9]{%d}`, length)).Draw(t, "longID")
 		case 3:
 			// Contains letters (12 chars but not all digits)
@@ -150,6 +154,7 @@ func TestPropertyAccountIDValidation(t *testing.T) {
 			sort.SliceStable(expectedRoles, func(i, j int) bool {
 				return strings.ToLower(expectedRoles[i]) < strings.ToLower(expectedRoles[j])
 			})
+
 			if !reflect.DeepEqual(roles, expectedRoles) {
 				t.Fatalf("roles mismatch for account %q: got %v, want %v", accountID, roles, expectedRoles)
 			}

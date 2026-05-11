@@ -106,14 +106,14 @@ var (
 			// (-vv), 3+=debug with source file:line (-vvv). ReportCaller is
 			// expensive so it's only enabled at the highest level for deep
 			// debugging.
-			switch {
-			case fVerbose == 0:
+			switch fVerbose {
+			case 0:
 				charmlogger.SetLevel(log.WarnLevel)
 				charmlogger.SetReportCaller(false)
-			case fVerbose == 1:
+			case 1:
 				charmlogger.SetLevel(log.InfoLevel)
 				charmlogger.SetReportCaller(false)
-			case fVerbose == 2:
+			case 2:
 				charmlogger.SetLevel(log.DebugLevel)
 				charmlogger.SetReportCaller(false)
 			default:
@@ -148,6 +148,7 @@ func parseCacheDurationFlag(raw string) (time.Duration, error) {
 
 	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
 	normalized := trimmed
+
 	matches := dayTokenPattern.FindAllStringSubmatch(trimmed, -1)
 	for _, match := range matches {
 		days, err := strconv.Atoi(match[1])
@@ -182,6 +183,7 @@ func init() {
 	// The SDK doesn't appear to provide access to a fully-resolved config file
 	// location, so we'll do it quick-and-dirty here.
 	awsConfigFilePath = config.DefaultSharedConfigFilename()
+
 	envConfigFile := os.Getenv("AWS_CONFIG_FILE")
 
 	if envConfigFile != "" {

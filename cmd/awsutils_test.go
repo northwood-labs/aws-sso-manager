@@ -42,6 +42,7 @@ func TestListAWSAccountsCacheFilePathUsesPackageDefaultDir(t *testing.T) {
 	}
 
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), ".config", "aws-sso-manager", "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -66,6 +67,7 @@ func TestListAWSAccountsCacheFilePathUsesPackageDefaultDir(t *testing.T) {
 
 func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -94,7 +96,9 @@ func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 	}
 
 	oldFetcher := listAWSAccountsFetcher
+
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
+
 	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
 		return listAccounts{}, errors.New("fetcher should not be called on a cache hit")
 	}
@@ -111,11 +115,14 @@ func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 
 func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	oldCacheDuration := cacheDuration
+
 	cacheDuration = time.Hour
+
 	t.Cleanup(func() { cacheDuration = oldCacheDuration })
 
 	input := listAWSAccountsInput{
@@ -162,7 +169,9 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 
 	fetchCount := 0
 	oldFetcher := listAWSAccountsFetcher
+
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
+
 	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
 		fetchCount++
 		return expected, nil
@@ -197,6 +206,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 
 func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -222,7 +232,9 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 	}
 
 	oldFetcher := listAWSAccountsFetcher
+
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
+
 	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
 		return expected, nil
 	}
@@ -241,6 +253,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("readListAWSAccountsLookupCache: %v", err)
 	}
+
 	if !ok {
 		t.Fatalf("expected lookup cache to be present")
 	}
@@ -281,6 +294,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 
 func TestLoadOrBuildListAWSAccountsLookupIndexBuildsFromAccountsCache(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -330,6 +344,7 @@ func TestLoadOrBuildListAWSAccountsLookupIndexBuildsFromAccountsCache(t *testing
 
 func TestDeleteListAWSAccountsCacheRemovesExistingFile(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -371,6 +386,7 @@ func TestDeleteListAWSAccountsCacheRemovesExistingFile(t *testing.T) {
 
 func TestDeleteListAWSAccountsCacheIgnoresMissingFile(t *testing.T) {
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -387,6 +403,7 @@ func TestDeleteListAWSAccountsCacheIgnoresMissingFile(t *testing.T) {
 func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 	// 1. Set up a temp directory for cache files
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -439,7 +456,9 @@ func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 
 	fetcherCalled := false
 	oldFetcher := listAWSAccountsFetcher
+
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
+
 	listAWSAccountsFetcher = func(_ listAWSAccountsInput) (listAccounts, error) {
 		fetcherCalled = true
 		return newAccounts, nil
@@ -484,6 +503,7 @@ func TestPropertyAccountAndRoleSorting(t *testing.T) {
 	// **Validates: Requirements 3.7**
 	rapid.Check(t, func(t *rapid.T) {
 		numAccounts := rapid.IntRange(1, 10).Draw(t, "numAccounts")
+
 		accounts := make([]listAccount, numAccounts)
 		for i := range numAccounts {
 			accounts[i] = genListAccount().Draw(t, fmt.Sprintf("account%d", i))
@@ -493,6 +513,7 @@ func TestPropertyAccountAndRoleSorting(t *testing.T) {
 		sort.SliceStable(accounts, func(i, j int) bool {
 			return strings.ToLower(accounts[i].Name) < strings.ToLower(accounts[j].Name)
 		})
+
 		for i := range accounts {
 			sort.SliceStable(accounts[i].Roles, func(a, b int) bool {
 				return strings.ToLower(accounts[i].Roles[a].Name) < strings.ToLower(accounts[i].Roles[b].Name)
@@ -510,7 +531,12 @@ func TestPropertyAccountAndRoleSorting(t *testing.T) {
 		for _, acct := range accounts {
 			for j := 1; j < len(acct.Roles); j++ {
 				if strings.ToLower(acct.Roles[j-1].Name) > strings.ToLower(acct.Roles[j].Name) {
-					t.Fatalf("roles not sorted in account %q: %q > %q", acct.Name, acct.Roles[j-1].Name, acct.Roles[j].Name)
+					t.Fatalf(
+						"roles not sorted in account %q: %q > %q",
+						acct.Name,
+						acct.Roles[j-1].Name,
+						acct.Roles[j].Name,
+					)
 				}
 			}
 		}
@@ -527,6 +553,7 @@ func TestPropertyAccountAndRoleFiltering(t *testing.T) {
 
 		// Apply account filtering (replicate production logic from fetchListAWSAccountsFromSSO)
 		var filtered listAccounts
+
 		for _, acct := range original.Accounts {
 			if !strings.Contains(strings.ToLower(acct.Name), filterLower) {
 				continue
@@ -543,6 +570,7 @@ func TestPropertyAccountAndRoleFiltering(t *testing.T) {
 				if !strings.Contains(strings.ToLower(role.Name), filterLower) {
 					continue
 				}
+
 				filteredAcct.Roles = append(filteredAcct.Roles, role)
 			}
 
@@ -652,6 +680,7 @@ func TestPropertyLookupIndexRoundTrip(t *testing.T) {
 func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 	// **Validates: Requirements 10.2**
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
@@ -669,6 +698,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 
 		// Same inputs produce same path
 		path1 := input.cacheFilePath()
+
 		path2 := input.cacheFilePath()
 		if path1 != path2 {
 			t.Fatalf("same inputs produced different paths: %q vs %q", path1, path2)
@@ -682,6 +712,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 			AccountFilter: accountFilter,
 			RoleFilter:    roleFilter,
 		}
+
 		path3 := differentInput.cacheFilePath()
 		if path1 == path3 {
 			t.Fatalf("different inputs produced same path: %q", path1)
@@ -693,14 +724,17 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 func TestPropertyCacheExpiryDetection(t *testing.T) {
 	// **Validates: Requirements 10.4**
 	oldCacheDir := awsManagerCacheDir
+
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
 	oldCacheDuration := cacheDuration
+
 	t.Cleanup(func() { cacheDuration = oldCacheDuration })
 
 	rapid.Check(t, func(t *rapid.T) {
 		duration := time.Duration(rapid.IntRange(1, 48).Draw(t, "hours")) * time.Hour
+
 		cacheDuration = duration
 
 		accounts := genListAccounts(1, 3).Draw(t, "accounts")
@@ -717,6 +751,7 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 			Accounts: accounts,
 		}
 		data, _ := json.Marshal(notExpired)
+
 		os.MkdirAll(filepath.Dir(cachePath), 0o755)
 		os.WriteFile(cachePath, data, 0o600)
 
@@ -724,9 +759,11 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 		if err != nil {
 			t.Fatalf("readListAWSAccountsCache (not expired): %v", err)
 		}
+
 		if !ok {
 			t.Fatalf("expected cache to be valid (not expired)")
 		}
+
 		if len(got.Accounts) != len(accounts.Accounts) {
 			t.Fatalf("expected %d accounts, got %d", len(accounts.Accounts), len(got.Accounts))
 		}
@@ -736,6 +773,7 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 			CachedAt: time.Now().Add(-duration * 2).UTC(),
 			Accounts: accounts,
 		}
+
 		data, _ = json.Marshal(expired)
 		os.WriteFile(cachePath, data, 0o600)
 
@@ -743,6 +781,7 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 		if err != nil {
 			t.Fatalf("readListAWSAccountsCache (expired): %v", err)
 		}
+
 		if ok {
 			t.Fatalf("expected cache to be expired")
 		}
@@ -762,10 +801,12 @@ func TestBuildListAWSAccountsLookupIndexEdgeCases(t *testing.T) {
 			Accounts: []listAccount{{ID: "111111111111", Name: "NoRoles"}},
 		}
 		index := buildListAWSAccountsLookupIndex("test", accounts)
+
 		entry, ok := index.AccountsByID["111111111111"]
 		if !ok {
 			t.Fatal("expected account in index")
 		}
+
 		if len(entry.Roles) != 0 {
 			t.Fatalf("expected no roles, got %d", len(entry.Roles))
 		}
@@ -779,6 +820,7 @@ func TestBuildListAWSAccountsLookupIndexEdgeCases(t *testing.T) {
 			},
 		}
 		index := buildListAWSAccountsLookupIndex("test", accounts)
+
 		entry := index.AccountsByID["111111111111"]
 		if len(entry.Roles) != 2 {
 			t.Fatalf("expected 2 merged roles, got %d: %v", len(entry.Roles), entry.Roles)
@@ -789,10 +831,12 @@ func TestBuildListAWSAccountsLookupIndexEdgeCases(t *testing.T) {
 		accounts := listAccounts{
 			Accounts: []listAccount{{ID: "111111111111", Name: ""}},
 		}
+
 		index := buildListAWSAccountsLookupIndex("test", accounts)
 		if _, ok := index.AccountsByID["111111111111"]; !ok {
 			t.Fatal("expected account in index")
 		}
+
 		if len(index.AccountIDsByNameCI) != 0 {
 			t.Fatalf("expected empty AccountIDsByNameCI for empty name, got %v", index.AccountIDsByNameCI)
 		}
@@ -802,6 +846,7 @@ func TestBuildListAWSAccountsLookupIndexEdgeCases(t *testing.T) {
 		accounts := listAccounts{
 			Accounts: []listAccount{{ID: "", Name: "NoID"}},
 		}
+
 		index := buildListAWSAccountsLookupIndex("test", accounts)
 		if len(index.AccountsByID) != 0 {
 			t.Fatalf("expected empty AccountsByID for empty ID, got %d", len(index.AccountsByID))

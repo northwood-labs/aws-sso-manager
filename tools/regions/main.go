@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main provides the entrypoint for the regions tool.
 package main
 
 import "github.com/northwood-labs/aws-sso-manager/tools/regions/cmd"

@@ -215,13 +215,3 @@ tools/go-tool-standard.sh
 go mod tidy -modfile go.tools.mod
 go get -modfile go.tools.mod -u -t -v ./...
 """
-
-# Git hooks
-[[files]]
-  stub = 'configs/stubs/.githooks/commit-msg.sh'
-  source = 'configs/templates/.githooks/commit-msg.sh'
-  destination = '.githooks/commit-msg.sh'
-  executable = true
-
-  [files.post_update_hook]
-    bash = 'cp -vf .githooks/commit-msg.sh .git/hooks/commit-msg'

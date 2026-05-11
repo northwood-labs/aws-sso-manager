@@ -32,12 +32,14 @@ func genListAccount() *rapid.Generator[listAccount] {
 	return rapid.Custom[listAccount](func(t *rapid.T) listAccount {
 		accountID := genAccountID().Draw(t, "accountID")
 		name := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,19}`).Draw(t, "name")
-		email := fmt.Sprintf("%s@example.com", strings.ToLower(name))
+		email := strings.ToLower(name) + "@example.com"
 
 		numRoles := rapid.IntRange(1, 5).Draw(t, "numRoles")
+
 		roles := make([]listRole, numRoles)
 		for i := range numRoles {
 			roleName := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(t, fmt.Sprintf("roleName%d", i))
+
 			roles[i] = listRole{
 				AccountID: accountID,
 				Name:      roleName,
@@ -68,6 +70,7 @@ func genAccountID() *rapid.Generator[string] {
 func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts] {
 	return rapid.Custom[listAccounts](func(t *rapid.T) listAccounts {
 		numAccounts := rapid.IntRange(minAccounts, maxAccounts).Draw(t, "numAccounts")
+
 		accounts := make([]listAccount, numAccounts)
 		for i := range numAccounts {
 			accounts[i] = genListAccount().Draw(t, fmt.Sprintf("account%d", i))
@@ -117,26 +120,44 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 		}
 
 		for _, profile := range profiles {
-			sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
-			sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
+			fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
+			fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 			sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
 			sb.WriteString("sso_region = us-east-1\n")
 			sb.WriteString("sso_registration_scopes = sso:account:access\n")
 			sb.WriteString("\n")
 
 			// Generate 1-3 profile sections inside the managed block
-			numProfiles := rapid.IntRange(1, 3).Draw(t, fmt.Sprintf("numProfiles_%s", profile))
+			numProfiles := rapid.IntRange(1, 3).Draw(t, "numProfiles_"+profile)
 			for j := range numProfiles {
-				profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,14}`).Draw(t, fmt.Sprintf("profileName_%s_%d", profile, j))
-				sb.WriteString(fmt.Sprintf("[profile %s]\n", profileName))
-				sb.WriteString(fmt.Sprintf("sso_session = %s\n", profile))
-				sb.WriteString(fmt.Sprintf("sso_account_id = %s\n", genAccountID().Draw(t, fmt.Sprintf("acctID_%s_%d", profile, j))))
-				sb.WriteString(fmt.Sprintf("sso_role_name = %s\n", rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(t, fmt.Sprintf("roleName_%s_%d", profile, j))))
+				profileName := rapid.StringMatching(
+					`[a-z][a-z0-9]{2,14}`,
+				).Draw(
+					t,
+					fmt.Sprintf("profileName_%s_%d", profile, j),
+				)
+				fmt.Fprintf(&sb, "[profile %s]\n", profileName)
+				fmt.Fprintf(&sb, "sso_session = %s\n", profile)
+				fmt.Fprintf(
+					&sb,
+					"sso_account_id = %s\n",
+					genAccountID().Draw(t, fmt.Sprintf("acctID_%s_%d", profile, j)),
+				)
+				fmt.Fprintf(
+					&sb,
+					"sso_role_name = %s\n",
+					rapid.StringMatching(
+						`[A-Za-z][A-Za-z0-9]{2,14}`,
+					).Draw(
+						t,
+						fmt.Sprintf("roleName_%s_%d", profile, j),
+					),
+				)
 				sb.WriteString("region = us-east-1\n")
 				sb.WriteString("output = json\n")
 			}
 
-			sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+			fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
 		}
 
 		return sb.String()
@@ -163,18 +184,22 @@ func genProfilePatternConfig() *rapid.Generator[map[string]any] {
 
 		// Generate substr_match_replace maps with 0-2 entries
 		accountReplacements := make(map[string]any)
+
 		numAccountReplacements := rapid.IntRange(0, 2).Draw(t, "numAccountReplacements")
 		for i := range numAccountReplacements {
 			key := rapid.StringMatching(`[A-Za-z]{2,8}`).Draw(t, fmt.Sprintf("acctReplKey%d", i))
 			val := rapid.StringMatching(`[a-z]{1,6}`).Draw(t, fmt.Sprintf("acctReplVal%d", i))
+
 			accountReplacements[key] = val
 		}
 
 		roleReplacements := make(map[string]any)
+
 		numRoleReplacements := rapid.IntRange(0, 2).Draw(t, "numRoleReplacements")
 		for i := range numRoleReplacements {
 			key := rapid.StringMatching(`[A-Za-z]{2,8}`).Draw(t, fmt.Sprintf("roleReplKey%d", i))
 			val := rapid.StringMatching(`[a-z]{1,6}`).Draw(t, fmt.Sprintf("roleReplVal%d", i))
+
 			roleReplacements[key] = val
 		}
 

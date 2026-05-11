@@ -165,9 +165,9 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 | Runs on Windows                              | ✓                           | ✓                  |
 | Runs on macOS                                | ✓                           | ✓                  |
 | Runs on Linux                                | ✓                           | ✓                  |
-| macOS code signing (Gatekeeper)              | ✓                           |                    |
-| Linux code signing                           | —                           |                    |
-| Windows code signing                         | —                           |                    |
+| macOS code signing (Gatekeeper)              | ✓                           | -                  |
+| Linux code signing                           | —                           | -                  |
+| Windows code signing                         | —                           | -                  |
 | Shell completion                             | Bash, Zsh, Fish, PowerShell | Bash, Zsh, Fish    |
 | License                                      | [Apache-2.0]                | [GPL-3.0-or-later] |
 

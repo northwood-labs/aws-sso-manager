@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -99,7 +100,7 @@ var initCmd = &cobra.Command{
 		sections, err := loadAWSConfig(awsConfigFilePath)
 		cobra.CheckErr(err)
 
-		sessionName := fmt.Sprintf("sso-session %s", profileName)
+		sessionName := "sso-session " + profileName
 
 		logger.Info("Load the session section and check for existing section", "section", sessionName)
 
@@ -148,6 +149,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("invalid SSO start URL: %w", err)
 		}
+
 		ssoStartURL = normalizedStartURL
 
 		logger.Info("Ask for SSO region if not provided already.")
@@ -208,6 +210,7 @@ var initCmd = &cobra.Command{
 
 		tmpConfig, err := os.CreateTemp(filepath.Dir(awsConfigFilePath), ".aws-sso-manager-init-*.ini")
 		cobra.CheckErr(err)
+
 		tmpConfigPath := tmpConfig.Name()
 
 		defer func() {
@@ -287,7 +290,7 @@ func init() {
 func normalizeSSOStartURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return "", fmt.Errorf("value cannot be empty")
+		return "", errors.New("value cannot be empty")
 	}
 
 	if strings.Contains(trimmed, "://") {

@@ -97,6 +97,7 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) {
 		if err != nil {
 			t.Fatalf("json.Marshal failed: %v", err)
 		}
+
 		jsonOutput := string(jsonBytes)
 
 		// Verify every account ID, account name, and role name appears in all three outputs
@@ -104,9 +105,11 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) {
 			if !strings.Contains(csvOutput, acct.ID) {
 				t.Fatalf("CSV output missing account ID %q", acct.ID)
 			}
+
 			if !strings.Contains(mdOutput, acct.ID) {
 				t.Fatalf("Markdown output missing account ID %q", acct.ID)
 			}
+
 			if !strings.Contains(jsonOutput, acct.ID) {
 				t.Fatalf("JSON output missing account ID %q", acct.ID)
 			}
@@ -114,9 +117,11 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) {
 			if !strings.Contains(csvOutput, acct.Name) {
 				t.Fatalf("CSV output missing account name %q", acct.Name)
 			}
+
 			if !strings.Contains(mdOutput, acct.Name) {
 				t.Fatalf("Markdown output missing account name %q", acct.Name)
 			}
+
 			if !strings.Contains(jsonOutput, acct.Name) {
 				t.Fatalf("JSON output missing account name %q", acct.Name)
 			}
@@ -125,9 +130,11 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) {
 				if !strings.Contains(csvOutput, role.Name) {
 					t.Fatalf("CSV output missing role name %q", role.Name)
 				}
+
 				if !strings.Contains(mdOutput, role.Name) {
 					t.Fatalf("Markdown output missing role name %q", role.Name)
 				}
+
 				if !strings.Contains(jsonOutput, role.Name) {
 					t.Fatalf("JSON output missing role name %q", role.Name)
 				}
@@ -140,6 +147,7 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) {
 			if !strings.Contains(csvOutput, profile) {
 				t.Fatalf("CSV output missing profile name %q", profile)
 			}
+
 			if !strings.Contains(mdOutput, profile) {
 				t.Fatalf("Markdown output missing profile name %q", profile)
 			}

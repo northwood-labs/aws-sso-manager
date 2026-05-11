@@ -104,10 +104,10 @@ type (
 	// so that "get" and "lookup" commands can resolve identifiers without
 	// re-fetching from AWS.
 	listAWSAccountsLookupIndex struct {
-		ProfileName           string                                  `json:"profile_name"`
 		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`
 		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`
 		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"`
+		ProfileName           string                                  `json:"profile_name"`
 	}
 
 	listAWSAccountsLookupCacheData struct {
@@ -149,6 +149,7 @@ func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 	}
 
 	var cache cacheFileData
+
 	err = json.Unmarshal(data, &cache)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal cache file data: %w ", err)
@@ -169,6 +170,7 @@ func ensureAWSManagerCacheDir() (string, error) {
 
 		if homeDir == "" {
 			var err error
+
 			homeDir, err = os.UserHomeDir()
 			if err != nil {
 				return "", fmt.Errorf("could not determine user home directory: %w", err)
@@ -205,6 +207,7 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 		input.RoleFilter,
 	}, "\x00")
 	hash := sha256.Sum256([]byte(cacheKey))
+
 	cacheDir, err := ensureAWSManagerCacheDir()
 	if err != nil {
 		input.getLogger().Error("Failed to ensure AWS accounts cache directory", "err", err)
@@ -261,6 +264,7 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 		}
 
 		entry := index.AccountsByID[account.ID]
+
 		entry.Name = account.Name
 
 		nameKey := strings.ToLower(strings.TrimSpace(account.Name))
@@ -270,6 +274,7 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 
 		for _, role := range account.Roles {
 			entry.Roles = appendUnique(entry.Roles, role.Name)
+
 			profileKey := strings.ToLower(strings.TrimSpace(role.Profile))
 
 			if profileKey != "" {
@@ -295,11 +300,13 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 
 	for nameKey, accountIDs := range index.AccountIDsByNameCI {
 		sort.Strings(accountIDs)
+
 		index.AccountIDsByNameCI[nameKey] = accountIDs
 	}
 
 	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
 		sort.Strings(accountIDs)
+
 		index.AccountIDsByProfileCI[profileKey] = accountIDs
 	}
 
@@ -388,6 +395,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 	if err != nil {
 		return listAWSAccountsLookupIndex{}, err
 	}
+
 	if ok {
 		return index, nil
 	}
@@ -401,6 +409,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 	if err != nil {
 		return listAWSAccountsLookupIndex{}, err
 	}
+
 	if !ok {
 		return listAWSAccountsLookupIndex{}, fmt.Errorf(
 			"lookup cache is missing and no accounts cache exists for profile %q",
@@ -421,6 +430,7 @@ func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
 	if cacheFilePath == "" {
 		return errors.New("could not determine the cache file path")
 	}
+
 	lookupCachePath := input.lookupCacheFilePath()
 
 	if err := os.Remove(cacheFilePath); err != nil {
@@ -639,7 +649,7 @@ func getSsoSession(profileName string) (ssoProfile, error) {
 		return ssoProfile{}, fmt.Errorf("failed to load AWS config file: %w", err)
 	}
 
-	sessionName := fmt.Sprintf("sso-session %s", profileName)
+	sessionName := "sso-session " + profileName
 
 	section, ok := sections.GetSection(sessionName)
 	if !ok {
@@ -780,7 +790,9 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 
 		if errors.As(err, &authPendingErr) {
 			time.Sleep(sleepPerCycle)
+
 			delta = time.Since(startTime)
+
 			continue
 		} else if errors.As(err, &accessDeniedErr) {
 			return cacheFileData{}, fmt.Errorf("authentication denied: %w", err)

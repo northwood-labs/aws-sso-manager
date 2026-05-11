@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cmd lists all AWS regions by name and identifier.
 package cmd
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -33,10 +35,13 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
-type RegionEntry struct {
-	Name       string `json:"name"`
-	Identifier string `json:"identifier"`
-}
+const (
+	// AWSMaxResults refers to how many results to retrieve per page.
+	AWSMaxResults = 10
+
+	// ExpectedRegionParts refers to the expected number of parts when splitting a region string.
+	ExpectedRegionParts = 2
+)
 
 var (
 	fVerbose     int
@@ -48,7 +53,12 @@ var (
 	runRootCommand    = func(ctx context.Context, cmd *cobra.Command, signals ...os.Signal) error {
 		return fangExecute(ctx, cmd, fang.WithNotifySignal(signals...))
 	}
-	osExit = os.Exit
+
+	osExit  = os.Exit
+	results []string
+
+	// ErrInvalidResultFormat is returned when a region result string does not match the expected format.
+	ErrInvalidResultFormat = errors.New("invalid result format")
 
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
@@ -63,7 +73,7 @@ var (
 		The output is suitable for use in scripts and can be easily parsed as
 		JSON.
 		`),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			ctx := context.Background()
 
 			awsConfig, err := config.LoadDefaultConfig(ctx)
@@ -77,26 +87,24 @@ var (
 
 			p := ssm.NewGetParametersByPathPaginator(ssmClient, &ssm.GetParametersByPathInput{
 				Path:       aws.String("/aws/service/global-infrastructure/regions"),
-				MaxResults: aws.Int32(10),
+				MaxResults: aws.Int32(AWSMaxResults),
 			})
-
-			var results []string
 
 			for p.HasMorePages() {
 				// Get the next page of results
-				page, err := p.NextPage(ctx)
-				if err != nil {
-					return fmt.Errorf("failed to get next page of results: %w", err)
+				page, pageErr := p.NextPage(ctx)
+				if pageErr != nil {
+					return fmt.Errorf("failed to get next page of results: %w", pageErr)
 				}
 
 				// Get a batch of results
 				for _, param := range page.Parameters {
 					group.Submit(func() string {
-						output, err := ssmClient.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{
+						output, fetchErr := ssmClient.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{
 							Path: param.Name,
 						})
-						if err != nil {
-							panic(err)
+						if fetchErr != nil {
+							panic(fetchErr)
 						}
 
 						for _, innerParam := range output.Parameters {
@@ -122,9 +130,9 @@ var (
 			regions := make([]RegionEntry, len(results))
 
 			for i, result := range results {
-				parts := strings.SplitN(result, ":::", 2)
-				if len(parts) != 2 {
-					return fmt.Errorf("invalid result format: %q", result)
+				parts := strings.SplitN(result, ":::", ExpectedRegionParts)
+				if len(parts) != ExpectedRegionParts {
+					return fmt.Errorf("%w: %q", ErrInvalidResultFormat, result)
 				}
 
 				regions[i] = RegionEntry{
@@ -149,6 +157,24 @@ var (
 	}
 )
 
+// RegionEntry represents a single region entry.
+type RegionEntry struct {
+	Name       string `json:"name"`
+	Identifier string `json:"identifier"`
+}
+
+func init() { // lint:allow_init
+	const DefaultConcurrencyValue = 10
+
+	rootCmd.Flags().IntVarP(
+		&fConcurrency, "concurrency", "c", DefaultConcurrencyValue, "Number of concurrent requests.",
+	)
+	rootCmd.PersistentFlags().CountVarP(
+		&fVerbose, "verbose", "v", "Increase verbosity. Can be specified multiple times.",
+	)
+}
+
+// Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	if err := runRootCommand(
 		context.Background(),
@@ -157,13 +183,4 @@ func Execute() {
 	); err != nil {
 		osExit(1)
 	}
-}
-
-func init() {
-	rootCmd.Flags().IntVarP(
-		&fConcurrency, "concurrency", "c", 10, "Number of concurrent requests.",
-	)
-	rootCmd.PersistentFlags().CountVarP(
-		&fVerbose, "verbose", "v", "Increase verbosity. Can be specified multiple times.",
-	)
 }

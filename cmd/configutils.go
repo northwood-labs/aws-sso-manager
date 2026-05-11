@@ -38,10 +38,10 @@ const (
 // validate command can report all anomalies in a single pass rather than
 // failing on the first one.
 type managedMarkerReport struct {
-	profiles    []string
 	startCounts map[string]int
 	endCounts   map[string]int
 	issues      map[string][]string
+	profiles    []string
 }
 
 // appendManagedMarkerIssue deduplicates issues per profile so overlapping
@@ -65,6 +65,7 @@ func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 	}
 
 	rest := strings.TrimSpace(after)
+
 	name := strings.TrimRight(strings.TrimSuffix(rest, "--------"), " -")
 	if name == "" {
 		return "", false
@@ -114,6 +115,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 
 		if profile, ok := parseManagedMarkerProfile(line, managedStartMarkerPrefix); ok {
 			addProfile(profile)
+
 			report.startCounts[profile]++
 
 			if activeProfile != "" {
@@ -137,6 +139,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 
 		if profile, ok := parseManagedMarkerProfile(line, managedEndMarkerPrefix); ok {
 			addProfile(profile)
+
 			report.endCounts[profile]++
 
 			if activeProfile == "" {
@@ -251,6 +254,7 @@ func getProfileName(profileName, account, role string) string {
 					}
 
 					matched = true
+
 					continue
 				}
 			}
@@ -268,6 +272,7 @@ func getProfileName(profileName, account, role string) string {
 					}
 
 					matched = true
+
 					continue
 				}
 			}
@@ -333,6 +338,7 @@ func toProfileToken(input string) string {
 	for _, r := range input {
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
 			b.WriteRune(r)
+
 			lastDash = false
 
 			continue
@@ -340,6 +346,7 @@ func toProfileToken(input string) string {
 
 		if !lastDash {
 			b.WriteRune('-')
+
 			lastDash = true
 		}
 	}
@@ -372,6 +379,7 @@ func validateMarkers(profileName string) error {
 	for _, issue := range report.issues[profileName] {
 		errs = append(errs, errors.New(issue))
 	}
+
 	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
@@ -388,6 +396,7 @@ func validateManagedMarkers() error {
 	}
 
 	var errs []error
+
 	for _, profile := range report.profiles {
 		for _, issue := range report.issues[profile] {
 			errs = append(errs, errors.New(issue))
@@ -437,12 +446,14 @@ func getManagedSection(profileName string) (string, error) {
 			logger.Debug(">| " + line)
 
 			doCopy = true
+
 			continue
 		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
 			logger.Debug("<| " + line)
 			break
 		} else {
 			logger.Debug(" | " + line)
+
 			if doCopy {
 				_, err = tmp.WriteString(line + "\n")
 				if err != nil {
@@ -506,6 +517,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 
 			inManagedBlock = true
 			injectedInBlock = false
+
 			continue
 		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
 			logger.Debug("<| " + confLine)
@@ -517,6 +529,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 
 			inManagedBlock = false
 			injectedInBlock = false
+
 			continue
 		} else {
 			logger.Debug(" | " + confLine)

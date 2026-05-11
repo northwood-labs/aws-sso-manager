@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -35,11 +36,13 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() {
 		awsConfigFilePath = oldConfigPath
 	})
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	configContent := strings.Join([]string{
@@ -60,10 +63,7 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 	}
 
 	tmpFile := filepath.Join(dir, "managed.ini")
-	replacement := strings.Join([]string{
-		"[profile new-one]",
-		"sso_account_id = 333333333333",
-	}, "\n") + "\n"
+	replacement := "[profile new-one]" + "\n" + "sso_account_id = 333333333333" + "\n"
 
 	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil {
 		t.Fatalf("write tmp file: %v", err)
@@ -107,9 +107,11 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := strings.Join([]string{
@@ -135,6 +137,7 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 	if len(profiles) != 2 {
 		t.Fatalf("expected 2 profiles, got %d: %v", len(profiles), profiles)
 	}
+
 	if profiles[0] != "alpha" || profiles[1] != "beta" {
 		t.Fatalf("expected [alpha beta], got %v", profiles)
 	}
@@ -144,9 +147,11 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	// Duplicate start markers for the same profile.
@@ -175,9 +180,11 @@ func TestValidateMarkersOK(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := strings.Join([]string{
@@ -199,9 +206,11 @@ func TestValidateMarkersMismatched(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	// Missing end marker.
@@ -221,9 +230,11 @@ func TestValidateMarkersDuplicate(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := strings.Join([]string{
@@ -247,9 +258,11 @@ func TestValidateMarkersOverlappingProfiles(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := strings.Join([]string{
@@ -267,9 +280,11 @@ func TestValidateMarkersOverlappingProfiles(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for overlapping managed block markers")
 	}
+
 	if !strings.Contains(err.Error(), "overlapping managed block markers") {
 		t.Fatalf("expected overlapping marker error, got: %v", err)
 	}
+
 	if !strings.Contains(err.Error(), "alpha") || !strings.Contains(err.Error(), "beta") {
 		t.Fatalf("expected overlapping error to mention both profiles, got: %v", err)
 	}
@@ -279,9 +294,11 @@ func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := "; -------- aws-sso-manager: end orphan --------\n"
@@ -294,6 +311,7 @@ func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for unmatched end marker")
 	}
+
 	if !strings.Contains(err.Error(), "unmatched managed block end marker") {
 		t.Fatalf("expected unmatched end marker error, got: %v", err)
 	}
@@ -303,9 +321,11 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	config := strings.Join([]string{
@@ -326,6 +346,7 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 	if len(profiles) != 2 {
 		t.Fatalf("expected 2 profiles, got %d: %v", len(profiles), profiles)
 	}
+
 	if profiles[0] != "alpha" || profiles[1] != "orphan" {
 		t.Fatalf("expected [alpha orphan], got %v", profiles)
 	}
@@ -337,11 +358,13 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() {
 		awsConfigFilePath = oldConfigPath
 	})
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, "config")
 
 	configContent := strings.Join([]string{
@@ -395,15 +418,18 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldHomeDir := userHomeDir
+
 	t.Cleanup(func() { userHomeDir = oldHomeDir })
 
 	dir := t.TempDir()
+
 	userHomeDir = dir
 
 	lock, err := acquireAWSConfigLock(context.Background())
 	if err != nil {
 		t.Fatalf("acquireAWSConfigLock: %v", err)
 	}
+
 	t.Cleanup(func() {
 		if err := lock.Release(); err != nil {
 			t.Fatalf("release lock: %v", err)
@@ -429,6 +455,7 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected lock directory at %s: %v", lockDir, err)
 	}
+
 	if perm := dirInfo.Mode().Perm(); perm != 0o0755 {
 		t.Fatalf("expected lock directory permissions 0755, got %04o", perm)
 	}
@@ -438,9 +465,11 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	dir := t.TempDir()
+
 	awsConfigFilePath = filepath.Join(dir, ".aws", "config")
 
 	if err := os.MkdirAll(filepath.Dir(awsConfigFilePath), 0o0755); err != nil {
@@ -462,14 +491,16 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 		t.Fatalf("read config: %v", err)
 	}
 
-	if string(content) != string(original) {
+	if !bytes.Equal(content, original) {
 		t.Fatalf("expected existing config to remain unchanged, got %q", string(content))
 	}
 }
 
 func TestGetProfileNameFallsBackWhenRenameConfigMissing(t *testing.T) {
 	oldConfig := asmConfig
+
 	asmConfig = viper.New()
+
 	t.Cleanup(func() { asmConfig = oldConfig })
 
 	got := getProfileName("nwl2", "Sandbox", "ReadOnlyAccess")
@@ -480,7 +511,9 @@ func TestGetProfileNameFallsBackWhenRenameConfigMissing(t *testing.T) {
 
 func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 	oldConfig := asmConfig
+
 	asmConfig = viper.New()
+
 	t.Cleanup(func() { asmConfig = oldConfig })
 
 	asmConfig.Set("nwl2.rename.pattern.order", []string{"PREFIX", "SUFFIX"})
@@ -498,6 +531,7 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
+
 		asmConfig = viper.New()
 		defer func() { asmConfig = oldConfig }()
 
@@ -536,6 +570,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 		// pattern-based join. Empty prefix/suffix are omitted from the output.
 		// The final result is TrimSpace'd by getProfileName.
 		var expectedTokens []string
+
 		for _, token := range order {
 			switch strings.ToLower(token) {
 			case "prefix":
@@ -560,6 +595,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 				// to buildDefaultProfileName — just verify it's non-empty and lowercased
 				return
 			}
+
 			if got != expected {
 				rt.Fatalf("expected %q, got %q (order=%v, delimiter=%q, prefix=%q, suffix=%q, account=%q, role=%q)",
 					expected, got, order, delimiter, prefix, suffix, account, role)
@@ -581,12 +617,14 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 			numProfiles := rapid.IntRange(1, 3).Draw(rt, "numProfiles")
 			profiles := make([]string, numProfiles)
 			seen := map[string]bool{}
+
 			for i := range numProfiles {
 				for {
 					p := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, fmt.Sprintf("profile%d", i))
 					if !seen[p] {
 						seen[p] = true
 						profiles[i] = p
+
 						break
 					}
 				}
@@ -595,6 +633,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 			content := genManagedBlockConfig(profiles).Draw(rt, "config")
 
 			dir := t.TempDir()
+
 			tmpFile := filepath.Join(dir, "config")
 			if err := os.WriteFile(tmpFile, []byte(content), 0o0644); err != nil {
 				rt.Fatalf("write config: %v", err)
@@ -627,23 +666,25 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 			anomaly := rapid.IntRange(0, 2).Draw(rt, "anomaly")
 
 			var sb strings.Builder
+
 			switch anomaly {
 			case 0: // Missing end marker (unclosed block)
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
-				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
+				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
 			case 1: // Extra end marker (unmatched end)
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
 			case 2: // Duplicate start markers
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
-				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: start %s --------\n", profile))
-				sb.WriteString(fmt.Sprintf("[sso-session %s]\n", profile))
-				sb.WriteString(fmt.Sprintf("; -------- aws-sso-manager: end %s --------\n", profile))
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
+				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
+				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
+				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
 			}
 
 			dir := t.TempDir()
+
 			tmpFile := filepath.Join(dir, "config")
 			if err := os.WriteFile(tmpFile, []byte(sb.String()), 0o0644); err != nil {
 				rt.Fatalf("write config: %v", err)
@@ -673,6 +714,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
 func TestPropertySubstringMatchReplacement(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
+
 		asmConfig = viper.New()
 		defer func() { asmConfig = oldConfig }()
 
@@ -718,11 +760,11 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 // Feature: aws-sso-manager, Property 9: Default Profile Name Generation
 func TestPropertyDefaultProfileNameGeneration(t *testing.T) {
 	// **Validates: Requirements 9.10**
-
 	t.Run("toProfileToken_idempotence", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			input := rapid.String().Draw(t, "input")
 			once := toProfileToken(input)
+
 			twice := toProfileToken(once)
 			if once != twice {
 				t.Fatalf("toProfileToken is not idempotent: toProfileToken(%q)=%q, toProfileToken(%q)=%q",

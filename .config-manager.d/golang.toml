@@ -39,3 +39,18 @@
 
     #-------------------------------------------------------------------------------
     # FILES WITH HOOKS
+
+# Go tools
+# https://go.dev/doc/modules/managing-dependencies#tools
+[[files]]
+  stub = 'configs/stubs/tools/go-tool-golang.sh'
+  source = 'configs/templates/tools/go-tool-golang.sh'
+  destination = 'tools/go-tool-golang.sh'
+  executable = true
+
+  [files.post_update_hook]
+    bash = """
+tools/go-tool-golang.sh
+go mod tidy -modfile go.tools.mod
+go get -modfile go.tools.mod -u -t -v ./...
+"""

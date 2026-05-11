@@ -151,6 +151,7 @@ var (
 					"region",
 					fRegion,
 				)
+
 				sessionProfile.Region = fRegion
 			}
 
@@ -226,6 +227,7 @@ var (
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
 							var roles []huh.Option[string]
+
 							roleList := getRolesForAccount(accounts.Accounts, accountID)
 
 							for _, role := range roleList {
@@ -248,14 +250,15 @@ var (
 			}
 
 			logger.WithGroup("v").With(
-				slog.String("profileName", profileName),
-				slog.String("startHost", startHost),
-				slog.String("consoleURL", consoleURL),
-				slog.String("accountID", accountID),
-				slog.String("roleName", roleName),
+				slog.String("profile_name", profileName),
+				slog.String("start_host", startHost),
+				slog.String("console_url", consoleURL),
+				slog.String("account_id", accountID),
+				slog.String("role_name", roleName),
 			).Debug("Values have been collected")
 
 			destinationURL := stripAccountFromURL(consoleURL)
+
 			destinationURL = url.QueryEscape(destinationURL)
 
 			finalURL := fmt.Sprintf(
@@ -376,6 +379,7 @@ func getStartURL(profileName string) (string, error) {
 // because the account is specified separately via the account_id parameter.
 func stripAccountFromURL(consoleURL string) string {
 	reConsole := regexp.MustCompile(`https://([0-9a-zA-Z-]+)\.([0-9a-zA-Z-]+)\.console\.aws\.amazon\.com`)
+
 	consoleURL = reConsole.ReplaceAllString(consoleURL, `https://${2}.console.aws.amazon.com`)
 
 	return consoleURL

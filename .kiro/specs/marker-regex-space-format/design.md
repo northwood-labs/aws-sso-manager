@@ -68,11 +68,11 @@ Based on the bug description and code analysis, the root cause is a single issue
 
 1. **Regex Only Matches Parenthesized Format**: The `markerRegex` pattern is:
 
-   ```text
-   ^\s*(?://|#)\s*@config-manager:(start|end)\(([A-Za-z0-9_-]+)\)\s*$
-   ```
+    ```text
+    ^\s*(?://|#)\s*@config-manager:(start|end)\(([A-Za-z0-9_-]+)\)\s*$
+    ```
 
-   The `\(` and `\)` require literal parentheses around the block name. Space-separated markers like `# @config-manager:start html_elements` have no parentheses, so `FindStringSubmatch` returns `nil` and the line is skipped.
+    The `\(` and `\)` require literal parentheses around the block name. Space-separated markers like `# @config-manager:start html_elements` have no parentheses, so `FindStringSubmatch` returns `nil` and the line is skipped.
 
 2. **No Alternative Branch**: The regex has no alternation (`|`) or optional group to match the space-separated format as an alternative to parentheses.
 
@@ -106,19 +106,19 @@ Assuming our root cause analysis is correct:
 
 1. **Replace the regex to match space-separated format**: Replace the parenthesized capture group `\(([A-Za-z0-9_-]+)\)` with a space-separated capture `\s+([A-Za-z0-9_-]+)`. The parenthesized format was never intended for production use and can be removed.
 
-   Current regex:
+    Current regex:
 
-   ```text
-   ^\s*(?://|#)\s*@config-manager:(start|end)\(([A-Za-z0-9_-]+)\)\s*$
-   ```
+    ```text
+    ^\s*(?://|#)\s*@config-manager:(start|end)\(([A-Za-z0-9_-]+)\)\s*$
+    ```
 
-   Fixed regex:
+    Fixed regex:
 
-   ```text
-   ^\s*(?://|#)\s*@config-manager:(start|end)\s+([A-Za-z0-9_-]+)\s*$
-   ```
+    ```text
+    ^\s*(?://|#)\s*@config-manager:(start|end)\s+([A-Za-z0-9_-]+)\s*$
+    ```
 
-   The block name remains in capture group 2. No alternation or extra groups needed.
+    The block name remains in capture group 2. No alternation or extra groups needed.
 
 2. **No changes to `DetectMarkers` logic**: The block name stays in `matches[2]`, so the existing `BlockName: matches[2]` line is unchanged.
 

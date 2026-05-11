@@ -90,6 +90,7 @@ var (
 			for _, p := range ssoSections {
 				union[p] = struct{}{}
 			}
+
 			for _, p := range markedProfiles {
 				union[p] = struct{}{}
 			}
@@ -118,6 +119,7 @@ var (
 			}
 
 			var results []result
+
 			foundProblems := false
 
 			// Evaluate in a deterministic order.
@@ -127,7 +129,7 @@ var (
 			}
 
 			// Sort for deterministic output.
-			for i := 0; i < len(allProfiles)-1; i++ {
+			for i := range len(allProfiles) - 1 {
 				for j := i + 1; j < len(allProfiles); j++ {
 					if allProfiles[i] > allProfiles[j] {
 						allProfiles[i], allProfiles[j] = allProfiles[j], allProfiles[i]

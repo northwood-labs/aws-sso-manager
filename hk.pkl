@@ -1,0 +1,161 @@
+// https://github.com/jdx/hk/blob/main/hk.pkl
+amends "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Builtins.pkl"
+
+local linters = new Mapping<String, Step> {
+  // @config-manager:start standard
+  // ["check-conventional-commit"] {
+  //   // Presently, gommit is more configurable than hk's built-in checker.
+  //   check = "gommit check message {{commit_msg_file}}"
+  // }
+
+  ["check-added-large-files"] = Builtins.check_added_large_files
+  ["check-byte-order-marker"] = Builtins.check_byte_order_marker
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["check-symlinks"] = Builtins.check_symlinks
+  // ["contextlint"] = Builtins.contextlint // Needs more tuning.
+  ["editorconfig-checker"] = Builtins.editorconfig_checker
+  ["rumdl"] = Builtins.rumdl
+
+  // @config-manager:end standard
+
+  // @config-manager:start golang
+  ["fieldalignment"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "cd {{ workspace }} && fieldalignment -fix ./..."
+  }
+  ["go-fmt"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "gofmt -s -w {{ files }} && gofumpt -w {{ files }}"
+  }
+  ["golines"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "golines --base-formatter=gofumpt --write-output --max-len=120 --dry-run {{ files }}"
+    fix = "golines --base-formatter=gofumpt --write-output --max-len=120 {{ files }}"
+  }
+  ["go-mod-tidy"] {
+    workspace_indicator = "go.mod"
+    check = "cd {{ workspace }} && go mod tidy -diff"
+    fix = "cd {{ workspace }} && go mod tidy"
+  }
+  ["go-mod-tidy-tools"] {
+    workspace_indicator = "go.tools.mod"
+    check = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod -diff"
+    fix = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod"
+  }
+  ["go-vet"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "cd {{ workspace }} && go vet ./..."
+  }
+  ["go-vuln-check"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "cd {{ workspace }} && govulncheck ./..."
+  }
+  ["golangci-lint"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "cd {{ workspace }} && golangci-lint run --fix=false ./..."
+    fix = "cd {{ workspace }} && golangci-lint run --fix ./..."
+  }
+  // @config-manager:end golang
+
+
+  // hadolint ​
+  // Glob: **/Dockerfile*
+  // Check: hadolint {{ files }}
+
+  // hclfmt ​
+  // Glob: **/*.hcl
+  // Fix: hclfmt -w {{ files }}
+
+  // jq ​
+  // Glob: **/*.json
+  // Check (diff): failed=0 for f in {{ files }}; do jq . "$f" | diff -u "$f" - || failed=1 done exit $failed
+  // Fix: for f in {{ files }}; do tmp=$(mktemp) && jq -S . "$f" > "$tmp" && mv "$tmp" "$f" done
+
+  // lychee ​
+  // Check: lychee --no-progress {{ files }}
+
+  // mdschema ​
+  // Check: mdschema check {{ files }}
+
+  // mise ​
+  // Glob: mise.toml, mise.*.toml, .mise.toml, .mise.*.toml, mise/config.toml, mise/config.*.toml, .mise/config.toml,
+    // .mise/config.*.toml, .config/mise.toml, .config/mise.*.toml, .config/mise/config.toml,
+    // .config/mise/config.*.toml, .config/mise/mise.toml, .config/mise/mise.*.toml, .config/mise/conf.d/*.toml
+  // Check: mise fmt --check
+  // Fix: mise fmt
+
+  // mixed-line-ending ​
+  // Glob: **/*
+  // Check (diff): hk util mixed-line-ending --diff {{files}}
+  // Fix: hk util mixed-line-ending --fix {{files}}
+
+  // newlines ​
+  // Glob: **/*
+  // Check (diff): hk util end-of-file-fixer --diff {{files}}
+  // Fix: hk util end-of-file-fixer --fix {{files}}
+
+  // pkl ​
+  // Check: pkl eval {{files}} >/dev/null
+
+  // pkl-format ​
+  // Check (list-files): pkl format --diff-name-only {{ files }}
+  // Fix: pkl format --write {{ files }} code=$? if [ $code -eq 11 ]; then exit 0 else exit $code fi
+
+  // python-debug-statements ​
+  // Glob: **/*.py
+  // Check: hk util python-debug-statements {{files}}
+
+  // ruff ​
+  // Glob: **/*.py, **/*.pyi
+  // Check: ruff check --force-exclude {{ files }}
+  // Fix: ruff check --force-exclude --fix {{ files }}
+
+  // ruff-format ​
+  // Glob: **/*.py, **/*.pyi
+  // Check (diff): ruff format --quiet --force-exclude --diff {{ files }}
+  // Fix: ruff format --quiet --force-exclude {{ files }}
+
+  // rustfmt ​
+  // Glob: **/*.rs
+  // Check: rustfmt --check --edition 2024 {{ files }}
+  // Fix: rustfmt --edition 2024 {{ files }}
+}
+
+hooks {
+  // @config-manager:start hooks
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps {
+      ["prelint"] {
+        check = "mise run prelint"
+        exclusive = true
+      }
+      ...linters
+      ["postlint"] {
+        check = "mise run postlint"
+        exclusive = true
+      }
+    }
+  }
+  ["pre-push"] {
+    steps = linters
+  }
+  ["fix"] {
+    fix = true
+    steps = linters
+  }
+  ["check"] {
+    steps = linters
+  }
+  // @config-manager:end hooks
+}

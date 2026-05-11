@@ -151,7 +151,6 @@ func TestGetRolesForAccount(t *testing.T) {
 // Feature: aws-sso-manager, Property 13: Console URL Account Subdomain Stripping
 func TestPropertyConsoleURLAccountSubdomainStripping(t *testing.T) {
 	// **Validates: Requirements 5.9**
-
 	t.Run("strips_account_subdomain", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			account := rapid.StringMatching(`[0-9]{12}`).Draw(t, "account")

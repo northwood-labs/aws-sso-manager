@@ -36,6 +36,7 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	// Create a temp file with a [default] section but no sso-session sections.
@@ -55,8 +56,8 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 	awsConfigFilePath = tmpFile.Name()
 
 	var target string
-	err = promptProfileSelect(&target)
 
+	err = promptProfileSelect(&target)
 	if err == nil {
 		t.Fatalf("expected error when no SSO profiles exist, got nil")
 	}
@@ -71,15 +72,19 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 // (Requirement 1.1).
 func TestAuthCommandUsesSelectPrompt(t *testing.T) {
 	oldPrompt := promptProfileSelect
+
 	t.Cleanup(func() { promptProfileSelect = oldPrompt })
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
+
 	asmConfig = viper.New() // empty config, no profile-name set
 
 	logger = slog.New(log.New(io.Discard))
 
 	called := false
+
 	promptProfileSelect = func(target *string) error {
 		called = true
 		return errors.New("spy: prompt called")
@@ -97,15 +102,19 @@ func TestAuthCommandUsesSelectPrompt(t *testing.T) {
 // (Requirement 1.2).
 func TestListCommandUsesSelectPrompt(t *testing.T) {
 	oldPrompt := promptProfileSelect
+
 	t.Cleanup(func() { promptProfileSelect = oldPrompt })
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
+
 	asmConfig = viper.New()
 
 	logger = slog.New(log.New(io.Discard))
 
 	called := false
+
 	promptProfileSelect = func(target *string) error {
 		called = true
 		return errors.New("spy: prompt called")
@@ -123,15 +132,19 @@ func TestListCommandUsesSelectPrompt(t *testing.T) {
 // (Requirement 1.3).
 func TestUpdateCommandUsesSelectPrompt(t *testing.T) {
 	oldPrompt := promptProfileSelect
+
 	t.Cleanup(func() { promptProfileSelect = oldPrompt })
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
+
 	asmConfig = viper.New()
 
 	logger = slog.New(log.New(io.Discard))
 
 	called := false
+
 	promptProfileSelect = func(target *string) error {
 		called = true
 		return errors.New("spy: prompt called")
@@ -149,15 +162,19 @@ func TestUpdateCommandUsesSelectPrompt(t *testing.T) {
 // because the profile being created doesn't exist yet (Requirements 2.1, 2.2).
 func TestInitCommandUsesInputPrompt(t *testing.T) {
 	oldPrompt := promptProfileSelect
+
 	t.Cleanup(func() { promptProfileSelect = oldPrompt })
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
+
 	asmConfig = viper.New()
 
 	logger = slog.New(log.New(io.Discard))
 
 	called := false
+
 	promptProfileSelect = func(target *string) error {
 		called = true
 		return errors.New("spy: prompt called")
@@ -175,8 +192,8 @@ func TestInitCommandUsesInputPrompt(t *testing.T) {
 // Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names
 func TestPropertySSOSessionParsing(t *testing.T) {
 	// **Validates: Requirements 3.1, 3.2**
-
 	oldConfigPath := awsConfigFilePath
+
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
 
 	logger = slog.New(log.New(io.Discard))
@@ -185,6 +202,7 @@ func TestPropertySSOSessionParsing(t *testing.T) {
 		// Generate 1–5 unique sso-session names matching [a-z][a-z0-9]{2,10}.
 		numSessions := rapid.IntRange(1, 5).Draw(t, "numSessions")
 		nameSet := make(map[string]bool)
+
 		var names []string
 
 		for len(names) < numSessions {
@@ -207,10 +225,10 @@ func TestPropertySSOSessionParsing(t *testing.T) {
 			// Optionally interleave a [profile ...] section before the sso-session.
 			if rapid.Bool().Draw(t, "interleaveProfile_"+name) {
 				profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(t, "profileName_"+name)
-				sb.WriteString(fmt.Sprintf("[profile %s]\nregion = us-east-1\n\n", profileName))
+				fmt.Fprintf(&sb, "[profile %s]\nregion = us-east-1\n\n", profileName)
 			}
 
-			sb.WriteString(fmt.Sprintf("[sso-session %s]\n", name))
+			fmt.Fprintf(&sb, "[sso-session %s]\n", name)
 			sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
 			sb.WriteString("sso_region = us-east-1\n\n")
 		}

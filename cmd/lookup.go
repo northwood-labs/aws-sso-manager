@@ -178,6 +178,7 @@ var (
 			}
 
 			var matches []string
+
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needle) {
 					matches = append(matches, roleName)
@@ -278,6 +279,7 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 	// "internal-prod". We deduplicate via a seen set because the same account
 	// ID can appear in both name and profile maps.
 	seen := map[string]struct{}{}
+
 	var matched []string
 
 	for nameKey, accountIDs := range index.AccountIDsByNameCI {
@@ -338,6 +340,7 @@ func resolveLookupAccount(
 	}
 
 	accountID := accountIDs[0]
+
 	account, ok := index.AccountsByID[accountID]
 	if !ok {
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf(

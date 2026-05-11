@@ -166,6 +166,7 @@ var (
 	// Tests swap this to avoid TUI interaction.
 	confirmDeletion = func(key string, value any) (bool, error) {
 		var confirmed bool
+
 		err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete %q (current value: %v)?", key, value)).
 			Value(&confirmed).
@@ -217,8 +218,8 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 		Border(lipgloss.RoundedBorder()).
 		Headers("Key", "Value").
 		StyleFunc(func(row, _ int) lipgloss.Style {
-			switch {
-			case row == table.HeaderRow:
+			switch row {
+			case table.HeaderRow:
 				return headerStyle
 			default:
 				return cellStyle

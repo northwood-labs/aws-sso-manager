@@ -103,9 +103,11 @@ func TestPropertyLookupAccountResolution(t *testing.T) {
 			if err != nil {
 				t.Fatalf("resolveLookupAccount(%q) returned error: %v", accountID, err)
 			}
+
 			if gotID != accountID {
 				t.Fatalf("expected account ID %q, got %q", accountID, gotID)
 			}
+
 			if gotAccount.Name != account.Name {
 				t.Fatalf("expected account name %q, got %q", account.Name, gotAccount.Name)
 			}
@@ -117,12 +119,14 @@ func TestPropertyLookupAccountResolution(t *testing.T) {
 		bogusLower := strings.ToLower(bogus)
 		_, existsByID := index.AccountsByID[bogus]
 		_, existsByName := index.AccountIDsByNameCI[bogusLower]
+
 		_, existsByProfile := index.AccountIDsByProfileCI[bogusLower]
 		if !existsByID && !existsByName && !existsByProfile {
 			_, _, err := resolveLookupAccount(index, bogus)
 			if err == nil {
 				t.Fatalf("expected not-found error for bogus identifier %q, got nil", bogus)
 			}
+
 			if !strings.Contains(err.Error(), "not found") {
 				t.Fatalf("expected not-found error for %q, got: %v", bogus, err)
 			}
@@ -136,6 +140,7 @@ func TestPropertyLookupAccountResolution(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", nameKey, accountIDs)
 				}
+
 				if !strings.Contains(err.Error(), "ambiguous") {
 					t.Fatalf("expected ambiguity error for %q, got: %v", nameKey, err)
 				}
@@ -148,6 +153,7 @@ func TestPropertyLookupAccountResolution(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", profileKey, accountIDs)
 				}
+
 				if !strings.Contains(err.Error(), "ambiguous") {
 					t.Fatalf("expected ambiguity error for %q, got: %v", profileKey, err)
 				}
@@ -176,6 +182,7 @@ func TestPropertyLookupRoleSubstringSearch(t *testing.T) {
 			// 3. Apply case-insensitive substring filtering on the account's roles
 			//    (replicating the logic from lookupRoleCmd).
 			var matches []string
+
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needleLower) {
 					matches = append(matches, roleName)
@@ -198,6 +205,7 @@ func TestPropertyLookupRoleSubstringSearch(t *testing.T) {
 			for _, r := range account.Roles {
 				roleSet[r] = true
 			}
+
 			for _, m := range matches {
 				if !roleSet[m] {
 					t.Fatalf("match %q is not in account roles %v", m, account.Roles)

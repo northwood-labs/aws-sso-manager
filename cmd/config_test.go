@@ -33,11 +33,11 @@ import (
 // Feature: config-commands, Property 1: Set-then-get round trip
 func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 	// **Validates: Requirements 2.2, 2.3, 3.2, 6.1**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
 		oldConfig := asmConfig
+
 		asmConfig = viper.New()
 		defer func() { asmConfig = oldConfig }()
 
@@ -85,7 +85,6 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 // Feature: config-commands, Property 5: Set confirmation output contains key and value
 func TestPropertyConfigSetConfirmation(t *testing.T) {
 	// **Validates: Requirements 2.6**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -127,7 +126,6 @@ func TestPropertyConfigSetConfirmation(t *testing.T) {
 // Feature: config-commands, Property 7: Backup retention limit
 func TestPropertyConfigBackupRetention(t *testing.T) {
 	// **Validates: Requirements 8.4**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -192,7 +190,6 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 // Feature: config-commands, Property 8: Backup content matches pre-mutation state
 func TestPropertyConfigBackupContent(t *testing.T) {
 	// **Validates: Requirements 8.1, 8.2**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -268,7 +265,6 @@ func TestPropertyConfigBackupContent(t *testing.T) {
 // Feature: config-commands, Property 4: Nonexistent key returns error
 func TestPropertyConfigNonexistentKey(t *testing.T) {
 	// **Validates: Requirements 3.3, 4.6**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -362,7 +358,6 @@ func TestPropertyConfigWrongArgCount(t *testing.T) {
 // Feature: config-commands, Property 2: Set-then-delete-then-get round trip
 func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 	// **Validates: Requirements 4.4, 4.5, 6.2**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -416,6 +411,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		asmConfig = viper.New()
 		asmConfig.SetConfigType("toml")
 		asmConfig.SetConfigFile(configPath)
+
 		_ = asmConfig.ReadInConfig()
 
 		// Step 3: config get <key> — must return a non-nil error containing "is not set"
@@ -452,7 +448,6 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 // Feature: config-commands, Property 6: Del confirmation output contains key
 func TestPropertyConfigDelConfirmation(t *testing.T) {
 	// **Validates: Requirements 4.8**
-
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -519,6 +514,7 @@ func TestPropertyConfigDelConfirmation(t *testing.T) {
 func TestConfigCommandRegistration(t *testing.T) {
 	t.Run("configCmd_under_rootCmd", func(t *testing.T) {
 		found := false
+
 		for _, cmd := range rootCmd.Commands() {
 			if cmd.Name() == "config" {
 				found = true
@@ -577,6 +573,7 @@ func TestConfigSetCreatesParentDirectory(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
 
 	asmConfig = viper.New()
@@ -617,8 +614,8 @@ func TestConfigSetCreatesParentDirectory(t *testing.T) {
 // **Validates: Requirements 7.1, 7.2, 7.3**
 func TestConfigSubcommandsUseRunE(t *testing.T) {
 	tests := []struct {
-		name string
 		cmd  *cobra.Command
+		name string
 	}{
 		{name: "configSetCmd uses RunE", cmd: configSetCmd},
 		{name: "configGetCmd uses RunE", cmd: configGetCmd},
@@ -642,6 +639,7 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 
 	oldConfig := asmConfig
 	oldForce := fForce
+
 	t.Cleanup(func() {
 		asmConfig = oldConfig
 		fForce = oldForce
@@ -696,6 +694,7 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 	oldConfig := asmConfig
 	oldForce := fForce
 	oldConfirm := confirmDeletion
+
 	t.Cleanup(func() {
 		asmConfig = oldConfig
 		fForce = oldForce
@@ -759,6 +758,7 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
+
 	t.Cleanup(func() { asmConfig = oldConfig })
 
 	asmConfig = viper.New()
@@ -934,7 +934,6 @@ func TestValidateConfigKey(t *testing.T) {
 // Feature: config-output-region-overrides, Property 3: Settings key validation accepts region/output and rejects unknown keys
 func TestPropertySettingsKeyValidation(t *testing.T) {
 	// **Validates: Requirements 3.1, 3.2, 3.3**
-
 	rapid.Check(t, func(t *rapid.T) {
 		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
 		awsProfile := rapid.StringMatching(`[a-z][a-z0-9-]{2,14}`).Draw(t, "awsProfile")
@@ -949,6 +948,7 @@ func TestPropertySettingsKeyValidation(t *testing.T) {
 			if err := validateConfigKey(profile + ".settings.global." + key); err != nil {
 				t.Fatalf("expected %q.settings.global.%s to be valid, got: %v", profile, key, err)
 			}
+
 			if err := validateConfigKey(profile + ".settings." + awsProfile + "." + key); err != nil {
 				t.Fatalf("expected %q.settings.%s.%s to be valid, got: %v", profile, awsProfile, key, err)
 			}

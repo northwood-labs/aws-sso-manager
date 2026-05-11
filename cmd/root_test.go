@@ -75,24 +75,29 @@ func TestParseCacheDurationFlag(t *testing.T) {
 func TestExecutePassesFangNotifyOption(t *testing.T) {
 	oldRunRootCommand := runRootCommand
 	oldOSExit := osExit
+
 	t.Cleanup(func() {
 		runRootCommand = oldRunRootCommand
 		osExit = oldOSExit
 	})
 
 	called := false
+
 	runRootCommand = func(ctx context.Context, cmd *cobra.Command, signals ...os.Signal) error {
 		called = true
 
 		if ctx == nil {
 			t.Fatal("expected non-nil context passed to runRootCommand")
 		}
+
 		if cmd != rootCmd {
 			t.Fatal("expected rootCmd to be passed to runRootCommand")
 		}
+
 		if len(signals) != 2 {
 			t.Fatalf("expected exactly 2 notify signals, got %d", len(signals))
 		}
+
 		if signals[0] != syscall.SIGINT || signals[1] != syscall.SIGTERM {
 			t.Fatalf("expected notify signals [SIGINT SIGTERM], got %v", signals)
 		}
@@ -101,8 +106,10 @@ func TestExecutePassesFangNotifyOption(t *testing.T) {
 	}
 
 	exitCalled := false
+
 	osExit = func(code int) {
 		exitCalled = true
+
 		t.Fatalf("did not expect osExit to be called, got code %d", code)
 	}
 
@@ -111,6 +118,7 @@ func TestExecutePassesFangNotifyOption(t *testing.T) {
 	if !called {
 		t.Fatal("expected runRootCommand to be called")
 	}
+
 	if exitCalled {
 		t.Fatal("did not expect osExit to be called")
 	}
@@ -119,6 +127,7 @@ func TestExecutePassesFangNotifyOption(t *testing.T) {
 func TestExecuteExitsOnFangError(t *testing.T) {
 	oldRunRootCommand := runRootCommand
 	oldOSExit := osExit
+
 	t.Cleanup(func() {
 		runRootCommand = oldRunRootCommand
 		osExit = oldOSExit
@@ -129,6 +138,7 @@ func TestExecuteExitsOnFangError(t *testing.T) {
 	}
 
 	exitCode := -1
+
 	osExit = func(code int) {
 		exitCode = code
 	}
@@ -142,20 +152,24 @@ func TestExecuteExitsOnFangError(t *testing.T) {
 
 func TestRunRootCommandUsesFangExecute(t *testing.T) {
 	oldFangExecute := fangExecute
+
 	t.Cleanup(func() {
 		fangExecute = oldFangExecute
 	})
 
 	called := false
+
 	fangExecute = func(ctx context.Context, cmd *cobra.Command, options ...fang.Option) error {
 		called = true
 
 		if ctx == nil {
 			t.Fatal("expected non-nil context passed to fangExecute")
 		}
+
 		if cmd != rootCmd {
 			t.Fatal("expected rootCmd to be passed to fangExecute")
 		}
+
 		if len(options) != 1 {
 			t.Fatalf("expected exactly one Fang option, got %d", len(options))
 		}
@@ -178,6 +192,7 @@ func TestVerboseLevels(t *testing.T) {
 	oldCacheDuration := fCacheDuration
 	oldConfigFile := fConfigFile
 	oldConfig := asmConfig
+
 	t.Cleanup(func() {
 		logger = oldLogger
 		fVerbose = oldVerbose
@@ -187,6 +202,7 @@ func TestVerboseLevels(t *testing.T) {
 	})
 
 	tmpDir := t.TempDir()
+
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
 	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
@@ -200,6 +216,7 @@ func TestEnvPrefixASM(t *testing.T) {
 	// Save and restore the global asvConfig on cleanup.
 	oldConfig := asmConfig
 	oldConfigFile := fConfigFile
+
 	t.Cleanup(func() {
 		asmConfig = oldConfig
 		fConfigFile = oldConfigFile
@@ -207,6 +224,7 @@ func TestEnvPrefixASM(t *testing.T) {
 
 	// Create a minimal temp config file so initializeConfig doesn't fail.
 	tmpDir := t.TempDir()
+
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
 	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
@@ -253,7 +271,6 @@ func TestEnvPrefixASM(t *testing.T) {
 // Feature: aws-sso-manager, Property 12: Cache Duration Parsing
 func TestPropertyCacheDurationParsing(t *testing.T) {
 	// **Validates: Requirements 10.6, 10.8**
-
 	t.Run("valid_go_durations", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			hours := rapid.IntRange(1, 100).Draw(t, "hours")
@@ -264,6 +281,7 @@ func TestPropertyCacheDurationParsing(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parseCacheDurationFlag(%q): %v", input, err)
 			}
+
 			if got <= 0 {
 				t.Fatalf("expected positive duration for %q, got %s", input, got)
 			}

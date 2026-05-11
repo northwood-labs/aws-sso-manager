@@ -7,9 +7,9 @@ source_hash = ''
 dest_hash = 'sha256:242b7f9c4e6f485696f076a048887c3fb95b9805a0cb91a8d49ed99647f7660a'
 
 [files.'.config/mise/conf.d/tools.standard.toml']
-last_sync_time = '2026-05-09T07:23:07Z'
+last_sync_time = '2026-05-10T17:16:53Z'
 source_hash = ''
-dest_hash = 'sha256:499fd2567225f60cd4b5c153a8b3f351b15159519e967d13ac06707dc2580bb9'
+dest_hash = 'sha256:9025be58801b28d69359bd1acf2622c6fac82e9e1fbc150d57ee95177ae58395'
 
 [files.'.githooks/commit-msg.sh']
 last_sync_time = '2026-05-03T01:39:29Z'
@@ -32,14 +32,14 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-08T22:34:54Z'
+last_sync_time = '2026-05-10T05:29:23Z'
 source_hash = ''
-dest_hash = 'sha256:33ef9405a863b0750fa74db94b1435d75ef6897c51c27748dd357b832889fbe6'
+dest_hash = 'sha256:5fa520cedd6483b2cfd55dd91bcaa4803560d97f57010b0b6c39f9b30e80f555'
 
 [files.'.rumdl.toml']
-last_sync_time = '2026-05-09T18:23:13Z'
+last_sync_time = '2026-05-10T05:29:23Z'
 source_hash = ''
-dest_hash = 'sha256:46fd90c45c421e21e51df2f18f562fc1aae7579355a733154e7e009111c00329'
+dest_hash = 'sha256:8b3f3d0ae17bc55cd230c8442289f63acc7bd5e625d2ee8854a63aabf6da8405'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-04-30T04:56:36Z'
@@ -105,6 +105,11 @@ dest_hash = 'sha256:e3ff16982dfd2815c9d1965ff7cc45e1a63de0cd24d7951dba4e75985375
 last_sync_time = '2026-05-04T19:51:03Z'
 source_hash = ''
 dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
+
+[files.'tools/go-tool-golang.sh']
+last_sync_time = '2026-05-10T17:16:53Z'
+source_hash = ''
+dest_hash = 'sha256:5419483412971408f2f8855feaf876b374fc466838a328dfd665af078ebbd9dc'
 
 [files.'tools/go-tool-standard.sh']
 last_sync_time = '2026-04-30T04:44:38Z'

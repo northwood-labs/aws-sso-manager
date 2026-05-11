@@ -17,6 +17,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -106,14 +107,17 @@ var (
 			if fJSON {
 				selectedOutputs++
 			}
+
 			if fCSV {
 				selectedOutputs++
 			}
+
 			if fMarkdown {
 				selectedOutputs++
 			}
+
 			if selectedOutputs > 1 {
-				return fmt.Errorf("choose only one output format flag: --json, --csv, or --markdown")
+				return errors.New("choose only one output format flag: --json, --csv, or --markdown")
 			}
 
 			logger.Info("Passed arguments", "count", len(args))
@@ -168,6 +172,7 @@ var (
 						return func() {
 							accts, err := listAWSAccountsFetcher(listInput)
 							cobra.CheckErr(err)
+
 							*accounts = accts
 						}
 					}(&accounts)).
@@ -209,6 +214,7 @@ var (
 						return func() {
 							accts, err := listAWSAccounts(listInput)
 							cobra.CheckErr(err)
+
 							*accounts = accts
 						}
 					}(&accounts)).
@@ -252,8 +258,8 @@ var (
 				Border(lipgloss.RoundedBorder()).
 				Headers(listOutputHeaders...).
 				StyleFunc(func(row, _ int) lipgloss.Style {
-					switch {
-					case row == table.HeaderRow:
+					switch row {
+					case table.HeaderRow:
 						return headerStyle
 					default:
 						return cellStyle

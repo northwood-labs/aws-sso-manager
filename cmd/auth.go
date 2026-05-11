@@ -52,6 +52,7 @@ var (
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
+
 			requestCtx := cmd.Context()
 			if requestCtx == nil {
 				requestCtx = context.Background()
@@ -228,6 +229,7 @@ func getOrRefreshAuthenticatedCache(
 	}
 
 	var cacheData cacheFileData
+
 	cache, err := cacheData.read(cacheFilePath)
 	if err == nil {
 		return cache, nil

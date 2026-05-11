@@ -109,7 +109,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 		}
 
-		ssoProfile := fmt.Sprintf("sso-session %s", profileName)
+		ssoProfile := "sso-session " + profileName
 
 		_, ok = sections.GetSection(ssoProfile)
 		if !ok {
@@ -157,24 +157,26 @@ var updateCmd = &cobra.Command{
 		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(nextSections)) + "\n")
 		cobra.CheckErr(err)
 
-		logger.Debug("", "temp file", tmpFilename)
+		logger.Debug("", "temp_file", tmpFilename)
 
 		backupFilename, err := setManagedSection(tmpFilename, profileName)
 		cobra.CheckErr(err)
 
-		logger.Debug("", "backup file", backupFilename)
+		logger.Debug("", "backup_file", backupFilename)
 
 		// Set permissions to match the expected config file mode before rename.
 		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
 		logger.Debug("Deleted file", "file", tmpFilename)
+
 		err = os.Remove(tmpFilename)
 		cobra.CheckErr(err)
 
 		// Atomic rename: the config file is replaced in a single OS operation,
 		// eliminating the window where the file would be empty on an interrupted write.
 		logger.Debug("Rename file", "from", backupFilename, "to", awsConfigFilePath)
+
 		err = os.Rename(backupFilename, awsConfigFilePath)
 		cobra.CheckErr(err)
 
@@ -212,6 +214,7 @@ func buildUpdatedManagedSections(
 	// output reflects the complete current account/role list (stale profiles
 	// from previous runs are intentionally dropped).
 	nextSections := configFile.NewSections()
+
 	nextSections = nextSections.SetSection(ssoProfile, ssoSection)
 
 	// Resolve per-profile overrides once so every generated [profile ...]
@@ -239,7 +242,8 @@ func buildUpdatedManagedSections(
 	for _, account := range accounts.Accounts {
 		for _, role := range account.Roles {
 			counter++
-			profileHeaderName := fmt.Sprintf("profile %s", role.Profile)
+
+			profileHeaderName := "profile " + role.Profile
 
 			logger.Info("Processing profile", "profile", profileHeaderName)
 

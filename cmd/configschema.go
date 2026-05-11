@@ -32,8 +32,8 @@ import (
 // PatternConfig controls how profile name tokens are assembled. Order defines
 // which tokens appear and in what sequence; Delimiter separates them.
 type PatternConfig struct {
-	Order     []string `json:"order,omitempty"     toml:"order,omitempty"     jsonschema:"description=Ordered list of tokens to include in the generated profile name.,enum=PREFIX,enum=ACCOUNT,enum=ROLE,enum=SUFFIX"`
-	Delimiter string   `json:"delimiter,omitempty" toml:"delimiter,omitempty" jsonschema:"description=Delimiter between tokens in the generated profile name.,default=-"`
+	Delimiter string   `json:"delimiter,omitempty" jsonschema:"description=Delimiter between tokens in the generated profile name.,default=-"                                               toml:"delimiter,omitempty"`
+	Order     []string `json:"order,omitempty"     jsonschema:"description=Ordered list of tokens to include in the generated profile name.,enum=PREFIX,enum=ACCOUNT,enum=ROLE,enum=SUFFIX" toml:"order,omitempty"`
 }
 
 // AccountRenameConfig holds the rules for rewriting AWS account names in
@@ -41,37 +41,37 @@ type PatternConfig struct {
 // matching strategies.
 type AccountRenameConfig struct {
 	// GlobalRegexReplace map[string]string `json:"global_regex_replace,omitempty" toml:"global_regex_replace,omitempty" jsonschema:"description=Regex patterns applied to every account name. Key is the regex and value is the replacement."`
-	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" toml:"substr_match_replace,omitempty" jsonschema:"description=If the account name contains the key the entire name is replaced with the value."`
+	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" jsonschema:"description=If the account name contains the key the entire name is replaced with the value." toml:"substr_match_replace,omitempty"`
 }
 
 // RoleRenameConfig holds the rules for rewriting AWS role names in generated
 // profile names. Same matching strategies as AccountRenameConfig.
 type RoleRenameConfig struct {
 	// GlobalRegexReplace map[string]string `json:"global_regex_replace,omitempty" toml:"global_regex_replace,omitempty" jsonschema:"description=Regex patterns applied to every role name. Key is the regex and value is the replacement."`
-	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" toml:"substr_match_replace,omitempty" jsonschema:"description=If the role name contains the key the entire name is replaced with the value."`
+	SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" jsonschema:"description=If the role name contains the key the entire name is replaced with the value." toml:"substr_match_replace,omitempty"`
 }
 
 // RenameConfig groups all profile-name generation settings for a single SSO
 // profile. It controls prefix/suffix tokens, the assembly pattern, and
 // account/role name rewriting rules.
 type RenameConfig struct {
-	Prefix   string              `json:"prefix,omitempty"   toml:"prefix,omitempty"   jsonschema:"description=Standard prefix added to all generated profile names for this SSO profile."`
-	Suffix   string              `json:"suffix,omitempty"   toml:"suffix,omitempty"   jsonschema:"description=Standard suffix added to all generated profile names for this SSO profile."`
-	Pattern  PatternConfig       `json:"pattern,omitempty"  toml:"pattern,omitempty"  jsonschema:"description=Controls how profile name tokens are ordered and delimited."`
-	Accounts AccountRenameConfig `json:"accounts,omitempty" toml:"accounts,omitempty" jsonschema:"description=Rules for rewriting AWS account names in generated profile names."`
-	Roles    RoleRenameConfig    `json:"roles,omitempty"    toml:"roles,omitempty"    jsonschema:"description=Rules for rewriting AWS role names in generated profile names."`
+	Accounts AccountRenameConfig `json:"accounts,omitempty" jsonschema:"description=Rules for rewriting AWS account names in generated profile names."          toml:"accounts,omitempty"`
+	Roles    RoleRenameConfig    `json:"roles,omitempty"    jsonschema:"description=Rules for rewriting AWS role names in generated profile names."             toml:"roles,omitempty"`
+	Prefix   string              `json:"prefix,omitempty"   jsonschema:"description=Standard prefix added to all generated profile names for this SSO profile." toml:"prefix,omitempty"`
+	Suffix   string              `json:"suffix,omitempty"   jsonschema:"description=Standard suffix added to all generated profile names for this SSO profile." toml:"suffix,omitempty"`
+	Pattern  PatternConfig       `json:"pattern,omitempty"  jsonschema:"description=Controls how profile name tokens are ordered and delimited."                toml:"pattern,omitempty"`
 }
 
 // GlobalSettingsConfig holds per-profile AWS CLI defaults that are applied to
 // every generated [profile ...] section for this SSO profile.
 type GlobalSettingsConfig struct {
-	Region               string `json:"region,omitempty"                 toml:"region,omitempty"                 jsonschema:"description=Default AWS region for profiles generated under this SSO profile."`
-	Output               string `json:"output,omitempty"                 toml:"output,omitempty"                 jsonschema:"description=Default output format (json text table yaml yaml-stream) for profiles generated under this SSO profile.,enum=json,enum=text,enum=table,enum=yaml,enum=yaml-stream"`
-	DurationSeconds      string `json:"duration_seconds,omitempty"       toml:"duration_seconds,omitempty"       jsonschema:"description=Session duration in seconds for assumed roles."`
-	SDKUAAppID           string `json:"sdk_ua_app_id,omitempty"          toml:"sdk_ua_app_id,omitempty"          jsonschema:"description=Application ID appended to the SDK user-agent string."`
-	UseDualstackEndpoint string `json:"use_dualstack_endpoint,omitempty" toml:"use_dualstack_endpoint,omitempty" jsonschema:"description=Enable dual-stack (IPv4/IPv6) endpoints.,enum=true,enum=false"`
-	UseFIPSEndpoint      string `json:"use_fips_endpoint,omitempty"      toml:"use_fips_endpoint,omitempty"      jsonschema:"description=Enable FIPS-compliant endpoints.,enum=true,enum=false"`
-	TCPKeepAlive         string `json:"tcp_keepalive,omitempty"          toml:"tcp_keepalive,omitempty"          jsonschema:"description=Enable TCP keep-alive for connections.,enum=true,enum=false"`
+	Region               string `json:"region,omitempty"                 jsonschema:"description=Default AWS region for profiles generated under this SSO profile."                                                                                                 toml:"region,omitempty"`
+	Output               string `json:"output,omitempty"                 jsonschema:"description=Default output format (json text table yaml yaml-stream) for profiles generated under this SSO profile.,enum=json,enum=text,enum=table,enum=yaml,enum=yaml-stream" toml:"output,omitempty"`
+	DurationSeconds      string `json:"duration_seconds,omitempty"       jsonschema:"description=Session duration in seconds for assumed roles."                                                                                                                    toml:"duration_seconds,omitempty"`
+	SDKUAAppID           string `json:"sdk_ua_app_id,omitempty"          jsonschema:"description=Application ID appended to the SDK user-agent string."                                                                                                             toml:"sdk_ua_app_id,omitempty"`
+	UseDualstackEndpoint string `json:"use_dualstack_endpoint,omitempty" jsonschema:"description=Enable dual-stack (IPv4/IPv6) endpoints.,enum=true,enum=false"                                                                                                     toml:"use_dualstack_endpoint,omitempty"`
+	UseFIPSEndpoint      string `json:"use_fips_endpoint,omitempty"      jsonschema:"description=Enable FIPS-compliant endpoints.,enum=true,enum=false"                                                                                                             toml:"use_fips_endpoint,omitempty"`
+	TCPKeepAlive         string `json:"tcp_keepalive,omitempty"          jsonschema:"description=Enable TCP keep-alive for connections.,enum=true,enum=false"                                                                                                       toml:"tcp_keepalive,omitempty"`
 }
 
 // SettingsConfig groups settings scopes for a single SSO profile. The Global
@@ -80,7 +80,7 @@ type GlobalSettingsConfig struct {
 // Any other key under settings is treated as a per-profile override keyed by
 // the generated AWS CLI profile name (e.g., [abc.settings.sandbox-admin]).
 type SettingsConfig struct {
-	Global GlobalSettingsConfig `json:"global,omitempty" toml:"global,omitempty" jsonschema:"description=Global defaults applied to every generated profile under this SSO profile."`
+	Global GlobalSettingsConfig `json:"global,omitempty" jsonschema:"description=Global defaults applied to every generated profile under this SSO profile." toml:"global,omitempty"`
 }
 
 // JSONSchemaExtend marks dynamic per-profile override keys under settings as
@@ -96,8 +96,8 @@ func (SettingsConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
 // (AWS Organization). The profile key (e.g., "abc", "nwl") is the dynamic
 // map key at the top level of the TOML file.
 type SSOProfileConfig struct {
-	Settings SettingsConfig `json:"settings,omitempty" toml:"settings,omitempty" jsonschema:"description=Default AWS CLI settings applied to every generated profile under this SSO profile."`
-	Rename   RenameConfig   `json:"rename"             toml:"rename"             jsonschema:"description=Profile name generation and rewriting rules for this SSO profile."`
+	Settings SettingsConfig `json:"settings,omitempty" jsonschema:"description=Default AWS CLI settings applied to every generated profile under this SSO profile." toml:"settings,omitempty"`
+	Rename   RenameConfig   `json:"rename"             jsonschema:"description=Profile name generation and rewriting rules for this SSO profile."                   toml:"rename"`
 }
 
 // ConfigFile is the root schema for the TOML configuration file. The fixed

@@ -68,6 +68,7 @@ func TestNormalizeSSOStartURL(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error")
 				}
+
 				return
 			}
 
@@ -109,6 +110,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("output not parseable as URL: %v", err)
 			}
+
 			if parsed.Host == "" {
 				t.Fatalf("parsed URL has empty host for %q", result)
 			}
@@ -137,6 +139,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("output not parseable as URL: %v", err)
 			}
+
 			if parsed.Host == "" {
 				t.Fatalf("parsed URL has empty host for %q", result)
 			}
@@ -165,6 +168,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("output not parseable as URL: %v", err)
 			}
+
 			if parsed.Host == "" {
 				t.Fatalf("parsed URL has empty host for %q", result)
 			}
@@ -192,6 +196,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("output not parseable as URL: %v", err)
 			}
+
 			if parsed.Host == "" {
 				t.Fatalf("parsed URL has empty host for %q", result)
 			}
