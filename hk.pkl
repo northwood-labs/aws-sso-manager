@@ -16,9 +16,12 @@ local linters = new Mapping<String, Step> {
   ["check-merge-conflict"] = Builtins.check_merge_conflict
   ["check-symlinks"] = Builtins.check_symlinks
   // ["contextlint"] = Builtins.contextlint // Needs more tuning.
-  ["editorconfig-checker"] = Builtins.editorconfig_checker
+  ["editorconfig-checker"] {
+    workspace_indicator = ".editorconfig-checker.json"
+    glob = "**/*"
+    fix = "cd {{ workspace }} && editorconfig-checker"
+  }
   ["rumdl"] = Builtins.rumdl
-
   // @config-manager:end standard
 
   // @config-manager:start golang
@@ -26,6 +29,12 @@ local linters = new Mapping<String, Step> {
     workspace_indicator = "go.mod"
     glob = "**/*.go"
     fix = "cd {{ workspace }} && fieldalignment -fix ./..."
+  }
+  ["go-fix"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "cd {{ workspace }} && go fix -diff ./..."
+    fix = "cd {{ workspace }} && go fix ./..."
   }
   ["go-fmt"] {
     workspace_indicator = "go.mod"
@@ -63,6 +72,11 @@ local linters = new Mapping<String, Step> {
     glob = "**/*.go"
     check = "cd {{ workspace }} && golangci-lint run --fix=false ./..."
     fix = "cd {{ workspace }} && golangci-lint run --fix ./..."
+  }
+  ["unconvert"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "cd {{ workspace }} && unconvert -fastmath -tests -apply -v ./..."
   }
   // @config-manager:end golang
 

@@ -3,7 +3,9 @@
   "Exclude": [
     "\\.config-manager\\.d/",
     "\\.kiro/hooks/",
-    "/testdata/",
+    "\\.rumdl_cache/",
+    "node_modules/",
+    "testdata/",
     "\\.7z$",
     "\\.avif$",
     "\\.bak$",

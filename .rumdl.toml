@@ -251,48 +251,48 @@
   enabled = true
   punctuation = ".,;:"
 
-# https://rumdl.dev/md033/
-[rules.MD033]
-  # no-inline-html
-  enabled = true
-  allowed-elements = [
-    "a",
-    "b",
-    "br",
-    "code",
-    "details",
-    "div",
-    "img",
-    "li",
-    "nobr",
-    "ol",
-    "p",
-    "pre",
-    "span",
-    "summary",
-    "ul",
-  ]
-  br-style = "backslash"
-  drop-attributes = [
-    #
-    "class",
-    "id",
-    "rel",
-    "style",
-    "target",
-    #
-  ]
-  fix = true
-  fix-mode = "relaxed"
-  strip-wrapper-elements = [
-    #
-    "p",
-    #
-  ]
-  table-allowed-elements = [
-    #
-    #
-  ]
+  # https://rumdl.dev/md033/
+  # [rules.MD033]
+  #   # no-inline-html
+  #   enabled = true
+  #   allowed-elements = [
+  #     "a",
+  #     "b",
+  #     "br",
+  #     "code",
+  #     "details",
+  #     "div",
+  #     "img",
+  #     "li",
+  #     "nobr",
+  #     "ol",
+  #     "p",
+  #     "pre",
+  #     "span",
+  #     "summary",
+  #     "ul",
+  #   ]
+  #   br-style = "backslash"
+  #   drop-attributes = [
+  #     #
+  #     "class",
+  #     "id",
+  #     "rel",
+  #     "style",
+  #     "target",
+  #     #
+  #   ]
+  #   fix = true
+  #   fix-mode = "relaxed"
+  #   strip-wrapper-elements = [
+  #     #
+  #     "p",
+  #     #
+  #   ]
+  #   table-allowed-elements = [
+  #     #
+  #     #
+  #   ]
 
 # https://rumdl.dev/md035/
 [rules.MD035]

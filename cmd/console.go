@@ -326,12 +326,11 @@ func minMaxRows[T any](rows []T) int {
 	return int(
 		math.Min(
 			10,
-			float64(
-				math.Max(
-					5,
-					float64(
-						len(rows),
-					),
+
+			math.Max(
+				5,
+				float64(
+					len(rows),
 				),
 			),
 		),

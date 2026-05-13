@@ -55,11 +55,11 @@ type RoleRenameConfig struct {
 // profile. It controls prefix/suffix tokens, the assembly pattern, and
 // account/role name rewriting rules.
 type RenameConfig struct {
-	Accounts AccountRenameConfig `json:"accounts,omitempty" jsonschema:"description=Rules for rewriting AWS account names in generated profile names."          toml:"accounts,omitempty"`
-	Roles    RoleRenameConfig    `json:"roles,omitempty"    jsonschema:"description=Rules for rewriting AWS role names in generated profile names."             toml:"roles,omitempty"`
-	Prefix   string              `json:"prefix,omitempty"   jsonschema:"description=Standard prefix added to all generated profile names for this SSO profile." toml:"prefix,omitempty"`
-	Suffix   string              `json:"suffix,omitempty"   jsonschema:"description=Standard suffix added to all generated profile names for this SSO profile." toml:"suffix,omitempty"`
-	Pattern  PatternConfig       `json:"pattern,omitempty"  jsonschema:"description=Controls how profile name tokens are ordered and delimited."                toml:"pattern,omitempty"`
+	Accounts AccountRenameConfig `json:"accounts"         jsonschema:"description=Rules for rewriting AWS account names in generated profile names."          toml:"accounts,omitempty"`
+	Roles    RoleRenameConfig    `json:"roles"            jsonschema:"description=Rules for rewriting AWS role names in generated profile names."             toml:"roles,omitempty"`
+	Prefix   string              `json:"prefix,omitempty" jsonschema:"description=Standard prefix added to all generated profile names for this SSO profile." toml:"prefix,omitempty"`
+	Suffix   string              `json:"suffix,omitempty" jsonschema:"description=Standard suffix added to all generated profile names for this SSO profile." toml:"suffix,omitempty"`
+	Pattern  PatternConfig       `json:"pattern"          jsonschema:"description=Controls how profile name tokens are ordered and delimited."                toml:"pattern,omitempty"`
 }
 
 // GlobalSettingsConfig holds per-profile AWS CLI defaults that are applied to
@@ -80,7 +80,7 @@ type GlobalSettingsConfig struct {
 // Any other key under settings is treated as a per-profile override keyed by
 // the generated AWS CLI profile name (e.g., [abc.settings.sandbox-admin]).
 type SettingsConfig struct {
-	Global GlobalSettingsConfig `json:"global,omitempty" jsonschema:"description=Global defaults applied to every generated profile under this SSO profile." toml:"global,omitempty"`
+	Global GlobalSettingsConfig `json:"global" jsonschema:"description=Global defaults applied to every generated profile under this SSO profile." toml:"global,omitempty"`
 }
 
 // JSONSchemaExtend marks dynamic per-profile override keys under settings as
@@ -96,8 +96,8 @@ func (SettingsConfig) JSONSchemaExtend(schema *jsonschema.Schema) {
 // (AWS Organization). The profile key (e.g., "abc", "nwl") is the dynamic
 // map key at the top level of the TOML file.
 type SSOProfileConfig struct {
-	Settings SettingsConfig `json:"settings,omitempty" jsonschema:"description=Default AWS CLI settings applied to every generated profile under this SSO profile." toml:"settings,omitempty"`
-	Rename   RenameConfig   `json:"rename"             jsonschema:"description=Profile name generation and rewriting rules for this SSO profile."                   toml:"rename"`
+	Settings SettingsConfig `json:"settings" jsonschema:"description=Default AWS CLI settings applied to every generated profile under this SSO profile." toml:"settings,omitempty"`
+	Rename   RenameConfig   `json:"rename"   jsonschema:"description=Profile name generation and rewriting rules for this SSO profile."                   toml:"rename"`
 }
 
 // ConfigFile is the root schema for the TOML configuration file. The fixed
@@ -144,14 +144,14 @@ func validateConfigKey(key string) error {
 		return fmt.Errorf("key %q is not valid: expected <profile>.<path>", key)
 	}
 
-	return walkStructPath(reflect.TypeOf(SSOProfileConfig{}), parts[1:], key)
+	return walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key)
 }
 
 // additionalPropertiesTypes maps struct types that accept dynamic keys to the
 // type those keys should validate against. This mirrors the JSONSchemaExtend
 // additionalProperties pattern used for JSON Schema generation.
 var additionalPropertiesTypes = map[reflect.Type]reflect.Type{
-	reflect.TypeOf(SettingsConfig{}): reflect.TypeOf(GlobalSettingsConfig{}),
+	reflect.TypeFor[SettingsConfig](): reflect.TypeFor[GlobalSettingsConfig](),
 }
 
 // walkStructPath recursively validates that a sequence of dot-split key
@@ -164,7 +164,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 		return nil
 	}
 
-	for t.Kind() == reflect.Ptr {
+	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 
@@ -174,8 +174,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 
 	segment := parts[0]
 
-	for i := range t.NumField() {
-		field := t.Field(i)
+	for field := range t.Fields() {
 		jsonTag := field.Tag.Get("json")
 		jsonName, _, _ := strings.Cut(jsonTag, ",")
 
@@ -184,7 +183,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 		}
 
 		ft := field.Type
-		for ft.Kind() == reflect.Ptr {
+		for ft.Kind() == reflect.Pointer {
 			ft = ft.Elem()
 		}
 

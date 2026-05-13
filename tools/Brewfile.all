@@ -1,0 +1,145 @@
+##
+# brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=Brewfile.all
+##
+
+# @config-manager:start brew
+# https://www.gnu.org/software/bash/
+brew "bash"
+
+# https://salsa.debian.org/debian/bash-completion
+brew "bash-completion"
+
+# https://www.gnu.org/software/coreutils/
+brew "coreutils"
+
+# https://curl.se
+brew "curl"
+
+# https://www.gnu.org/software/diffutils/
+brew "diffutils"
+
+# https://github.com/kcrawford/dockutil
+brew "dockutil"
+
+# https://github.com/eza-community/eza
+brew "eza"
+
+# https://github.com/sharkdp/fd
+brew "fd"
+
+# https://www.gnu.org/software/findutils/
+brew "findutils"
+
+# https://github.com/junegunn/fzf
+brew "fzf"
+
+# https://www.gnu.org/software/gawk/
+brew "gawk"
+
+# https://github.com/charmbracelet/glow
+brew "glow"
+
+# https://github.com/mbrt/gmailctl
+brew "gmailctl"
+
+# https://www.gnu.org/software/sed/
+brew "gnu-sed"
+
+# https://www.gnu.org/software/tar/
+brew "gnu-tar"
+
+# https://go.dev/
+brew "go"
+
+# https://graphviz.org/
+brew "graphviz"
+
+# https://www.gnu.org/software/grep/
+brew "grep"
+
+# https://htop.dev/
+brew "htop"
+
+# https://imagemagick.org/index.php
+brew "imagemagick-full"
+
+# https://jqlang.github.io/jq/
+brew "jq"
+
+# https://wiki.gnome.org/Projects/LibRsvg
+brew "librsvg"
+
+# https://github.com/mas-cli/mas
+brew "mas"
+
+# https://joeyh.name/code/moreutils/
+brew "moreutils"
+
+# https://www.nano-editor.org/
+brew "nano"
+
+# https://www.python.org/
+brew "python3"
+
+# https://tiswww.case.edu/php/chet/readline/rltop.html
+brew "readline"
+
+# https://github.com/BurntSushi/ripgrep
+brew "ripgrep"
+
+# https://infozip.sourceforge.net/UnZip.html
+brew "unzip"
+
+# https://developers.google.com/speed/webp/
+brew "webp"
+
+# https://www.gnu.org/software/wget/
+brew "wget"
+
+# https://tukaani.org/xz/
+brew "xz"
+
+# https://zlib.net/
+brew "zlib"
+
+# https://facebook.github.io/zstd/
+brew "zstd"
+# @config-manager:end brew
+
+# @config-manager:start cask
+# https://1password.com/
+cask "1password"
+
+# https://developer.1password.com/docs/cli
+cask "1password-cli"
+
+# https://www.mothersruin.com/software/Apparency/
+cask "apparency"
+
+# https://github.com/insidegui/AssetCatalogTinkerer
+cask "asset-catalog-tinkerer"
+
+# https://getcleanshot.com/
+cask "cleanshot"
+
+# https://corretto.aws/
+cask "corretto@25"
+
+# https://flexibits.com/fantastical
+cask "fantastical"
+
+# https://gpgtools.org/
+cask "gpg-suite@nightly"
+
+# https://imageoptim.com/mac
+cask "imageoptim"
+
+# https://developer.apple.com/sf-symbols/
+cask "sf-symbols"
+
+# https://slack.com/
+cask "slack"
+
+# https://www.mothersruin.com/software/SuspiciousPackage/
+cask "suspicious-package"
+# @config-manager:end cask

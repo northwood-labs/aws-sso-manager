@@ -20,6 +20,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -40,14 +41,7 @@ func TestLogoutCommandRegistration(t *testing.T) {
 		{
 			name: "logoutCmd is registered on rootCmd",
 			fn: func(t *testing.T) {
-				found := false
-
-				for _, cmd := range rootCmd.Commands() {
-					if cmd == logoutCmd {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(rootCmd.Commands(), logoutCmd)
 
 				if !found {
 					t.Fatal("logoutCmd not found in rootCmd.Commands()")

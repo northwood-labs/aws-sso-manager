@@ -1,0 +1,93 @@
+##
+# brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=Brewfile.standard
+##
+
+# @config-manager:start taps
+tap "trufflesecurity/trufflehog"
+# @config-manager:end taps
+
+# @config-manager:start brew
+# https://github.com/editorconfig-checker/editorconfig-checker
+brew "editorconfig-checker"
+
+# https://git-cliff.org/
+brew "git-cliff"
+
+# https://github.com/dandavison/delta
+brew "git-delta"
+
+# https://github.com/newren/git-filter-repo
+brew "git-filter-repo"
+
+# https://github.com/nvie/gitflow
+brew "git-flow"
+
+# https://git-lfs.com/
+brew "git-lfs"
+
+# https://git-scm.com
+brew "git"
+
+# https://go.dev/
+brew "go"
+
+# https://github.com/charmbracelet/gum
+brew "gum"
+
+# https://hk.jdx.dev
+brew "hk"
+
+# https://jqlang.github.io/jq/
+brew "jq"
+
+# https://lychee.cli.rs/
+brew "lychee"
+
+# https://nodejs.org/
+brew "node"
+
+# https://pandoc.org/
+brew "pandoc"
+
+# https://pkl-lang.org
+brew "pkl"
+
+# https://github.com/rvben/rumdl
+brew "rumdl"
+
+# https://www.shellcheck.net/
+brew "shellcheck"
+
+# https://github.com/mvdan/sh
+brew "shfmt"
+
+# https://taplo.tamasfe.dev
+brew "taplo"
+
+# https://trivy.dev/
+brew "trivy"
+
+# https://github.com/trufflesecurity/trufflehog
+brew "trufflesecurity/trufflehog/trufflehog"
+
+# https://github.com/google/yamlfmt
+brew "yamlfmt"
+# @config-manager:end brew
+
+# @config-manager:start npm
+# https://www.npmjs.com/package/@endevco/aube
+npm "@endevco/aube"
+# @config-manager:end npm
+
+# @config-manager:start go
+go "github.com/antham/gommit"
+go "github.com/charmbracelet/gum"
+go "github.com/google/osv-scanner/v2/cmd/osv-scanner"
+go "github.com/goph/licensei/cmd/licensei"
+go "github.com/pelletier/go-toml/v2/cmd/jsontoml"
+go "github.com/pelletier/go-toml/v2/cmd/tomljson"
+go "github.com/pelletier/go-toml/v2/cmd/tomll"
+go "github.com/psampaz/gothanks"
+go "github.com/tomwright/dasel/v3/cmd/dasel"
+go "github.com/trufflesecurity/driftwood"
+# @config-manager:end go

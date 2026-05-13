@@ -7,16 +7,6 @@
   destination = '.golangci.yml'
 
   #-------------------------------------------------------------------------------
-  # MISE
-
-# Install packages
-# https://mise.jdx.dev
-[[files]]
-  stub = 'configs/stubs/.config/mise/conf.d/tools.golang.toml'
-  source = 'configs/templates/.config/mise/conf.d/tools.golang.toml'
-  destination = '.config/mise/conf.d/tools.golang.toml'
-
-  #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
 
 [[files]]
@@ -43,14 +33,10 @@
 # Go tools
 # https://go.dev/doc/modules/managing-dependencies#tools
 [[files]]
-  stub = 'configs/stubs/tools/go-tool-golang.sh'
-  source = 'configs/templates/tools/go-tool-golang.sh'
-  destination = 'tools/go-tool-golang.sh'
+  stub = 'configs/stubs/tools/Brewfile.golang'
+  source = 'configs/templates/tools/Brewfile.golang'
+  destination = 'tools/Brewfile.golang'
   executable = true
 
   [files.post_update_hook]
-    bash = """
-tools/go-tool-golang.sh
-go mod tidy -modfile go.tools.mod
-go get -modfile go.tools.mod -u -t -v ./...
-"""
+    bash = 'brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=tools/Brewfile.golang'

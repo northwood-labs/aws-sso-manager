@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/invopop/jsonschema"
@@ -46,9 +47,7 @@ func main() {
 		schema.Definitions = make(jsonschema.Definitions)
 	}
 
-	for k, v := range sub.Definitions {
-		schema.Definitions[k] = v
-	}
+	maps.Copy(schema.Definitions, sub.Definitions)
 
 	out, err := json.MarshalIndent(schema, "", "  ")
 	if err != nil {

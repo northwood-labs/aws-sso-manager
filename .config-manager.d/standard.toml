@@ -79,16 +79,6 @@
   destination = '.yamlfmt.yml'
 
   #-------------------------------------------------------------------------------
-  # MISE
-
-# Install core packages
-# https://mise.jdx.dev
-[[files]]
-  stub = 'configs/stubs/.config/mise/conf.d/tools.standard.toml'
-  source = 'configs/templates/.config/mise/conf.d/tools.standard.toml'
-  destination = '.config/mise/conf.d/tools.standard.toml'
-
-  #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
 
 [[files]]
@@ -204,14 +194,10 @@
 # Go tools
 # https://go.dev/doc/modules/managing-dependencies#tools
 [[files]]
-  stub = 'configs/stubs/tools/go-tool-standard.sh'
-  source = 'configs/templates/tools/go-tool-standard.sh'
-  destination = 'tools/go-tool-standard.sh'
+  stub = 'configs/stubs/tools/Brewfile.standard'
+  source = 'configs/templates/tools/Brewfile.standard'
+  destination = 'tools/Brewfile.standard'
   executable = true
 
   [files.post_update_hook]
-    bash = """
-tools/go-tool-standard.sh
-go mod tidy -modfile go.tools.mod
-go get -modfile go.tools.mod -u -t -v ./...
-"""
+    bash = 'brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=tools/Brewfile.standard'
