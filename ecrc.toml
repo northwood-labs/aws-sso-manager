@@ -16,6 +16,7 @@ Exclude = [
   # Directories
   "\\.config-manager\\.d/",
   "\\.kiro/hooks/",
+  "\\.kirograph/",
   "\\.rumdl_cache/",
   "node_modules/",
   "testdata/",

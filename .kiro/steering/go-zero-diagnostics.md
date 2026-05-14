@@ -17,6 +17,17 @@ All Go source files must be free of diagnostic errors and warnings. Code is not 
 
 Do not present work as finished while diagnostics remain.
 
+## Resolution workflow
+
+When resolving lint issues across the project (not just a single file), follow this process:
+
+1. Run `golangci-lint run` (no path filter) to produce the full report.
+2. Parse the output to count how many errors each individual linter produced. Group errors by linter name (the identifier in parentheses at the end of each line, e.g., `(sloglint)`, `(err113)`, `(gocritic)`).
+3. Sort the linters by error count ascending — fewest errors first.
+4. Resolve linters in that order, starting with the linter that has the fewest errors and working up to the linter with the most. This maximizes early progress and keeps changesets small.
+5. After clearing all errors for a given linter, re-run `golangci-lint run` to confirm the count dropped and no new issues were introduced.
+6. Continue until the full run reports zero issues.
+
 ## Linter categories and fix patterns
 
 This project enables ~60 linters via `.golangci.yml` (v2 format, `default: none`). The most common diagnostic categories and their fixes are listed below.
@@ -69,3 +80,5 @@ Remove commented-out code blocks. If the code is needed for reference, move it b
 ## Suppression
 
 When a diagnostic cannot be resolved cleanly, use the project's lint suppression comments documented in `docs/agents/style.md`. Always include a justification. Suppression is a last resort — prefer fixing the root cause.
+
+The `.golangci.yml` file may NEVER be edited as a way to resolve diagnostics.

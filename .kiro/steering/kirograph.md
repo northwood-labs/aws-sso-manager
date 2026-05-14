@@ -8,26 +8,26 @@ KiroGraph builds a semantic knowledge graph of your codebase. Use its MCP tools 
 
 ## Quick decision guide
 
-| Question                               | Tool                                      |
-| -------------------------------------- | ----------------------------------------- |
-| Where do I start on this task?         | `kirograph_context`                       |
+| Question | Tool |
+| ---------- | ------ |
+| Where do I start on this task? | `kirograph_context` |
 | What is this symbol / show me its code | `kirograph_node` with `includeCode: true` |
-| Find a symbol by name                  | `kirograph_search`                        |
-| Who calls function X?                  | `kirograph_callers`                       |
-| What does function X call?             | `kirograph_callees`                       |
-| What breaks if I change X?             | `kirograph_impact`                        |
-| How are X and Y connected?             | `kirograph_path`                          |
-| What extends / implements this type?   | `kirograph_type_hierarchy`                |
-| Which code is never called?            | `kirograph_dead_code`                     |
-| Are there import cycles?               | `kirograph_circular_deps`                 |
-| What files are indexed?                | `kirograph_files`                         |
-| Is the index healthy?                  | `kirograph_status`                        |
-| What are the most critical symbols?    | `kirograph_hotspots`                      |
-| Any unexpected cross-module coupling?  | `kirograph_surprising`                    |
-| What changed since the last snapshot?  | `kirograph_diff`                          |
-| What packages/layers exist?            | `kirograph_architecture`                  |
-| How coupled is package X?              | `kirograph_coupling`                      |
-| What does package X depend on?         | `kirograph_package`                       |
+| Find a symbol by name | `kirograph_search` |
+| Who calls function X? | `kirograph_callers` |
+| What does function X call? | `kirograph_callees` |
+| What breaks if I change X? | `kirograph_impact` |
+| How are X and Y connected? | `kirograph_path` |
+| What extends / implements this type? | `kirograph_type_hierarchy` |
+| Which code is never called? | `kirograph_dead_code` |
+| Are there import cycles? | `kirograph_circular_deps` |
+| What files are indexed? | `kirograph_files` |
+| Is the index healthy? | `kirograph_status` |
+| What are the most critical symbols? | `kirograph_hotspots` |
+| Any unexpected cross-module coupling? | `kirograph_surprising` |
+| What changed since the last snapshot? | `kirograph_diff` |
+| What packages/layers exist? | `kirograph_architecture` |
+| How coupled is package X? | `kirograph_coupling` |
+| What does package X depend on? | `kirograph_package` |
 
 ---
 
@@ -155,13 +155,13 @@ kirograph_surprising(limit: 20)
 Compares the current graph against a saved snapshot. Shows added/removed symbols and edges. A snapshot must exist — the user saves one with `kirograph snapshot save <label>` before making changes.
 
 ```text
-kirograph_diff()                             // vs latest snapshot
+kirograph_diff()                              // vs latest snapshot
 kirograph_diff(snapshot: "pre-refactor")     // vs named snapshot
 ```
 
 ---
 
-## Architecture tools _(require XXXXXXXXXXXXXXXXXXXXXXXXXX in config)_
+## Architecture tools *(require `enableArchitecture: true` in config)*
 
 ### `kirograph_architecture` — **start here for architectural questions**
 
@@ -178,8 +178,8 @@ kirograph_architecture(includeFiles: true)  // add file→package assignments
 
 Returns Ca (afferent — depended on by), Ce (efferent — depends on), and instability (Ce/(Ca+Ce)).
 
-* High Ca + low instability = load-bearing, safe to depend on, risky to change interface.
-* High Ce + high instability = depends on many things, safe to refactor internals.
+- High Ca + low instability = load-bearing, safe to depend on, risky to change interface.
+- High Ce + high instability = depends on many things, safe to refactor internals.
 
 ```text
 kirograph_coupling()                        // all packages, sorted by instability

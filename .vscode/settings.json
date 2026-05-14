@@ -61,6 +61,7 @@
     "*.toml": "toml",
     ".style.yapf": "ini",
     ".terraformrc": "hcl",
+    "Brewfile*": "ruby",
     "config": "ini"
   },
   "files.eol": "\n",
@@ -146,7 +147,12 @@
   "kiroAgent.trustedCommands": [
     "cat *",
     "curl *",
-    "grep *"
+    "grep *",
+    "golangci-lint run --fix ./... 2>&1",
+    "golangci-lint run *",
+    "go build *",
+    "go vet *",
+    "go test *"
   ],
   "kiroAgent.usageSummary": true,
   "makefile.configureOnOpen": false,

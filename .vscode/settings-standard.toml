@@ -114,6 +114,7 @@
   '*.toml' = 'toml'
   '.style.yapf' = 'ini'
   '.terraformrc' = 'hcl'
+  'Brewfile*' = 'ruby'
   config = 'ini'
 
 [['githubIssues.queries']]

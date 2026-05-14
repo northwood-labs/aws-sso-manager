@@ -21,6 +21,18 @@
         "kirograph_path",
         "kirograph_type_hierarchy"
       ]
+    },
+    "aws-agent-toolkit": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--metadata",
+        "AWS_REGION=us-west-2"
+      ],
+      "env": {
+        "AWS_PROFILE": "msa-ro"
+      }
     }
   }
 }
