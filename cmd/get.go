@@ -73,7 +73,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profileName, err := resolveGetProfileName()
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
 			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
@@ -114,7 +114,7 @@ var (
 
 			profileName, err := resolveGetProfileName()
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
 			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
@@ -127,7 +127,7 @@ var (
 
 			roles, err := getRoleNamesForAccountID(lookupIndex, fGetFor)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not get roles for account: %w", err)
 			}
 
 			for _, roleName := range roles {

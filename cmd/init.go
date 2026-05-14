@@ -54,7 +54,9 @@ var initCmd = &cobra.Command{
 			profileName string
 		)
 
-		logger.Info("Passed arguments", "count", len(args))
+		ctx := cmd.Context()
+
+		logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
 		if len(args) == 1 {
 			profileName = args[0]
@@ -69,7 +71,7 @@ var initCmd = &cobra.Command{
 				Value(&profileName).
 				Run()
 			if err != nil {
-				return err
+				return fmt.Errorf("could not read SSO profile name: %w", err)
 			}
 		}
 
@@ -87,22 +89,22 @@ var initCmd = &cobra.Command{
 
 		configLock, err := acquireAWSConfigLock(cmd.Context())
 		if err != nil {
-			return err
+			return fmt.Errorf("could not acquire AWS config lock: %w", err)
 		}
 		defer func() {
 			if releaseErr := configLock.Release(); releaseErr != nil {
-				logger.Error("Failed to release AWS config lock", "err", releaseErr)
+				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()
 
-		logger.Info("Read the AWS config file", "config", awsConfigFilePath)
+		logger.InfoContext(ctx, "Read the AWS config file", logKeyConfig, awsConfigFilePath)
 
 		sections, err := loadAWSConfig(awsConfigFilePath)
 		cobra.CheckErr(err)
 
 		sessionName := "sso-session " + profileName
 
-		logger.Info("Load the session section and check for existing section", "section", sessionName)
+		logger.InfoContext(ctx, "Load the session section and check for existing section", logKeySection, sessionName)
 
 		_, ok := sections.GetSection(sessionName)
 		if ok {
@@ -114,7 +116,7 @@ var initCmd = &cobra.Command{
 		// removed while the managed-block markers remain. Appending new markers in
 		// that state would create a duplicate block.
 		if exists, err := markersExist(profileName); err != nil {
-			return err
+			return fmt.Errorf("could not check managed markers: %w", err)
 		} else if exists {
 			return fmt.Errorf(
 				"config file already contains managed block markers for profile %q; "+
@@ -127,7 +129,7 @@ var initCmd = &cobra.Command{
 
 		section := configFile.NewSection(sessionName)
 
-		logger.Info("Ask for SSO start URL if not provided already.")
+		logger.InfoContext(ctx, "Ask for SSO start URL if not provided already.")
 
 		if ssoStartURL == "" {
 			def := section.String("sso_start_url")
@@ -152,7 +154,7 @@ var initCmd = &cobra.Command{
 
 		ssoStartURL = normalizedStartURL
 
-		logger.Info("Ask for SSO region if not provided already.")
+		logger.InfoContext(ctx, "Ask for SSO region if not provided already.")
 
 		if ssoRegion == "" {
 			def := section.String("sso_region")
@@ -170,7 +172,7 @@ var initCmd = &cobra.Command{
 			cobra.CheckErr(err)
 		}
 
-		logger.Info("Create ssoStartURL entry.")
+		logger.InfoContext(ctx, "Create ssoStartURL entry.")
 
 		if v, err := configFile.NewStringValue(ssoStartURL); err != nil {
 			return fmt.Errorf("failed to create 'sso_start_url' value: %w", err)
@@ -181,7 +183,7 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		logger.Info("Create ssoRegion entry.")
+		logger.InfoContext(ctx, "Create ssoRegion entry.")
 
 		if v, err := configFile.NewStringValue(ssoRegion); err != nil {
 			return fmt.Errorf("failed to create 'sso_region' value: %w", err)
@@ -192,7 +194,7 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		logger.Info("Create ssoScope entry.")
+		logger.InfoContext(ctx, "Create ssoScope entry.")
 
 		if v, err := configFile.NewStringValue(ssoScopes); err != nil {
 			return fmt.Errorf("failed to create 'sso_registration_scopes' value: %w", err)
@@ -203,7 +205,7 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		logger.Info("Write the configuration to disk.")
+		logger.InfoContext(ctx, "Write the configuration to disk.")
 
 		existingConfig, err := os.ReadFile(awsConfigFilePath)
 		cobra.CheckErr(err)
@@ -219,7 +221,7 @@ var initCmd = &cobra.Command{
 			}
 
 			if closeErr := tmpConfig.Close(); closeErr != nil {
-				logger.Error("Failed to close temporary AWS config file", "err", closeErr)
+				logger.ErrorContext(ctx, "Failed to close temporary AWS config file", logKeyErr, closeErr)
 			}
 		}()
 

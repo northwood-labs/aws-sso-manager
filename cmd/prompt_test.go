@@ -198,6 +198,8 @@ func TestPropertySSOSessionParsing(t *testing.T) {
 
 	logger = slog.New(log.New(io.Discard))
 
+	tmpDir := t.TempDir()
+
 	rapid.Check(t, func(t *rapid.T) {
 		// Generate 1–5 unique sso-session names matching [a-z][a-z0-9]{2,10}.
 		numSessions := rapid.IntRange(1, 5).Draw(t, "numSessions")
@@ -234,11 +236,6 @@ func TestPropertySSOSessionParsing(t *testing.T) {
 		}
 
 		// Write to temp file and point awsConfigFilePath at it.
-		tmpDir, err := os.MkdirTemp("", "aws-config-test-*")
-		if err != nil {
-			t.Fatalf("create temp dir: %v", err)
-		}
-
 		tmpFile, err := os.CreateTemp(tmpDir, "aws-config-*.ini")
 		if err != nil {
 			t.Fatalf("create temp file: %v", err)

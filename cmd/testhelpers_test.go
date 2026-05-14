@@ -67,7 +67,7 @@ func genAccountID() *rapid.Generator[string] {
 // property tests can assert on sorted output without re-sorting. This is
 // intentional — if the production sort order changes, the generator should
 // change too, and the property tests will catch the mismatch.
-func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts] {
+func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts] { // lint:allow_param
 	return rapid.Custom[listAccounts](func(t *rapid.T) listAccounts {
 		numAccounts := rapid.IntRange(minAccounts, maxAccounts).Draw(t, "numAccounts")
 
@@ -238,25 +238,5 @@ func genConfigKey() *rapid.Generator[string] {
 		leaf := rapid.SampledFrom(leaves).Draw(t, "leaf")
 
 		return profile + "." + leaf
-	})
-}
-
-// genConfigMapKey returns a rapid generator that produces valid config keys
-// targeting map entries (e.g., substr_match_replace.<mapkey>).
-func genConfigMapKey() *rapid.Generator[string] {
-	return rapid.Custom[string](func(t *rapid.T) string {
-		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
-
-		mapPaths := []string{
-			"rename.accounts.global_regex_replace",
-			"rename.accounts.substr_match_replace",
-			"rename.roles.global_regex_replace",
-			"rename.roles.substr_match_replace",
-		}
-
-		mapPath := rapid.SampledFrom(mapPaths).Draw(t, "mapPath")
-		mapKey := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{1,10}`).Draw(t, "mapKey")
-
-		return profile + "." + mapPath + "." + mapKey
 	})
 }

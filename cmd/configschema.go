@@ -144,7 +144,7 @@ func validateConfigKey(key string) error {
 		return fmt.Errorf("key %q is not valid: expected <profile>.<path>", key)
 	}
 
-	return walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key)
+	return walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key) // lint:allow_unwrapped_errors
 }
 
 // additionalPropertiesTypes maps struct types that accept dynamic keys to the
@@ -202,7 +202,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 				return nil
 			}
 
-			return walkStructPath(ft, remaining, fullKey)
+			return walkStructPath(ft, remaining, fullKey) // lint:allow_unwrapped_errors
 
 		case reflect.Slice, reflect.String, reflect.Bool,
 			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -231,7 +231,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error {
 			return nil
 		}
 
-		return walkStructPath(valueType, remaining, fullKey)
+		return walkStructPath(valueType, remaining, fullKey) // lint:allow_unwrapped_errors
 	}
 
 	return fmt.Errorf("key %q is not valid: unknown config key %q", fullKey, segment)

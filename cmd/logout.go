@@ -36,6 +36,8 @@ var logoutCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var profileName string
 
+		ctx := cmd.Context()
+
 		// Profile resolution: arg > config > interactive prompt.
 		if len(args) == 1 {
 			profileName = args[0]
@@ -45,21 +47,21 @@ var logoutCmd = &cobra.Command{
 
 		if profileName == "" {
 			if err := promptProfileSelect(&profileName); err != nil {
-				return err
+				return fmt.Errorf("could not select SSO profile: %w", err)
 			}
 		}
 
-		logger.Info("Logging out SSO session", "profile", profileName)
+		logger.InfoContext(ctx, "Logging out SSO session", logKeyProfile, profileName)
 
 		// Resolve the SSO session and cache file path.
 		sessionProfile, err := getSsoSession(profileName)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get SSO session: %w", err)
 		}
 
 		cacheFilePath, err := getCacheFilePath(&sessionProfile)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get cache file path: %w", err)
 		}
 
 		// Delete the cache file.

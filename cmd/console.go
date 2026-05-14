@@ -15,9 +15,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"log/slog"
 	"math"
 	"net/url"
 	"os"
@@ -78,7 +78,12 @@ var (
 				roleName  = fRole
 			)
 
-			logger.Info("Passed arguments", "count", len(args))
+			ctx := cmd.Context()
+			if ctx == nil {
+				ctx = context.Background()
+			}
+
+			logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
 			if len(args) == 1 {
 				switch {
@@ -97,13 +102,13 @@ var (
 			var groups []*huh.Group
 
 			if consoleURL == "" {
-				logger.Debug("AWS Console URL is undefined. Collect it from user.")
+				logger.DebugContext(ctx, "AWS Console URL is undefined. Collect it from user.")
 
 				if fClipboard {
 					// Set the default value to whatever's on the clipboard.
 					clipboardBytes, err := nativeclipboard.Text.Read()
 					if err != nil {
-						logger.Debug("could not read from the clipboard", "err", err)
+						logger.DebugContext(ctx, "Could not read from the clipboard", logKeyErr, err)
 					}
 
 					clipboardString := string(clipboardBytes)
@@ -122,14 +127,14 @@ var (
 			}
 
 			if profileName == "" {
-				logger.Debug("SSO profile is undefined. Collect it from user.")
+				logger.DebugContext(ctx, "SSO profile is undefined. Collect it from user.")
 
 				if err := promptProfileSelect(&profileName); err != nil {
-					return err
+					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
 
-			logger.Info("Retrieving SSO session profile", "profile", profileName)
+			logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 			// profileName should be defined at this point.
 			startHost, err = getStartURL(profileName)
@@ -144,11 +149,12 @@ var (
 			}
 
 			if fRegion != "" {
-				logger.Info(
+				logger.InfoContext(
+					ctx,
 					"Using explicitly-configured region for console AWS calls",
-					"profile",
+					logKeyProfile,
 					profileName,
-					"region",
+					logKeyRegion,
 					fRegion,
 				)
 
@@ -191,7 +197,7 @@ var (
 			}
 
 			if accountID == "" {
-				logger.Debug("AWS Account ID is undefined. Collect it from user.")
+				logger.DebugContext(ctx, "AWS Account ID is undefined. Collect it from user.")
 
 				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
 					return huh.NewSelect[string]().
@@ -218,7 +224,7 @@ var (
 			}
 
 			if roleName == "" {
-				logger.Debug("AWS Organizations Role is undefined. Collect it from user.")
+				logger.DebugContext(ctx, "AWS Organizations Role is undefined. Collect it from user.")
 
 				groups = append(groups, huh.NewGroup(func() *huh.Select[string] {
 					return huh.NewSelect[string]().
@@ -249,13 +255,13 @@ var (
 				log.Fatal(err)
 			}
 
-			logger.WithGroup("v").With(
-				slog.String("profile_name", profileName),
-				slog.String("start_host", startHost),
-				slog.String("console_url", consoleURL),
-				slog.String("account_id", accountID),
-				slog.String("role_name", roleName),
-			).Debug("Values have been collected")
+			logger.DebugContext(ctx, "Values have been collected",
+				logKeyProfileName, profileName,
+				logKeyStartHost, startHost,
+				logKeyConsoleURL, consoleURL,
+				logKeyAccountID, accountID,
+				logKeyRoleName, roleName,
+			)
 
 			destinationURL := stripAccountFromURL(consoleURL)
 
@@ -272,7 +278,7 @@ var (
 			if fClipboard {
 				_, err = nativeclipboard.Text.Write([]byte(finalURL))
 				if err != nil {
-					logger.Debug("could not write URL to clipboard", "err", err)
+					logger.DebugContext(ctx, "Could not write URL to clipboard", logKeyErr, err)
 				}
 			}
 
@@ -356,13 +362,13 @@ func getRolesForAccount(accounts []listAccount, accountId string) []listRole {
 func getStartURL(profileName string) (string, error) {
 	sections, err := configFile.OpenFile(awsConfigFilePath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not open AWS config file: %w", err)
 	}
 
 	if section, ok := sections.GetSection("sso-session " + profileName); ok {
 		u, err := url.Parse(section.String("sso_start_url"))
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("could not parse sso_start_url: %w", err)
 		}
 
 		return u.Hostname(), nil

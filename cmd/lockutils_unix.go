@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"golang.org/x/sys/unix"
 )
@@ -26,12 +27,20 @@ import (
 // Non-blocking so we can implement our own retry loop with timeout and context
 // cancellation, rather than blocking the goroutine inside the kernel.
 func lockFileNB(fd uintptr) error {
-	return unix.Flock(int(fd), unix.LOCK_EX|unix.LOCK_NB)
+	if err := unix.Flock(int(fd), unix.LOCK_EX|unix.LOCK_NB); err != nil {
+		return fmt.Errorf("could not acquire file lock: %w", err)
+	}
+
+	return nil
 }
 
 // unlockFile releases the lock on the file descriptor.
 func unlockFile(fd uintptr) error {
-	return unix.Flock(int(fd), unix.LOCK_UN)
+	if err := unix.Flock(int(fd), unix.LOCK_UN); err != nil {
+		return fmt.Errorf("could not release file lock: %w", err)
+	}
+
+	return nil
 }
 
 // isLockBusy reports whether err indicates the lock is held by another process.

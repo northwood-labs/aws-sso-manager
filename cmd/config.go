@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -62,7 +63,7 @@ var (
 			value := args[1]
 
 			if err := validateConfigKey(key); err != nil {
-				return err
+				return fmt.Errorf("invalid config key: %w", err)
 			}
 
 			configPath := asmConfig.ConfigFileUsed()
@@ -74,7 +75,7 @@ var (
 			backupConfigFile(configPath)
 
 			if err := setConfigKey(configPath, key, value); err != nil {
-				return err
+				return fmt.Errorf("could not set config key: %w", err)
 			}
 
 			// Update the in-memory Viper state so subsequent reads in the
@@ -153,7 +154,7 @@ var (
 			backupConfigFile(configPath)
 
 			if err := deleteConfigKey(configPath, key); err != nil {
-				return err
+				return fmt.Errorf("could not delete config key: %w", err)
 			}
 
 			fmt.Fprintf(cmd.OutOrStdout(), "Deleted %q\n", key)
@@ -171,8 +172,11 @@ var (
 			Title(fmt.Sprintf("Delete %q (current value: %v)?", key, value)).
 			Value(&confirmed).
 			Run()
+		if err != nil {
+			return confirmed, fmt.Errorf("could not run confirmation prompt: %w", err)
+		}
 
-		return confirmed, err
+		return confirmed, nil
 	}
 )
 
@@ -269,49 +273,12 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 	return pairs
 }
 
-// writeConfigAtomic persists the current Viper state to configPath using a
-// temp-file-then-rename strategy so that a crash or power loss never leaves a
-// half-written config file on disk.
-func writeConfigAtomic(configPath string) error {
-	dir := filepath.Dir(configPath)
-
-	if err := os.MkdirAll(dir, 0o0755); err != nil {
-		return fmt.Errorf("could not create config directory: %w", err)
-	}
-
-	tmp, err := os.CreateTemp(dir, ".config-*.toml")
-	if err != nil {
-		return fmt.Errorf("could not create temporary config file: %w", err)
-	}
-
-	tmpPath := tmp.Name()
-
-	if err := asmConfig.WriteConfigAs(tmpPath); err != nil {
-		_ = tmp.Close()
-		_ = os.Remove(tmpPath)
-
-		return fmt.Errorf("could not write config: %w", err)
-	}
-
-	if err := tmp.Close(); err != nil {
-		_ = os.Remove(tmpPath)
-
-		return fmt.Errorf("could not close temporary config file: %w", err)
-	}
-
-	if err := os.Rename(tmpPath, configPath); err != nil {
-		_ = os.Remove(tmpPath)
-
-		return fmt.Errorf("could not replace config file: %w", err)
-	}
-
-	return nil
-}
-
 // backupConfigFile copies the current config to a timestamped .bak file before
 // a mutation so the user can recover from accidental changes. Failures are
 // logged as warnings because atomic writes already protect against corruption.
 func backupConfigFile(configPath string) {
+	ctx := context.Background()
+
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return
 	}
@@ -322,13 +289,13 @@ func backupConfigFile(configPath string) {
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		logger.Warn("could not read config for backup", "err", err)
+		logger.WarnContext(ctx, "Could not read config for backup", logKeyErr, err)
 
 		return
 	}
 
 	if err := os.WriteFile(backupPath, data, 0o0644); err != nil {
-		logger.Warn("could not write config backup", "err", err)
+		logger.WarnContext(ctx, "Could not write config backup", logKeyErr, err)
 
 		return
 	}
@@ -340,9 +307,11 @@ func backupConfigFile(configPath string) {
 // removing the oldest ones. The ISO-8601 timestamp in the filename ensures
 // lexicographic sort matches chronological order.
 func pruneConfigBackups(dir string, keep int) {
+	ctx := context.Background()
+
 	matches, err := filepath.Glob(filepath.Join(dir, "config-*.toml.bak"))
 	if err != nil {
-		logger.Warn("could not list config backups", "err", err)
+		logger.WarnContext(ctx, "Could not list config backups", logKeyErr, err)
 
 		return
 	}
@@ -355,7 +324,7 @@ func pruneConfigBackups(dir string, keep int) {
 
 	for _, old := range matches[:len(matches)-keep] {
 		if err := os.Remove(old); err != nil {
-			logger.Warn("could not remove old config backup", "file", old, "err", err)
+			logger.WarnContext(ctx, "Could not remove old config backup", logKeyFile, old, logKeyErr, err)
 		}
 	}
 }
@@ -393,7 +362,11 @@ func setConfigKey(configPath, key, value string) error {
 		return fmt.Errorf("could not marshal config: %w", err)
 	}
 
-	return writeAtomicBytes(configPath, out)
+	if err := writeAtomicBytes(configPath, out); err != nil {
+		return fmt.Errorf("could not write config file: %w", err)
+	}
+
+	return nil
 }
 
 // setNestedKey walks a dot-split key path through a map tree, creating
@@ -500,7 +473,11 @@ func deleteConfigKey(configPath, key string) error {
 		return fmt.Errorf("could not marshal config: %w", err)
 	}
 
-	return writeAtomicBytes(configPath, out)
+	if err := writeAtomicBytes(configPath, out); err != nil {
+		return fmt.Errorf("could not write config file: %w", err)
+	}
+
+	return nil
 }
 
 // deleteNestedKey walks a dot-split key path through a TOML tree and deletes

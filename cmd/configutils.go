@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -82,7 +83,7 @@ func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 func inspectManagedMarkers() (*managedMarkerReport, error) {
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("opening AWS config file: %w", err)
 	}
 	defer func() {
 		err := f.Close()
@@ -171,7 +172,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scanning AWS config file: %w", err)
 	}
 
 	if activeProfile != "" {
@@ -361,7 +362,7 @@ func toProfileToken(input string) string {
 func markersExist(profileName string) (bool, error) {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("inspecting managed markers: %w", err)
 	}
 
 	return report.startCounts[profileName] > 0, nil
@@ -372,7 +373,7 @@ func markersExist(profileName string) (bool, error) {
 func validateMarkers(profileName string) error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return err
+		return fmt.Errorf("inspecting managed markers: %w", err)
 	}
 
 	var errs []error
@@ -392,7 +393,7 @@ func validateMarkers(profileName string) error {
 func validateManagedMarkers() error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return err
+		return fmt.Errorf("inspecting managed markers: %w", err)
 	}
 
 	var errs []error
@@ -416,19 +417,19 @@ func validateManagedMarkers() error {
 // Validating markers first prevents operating on a corrupt config.
 func getManagedSection(profileName string) (string, error) {
 	if err := validateManagedMarkers(); err != nil {
-		return "", err
+		return "", fmt.Errorf("validating managed markers: %w", err)
 	}
 
 	tmp, err := os.CreateTemp("", "aws-sso-manager-managed-*.ini")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("creating temp file for managed section: %w", err)
 	}
 
-	logger.Debug("Reading from AWS config", "file", awsConfigFilePath)
+	logger.DebugContext(context.Background(), "Reading from AWS config", logKeyFile, awsConfigFilePath)
 
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("opening AWS config file: %w", err)
 	}
 
 	defer func() {
@@ -443,21 +444,21 @@ func getManagedSection(profileName string) (string, error) {
 		line := scanner.Text()
 
 		if strings.Contains(line, "aws-sso-manager: start "+profileName) {
-			logger.Debug(">| " + line)
+			logger.DebugContext(context.Background(), ">| "+line)
 
 			doCopy = true
 
 			continue
 		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
-			logger.Debug("<| " + line)
+			logger.DebugContext(context.Background(), "<| "+line)
 			break
 		} else {
-			logger.Debug(" | " + line)
+			logger.DebugContext(context.Background(), " | "+line)
 
 			if doCopy {
 				_, err = tmp.WriteString(line + "\n")
 				if err != nil {
-					return "", err
+					return "", fmt.Errorf("writing to temp file: %w", err)
 				}
 			}
 		}
@@ -482,17 +483,17 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	// boundaries.
 	backup, err := os.CreateTemp(filepath.Dir(awsConfigFilePath), ".aws-sso-manager-*.ini")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("creating backup temp file: %w", err)
 	}
 
 	replacement, err := os.ReadFile(tmpFile)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("reading replacement file: %w", err)
 	}
 
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("opening AWS config file: %w", err)
 	}
 
 	defer func() {
@@ -508,11 +509,11 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 		confLine := confScanner.Text()
 
 		if strings.Contains(confLine, "aws-sso-manager: start "+profileName) {
-			logger.Debug(">| " + confLine)
+			logger.DebugContext(context.Background(), ">| "+confLine)
 
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("writing start marker to backup: %w", err)
 			}
 
 			inManagedBlock = true
@@ -520,11 +521,11 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 
 			continue
 		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
-			logger.Debug("<| " + confLine)
+			logger.DebugContext(context.Background(), "<| "+confLine)
 
 			_, err = backup.WriteString(confLine + "\n")
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("writing end marker to backup: %w", err)
 			}
 
 			inManagedBlock = false
@@ -532,12 +533,12 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 
 			continue
 		} else {
-			logger.Debug(" | " + confLine)
+			logger.DebugContext(context.Background(), " | "+confLine)
 
 			if inManagedBlock {
 				if !injectedInBlock {
 					if _, err = backup.Write(replacement); err != nil {
-						return "", err
+						return "", fmt.Errorf("writing replacement to backup: %w", err)
 					}
 
 					injectedInBlock = true
@@ -545,7 +546,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			} else {
 				_, err = backup.WriteString(confLine + "\n")
 				if err != nil {
-					return "", err
+					return "", fmt.Errorf("writing line to backup: %w", err)
 				}
 			}
 		}
@@ -566,7 +567,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 func getAllMarkedProfiles() ([]string, error) {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("inspecting managed markers: %w", err)
 	}
 
 	return report.profiles, nil
@@ -575,11 +576,11 @@ func getAllMarkedProfiles() ([]string, error) {
 func getAllManagedSections() ([]string, error) {
 	var ssoProfiles []string
 
-	logger.Debug("Reading from AWS config", "file", awsConfigFilePath)
+	logger.DebugContext(context.Background(), "Reading from AWS config", logKeyFile, awsConfigFilePath)
 
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return ssoProfiles, err
+		return ssoProfiles, fmt.Errorf("opening AWS config file: %w", err)
 	}
 
 	defer func() {

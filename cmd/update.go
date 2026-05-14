@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -57,7 +58,9 @@ var updateCmd = &cobra.Command{
 			counter     int
 		)
 
-		logger.Info("Passed arguments", "count", len(args))
+		ctx := cmd.Context()
+
+		logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
 		if len(args) == 1 {
 			profileName = args[0]
@@ -67,44 +70,44 @@ var updateCmd = &cobra.Command{
 
 		if profileName == "" {
 			if err := promptProfileSelect(&profileName); err != nil {
-				return err
+				return fmt.Errorf("prompting for profile selection: %w", err)
 			}
 		}
 
-		configLock, err := acquireAWSConfigLock(cmd.Context())
+		configLock, err := acquireAWSConfigLock(ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("acquiring AWS config lock: %w", err)
 		}
 		defer func() {
 			if releaseErr := configLock.Release(); releaseErr != nil {
-				logger.Error("Failed to release AWS config lock", "err", releaseErr)
+				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()
 
-		logger.Info("Retrieving SSO session profile", "profile", profileName)
+		logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 		tmpFilename, err := getManagedSection(profileName)
 		cobra.CheckErr(err)
 
-		logger.Info("Read the AWS config file", "config", tmpFilename)
+		logger.InfoContext(ctx, "Read the AWS config file", logKeyConfig, tmpFilename)
 
 		sections, err := loadAWSConfig(tmpFilename)
 		cobra.CheckErr(err)
 
-		logger.Info("Retrieving SSO session profile", "profile", profileName)
+		logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 		// Generate a SSO session profile from the profile name.
 		sessionProfile, err := getSsoSession(profileName)
 		if err != nil {
-			return err
+			return fmt.Errorf("getting SSO session for profile %q: %w", profileName, err)
 		}
 
-		sdkConfig, err := getSDKConfig(cmd.Context(), sessionProfile)
+		sdkConfig, err := getSDKConfig(ctx, sessionProfile)
 		if err != nil {
-			return err
+			return fmt.Errorf("getting SDK config: %w", err)
 		}
 
-		cache, err := getOrRefreshAuthenticatedCache(cmd.Context(), profileName, sessionProfile)
+		cache, err := getOrRefreshAuthenticatedCache(ctx, profileName, sessionProfile)
 		if err != nil {
 			return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 		}
@@ -143,7 +146,7 @@ var updateCmd = &cobra.Command{
 
 		nextSections, counter, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
 		if err != nil {
-			return err
+			return fmt.Errorf("building updated managed sections: %w", err)
 		}
 
 		f, err := os.OpenFile(tmpFilename, os.O_TRUNC|os.O_WRONLY, 0o0644)
@@ -157,25 +160,25 @@ var updateCmd = &cobra.Command{
 		_, err = f.WriteString(strings.TrimSpace(generateAWSConfig(nextSections)) + "\n")
 		cobra.CheckErr(err)
 
-		logger.Debug("", "temp_file", tmpFilename)
+		logger.DebugContext(ctx, "Temporary file", logKeyTempFile, tmpFilename)
 
 		backupFilename, err := setManagedSection(tmpFilename, profileName)
 		cobra.CheckErr(err)
 
-		logger.Debug("", "backup_file", backupFilename)
+		logger.DebugContext(ctx, "Backup file", logKeyBackupFile, backupFilename)
 
 		// Set permissions to match the expected config file mode before rename.
 		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
-		logger.Debug("Deleted file", "file", tmpFilename)
+		logger.DebugContext(ctx, "Deleted file", logKeyFile, tmpFilename)
 
 		err = os.Remove(tmpFilename)
 		cobra.CheckErr(err)
 
 		// Atomic rename: the config file is replaced in a single OS operation,
 		// eliminating the window where the file would be empty on an interrupted write.
-		logger.Debug("Rename file", "from", backupFilename, "to", awsConfigFilePath)
+		logger.DebugContext(ctx, "Rename file", logKeyFrom, backupFilename, logKeyTo, awsConfigFilePath)
 
 		err = os.Rename(backupFilename, awsConfigFilePath)
 		cobra.CheckErr(err)
@@ -202,6 +205,8 @@ func buildUpdatedManagedSections(
 	profileName string,
 	accounts listAccounts,
 ) (configFile.Sections, int, error) {
+	ctx := context.Background()
+
 	ssoSection, ok := sections.GetSection(ssoProfile)
 	if !ok {
 		return configFile.NewSections(), 0, fmt.Errorf(
@@ -245,11 +250,16 @@ func buildUpdatedManagedSections(
 
 			profileHeaderName := "profile " + role.Profile
 
-			logger.Info("Processing profile", "profile", profileHeaderName)
+			logger.InfoContext(ctx, "Processing profile", logKeyProfile, profileHeaderName)
 
 			section, ok := nextSections.GetSection(profileHeaderName)
 			if !ok {
-				logger.Info("Config file does not have section; creating new section", "section", profileHeaderName)
+				logger.InfoContext(
+					ctx,
+					"Config file does not have section; creating new section",
+					logKeySection,
+					profileHeaderName,
+				)
 
 				section = configFile.NewSection(profileHeaderName)
 			}
@@ -309,7 +319,12 @@ func buildUpdatedManagedSections(
 				}
 			}
 
-			logger.Info("Get the section or create it if it does not exist", "section", profileHeaderName)
+			logger.InfoContext(
+				ctx,
+				"Get the section or create it if it does not exist",
+				logKeySection,
+				profileHeaderName,
+			)
 
 			nextSections = nextSections.SetSection(profileHeaderName, section)
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {

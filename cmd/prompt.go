@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"charm.land/huh/v2"
 )
@@ -25,7 +26,7 @@ import (
 var promptProfileSelect = func(target *string) error {
 	sections, err := getAllManagedSections()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get managed sections: %w", err)
 	}
 
 	if len(sections) == 0 {

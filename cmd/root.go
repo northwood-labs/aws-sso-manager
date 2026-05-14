@@ -126,7 +126,7 @@ var (
 
 			parsedCacheDuration, err := parseCacheDurationFlag(fCacheDuration)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not parse cache duration: %w", err)
 			}
 
 			cacheDuration = parsedCacheDuration
@@ -229,6 +229,8 @@ func Root() *cobra.Command {
 // flags > env vars > config file > defaults. This lets users override any
 // setting at any level without editing files.
 func initializeConfig(cmd *cobra.Command) error {
+	ctx := cmd.Context()
+
 	asmConfig.SetEnvPrefix("ASM") // AWS SSO Manager
 
 	// Map dots and hyphens in config keys to underscores for env var lookup,
@@ -239,12 +241,12 @@ func initializeConfig(cmd *cobra.Command) error {
 	defaultConfigFile := path.Join(userHomeDir, ".config", "aws-sso-manager", "config.toml")
 
 	if fConfigFile != defaultConfigFile {
-		logger.Info("Config file is set via flag", "file", fConfigFile)
+		logger.InfoContext(ctx, "Config file is set via flag", logKeyFile, fConfigFile)
 
 		// Use config file from the flag.
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
-			logger.Info("Config file does not exist", "file", fConfigFile)
+			logger.InfoContext(ctx, "Config file does not exist", logKeyFile, fConfigFile)
 
 			return fmt.Errorf("config file does not exist at %s", fConfigFile)
 		}
@@ -253,7 +255,7 @@ func initializeConfig(cmd *cobra.Command) error {
 	} else {
 		_, err := os.Stat(fConfigFile)
 		if os.IsNotExist(err) {
-			logger.Info("Config file does not exist. Create a new one.")
+			logger.InfoContext(ctx, "Config file does not exist. Create a new one.")
 
 			err = os.MkdirAll(filepath.Dir(defaultConfigFile), 0o0755)
 			if err != nil {
@@ -264,7 +266,7 @@ func initializeConfig(cmd *cobra.Command) error {
 
 			err = asmConfig.WriteConfigAs(defaultConfigFile)
 			if err != nil {
-				logger.Info("!!!!!! This should not happen !!!!!!")
+				logger.InfoContext(ctx, "Config file already exists")
 
 				var configFileAlreadyExistsError viper.ConfigFileAlreadyExistsError
 				if !errors.As(err, &configFileAlreadyExistsError) {
@@ -273,13 +275,13 @@ func initializeConfig(cmd *cobra.Command) error {
 			}
 		}
 
-		logger.Info("Using the config file", "file", fConfigFile)
+		logger.InfoContext(ctx, "Using the config file", logKeyFile, fConfigFile)
 		asmConfig.SetConfigFile(fConfigFile)
 	}
 
 	// We can print globals here and they will show up in verbose logs for all
 	// subcommands.
-	logger.Info("Using AWS config file", "file", awsConfigFilePath)
+	logger.InfoContext(ctx, "Using AWS config file", logKeyFile, awsConfigFilePath)
 
 	// If a config file is found, read it in. We use a robust error check to
 	// ignore "file not found" errors, but panic on any other error.
@@ -287,7 +289,7 @@ func initializeConfig(cmd *cobra.Command) error {
 		// It's okay if the config file doesn't exist.
 		var configFileNotFoundError viper.ConfigFileNotFoundError
 		if !errors.As(err, &configFileNotFoundError) {
-			return err
+			return fmt.Errorf("could not read config file: %w", err)
 		}
 	}
 
@@ -295,7 +297,7 @@ func initializeConfig(cmd *cobra.Command) error {
 	// binds the full flag set of the command passed in.
 	err := asmConfig.BindPFlags(cmd.Flags())
 	if err != nil {
-		return err
+		return fmt.Errorf("could not bind flags: %w", err)
 	}
 
 	return nil

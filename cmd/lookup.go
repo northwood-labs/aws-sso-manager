@@ -33,8 +33,8 @@ type (
 	// It bundles everything a caller needs to identify and interact with an
 	// account without making additional lookups.
 	lookupAccountResponse struct {
-		SSOProfile string   `json:"sso_profile,omitzero"`
-		AccountID  string   `json:"account_id"`
+		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
+		AccountID  string   `json:"account_id"`           // lint:allow_format
 		Name       string   `json:"name"`
 		Profiles   []string `json:"profiles"`
 		Roles      []string `json:"roles"`
@@ -44,8 +44,8 @@ type (
 	// Including the query string lets callers correlate results with their input
 	// when processing multiple lookups in a pipeline.
 	lookupRoleResponse struct {
-		SSOProfile string   `json:"sso_profile,omitzero"`
-		AccountID  string   `json:"account_id"`
+		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
+		AccountID  string   `json:"account_id"`           // lint:allow_format
 		Name       string   `json:"name"`
 		Query      string   `json:"query"`
 		Matches    []string `json:"matches"`
@@ -96,7 +96,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profileName, err := resolveLookupProfileName()
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
 			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
@@ -109,7 +109,7 @@ var (
 
 			accountID, account, err := resolveLookupAccount(lookupIndex, args[0])
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve account: %w", err)
 			}
 
 			if fJSON {
@@ -156,7 +156,7 @@ var (
 
 			profileName, err := resolveLookupProfileName()
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
 			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
@@ -169,7 +169,7 @@ var (
 
 			accountID, account, err := resolveLookupAccount(lookupIndex, fLookupFor)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not resolve account: %w", err)
 			}
 
 			needle := strings.ToLower(strings.TrimSpace(args[0]))
@@ -322,7 +322,7 @@ func resolveLookupAccount(
 ) (string, listAWSAccountsLookupAccount, error) {
 	accountIDs, err := lookupAccountIDsByIdentifier(index, identifier)
 	if err != nil {
-		return "", listAWSAccountsLookupAccount{}, err
+		return "", listAWSAccountsLookupAccount{}, fmt.Errorf("could not lookup account: %w", err)
 	}
 
 	if len(accountIDs) > 1 {

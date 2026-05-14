@@ -58,7 +58,7 @@ var (
 				requestCtx = context.Background()
 			}
 
-			logger.Info("Passed arguments", "count", len(args))
+			logger.InfoContext(requestCtx, "Passed arguments", logKeyCount, len(args))
 
 			if len(args) == 1 {
 				profileName = args[0]
@@ -68,7 +68,7 @@ var (
 
 			if profileName == "" {
 				if err := promptProfileSelect(&profileName); err != nil {
-					return err
+					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
 
@@ -90,18 +90,18 @@ func init() {
 }
 
 func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName string) error {
-	logger.Info("Retrieving SSO session profile", "profile", profileName)
+	logger.InfoContext(requestCtx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 	// Generate a SSO session profile from the profile name.
 	sessionProfile, err := getSsoSession(profileName)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get SSO session: %w", err)
 	}
 
 	// Where does the cache file live?
 	cacheFilePath, err := getCacheFilePath(&sessionProfile)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get cache file path: %w", err)
 	}
 
 	var cacheData cacheFileData
@@ -110,7 +110,7 @@ func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName strin
 	cacheResults, err := cacheData.read(cacheFilePath)
 	if err != nil {
 		if err := authenticateAndCacheSSOSession(requestCtx, profileName, sessionProfile, cacheFilePath); err != nil {
-			return err
+			return fmt.Errorf("could not authenticate SSO session: %w", err)
 		}
 	} else {
 		reportValidCachedSSOSession(profileName, cacheFilePath, cacheResults)
@@ -118,7 +118,7 @@ func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName strin
 
 	_, err = cacheData.read(cacheFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not read cache after authentication: %w", err)
 	}
 
 	return nil
@@ -130,12 +130,12 @@ func authenticateAndCacheSSOSession(
 	sessionProfile ssoProfile,
 	cacheFilePath string,
 ) error {
-	logger.Info("Authenticating SSO profile", "profile", profileName)
+	logger.InfoContext(requestCtx, "Authenticating SSO profile", logKeyProfile, profileName)
 
 	// Generate an AWS SDK config from the SSO session profile.
 	sdkConfig, err := getSDKConfig(requestCtx, sessionProfile)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get SDK config: %w", err)
 	}
 
 	// Perform the SSO authentication flow.
@@ -145,19 +145,19 @@ func authenticateAndCacheSSOSession(
 		sessionProfile,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not authenticate SSO profile: %w", err)
 	}
 
-	logger.Debug("Authentication URL", "url", authURL)
+	logger.DebugContext(requestCtx, "Authentication URL", logKeyURL, authURL)
 
 	u, err := url.Parse(authURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse auth URL: %w", err)
 	}
 
 	u, err = url.Parse(u.Fragment)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse auth URL fragment: %w", err)
 	}
 
 	codeWrapper := lipgloss.NewStyle().
@@ -189,12 +189,12 @@ func authenticateAndCacheSSOSession(
 		loginTimeout:   60 * time.Second,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("could not complete authentication: %w", err)
 	}
 
 	err = cacheData.save(cacheFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not save cache file: %w", err)
 	}
 
 	fmt.Printf("Successfully authenticated SSO session '%s'.\n", profileName)
@@ -203,7 +203,8 @@ func authenticateAndCacheSSOSession(
 }
 
 func reportValidCachedSSOSession(profileName, cacheFilePath string, cacheResults *cacheFileData) {
-	logger.Info("Cache file is valid; no need to authenticate", "file", cacheFilePath)
+	ctx := context.Background()
+	logger.InfoContext(ctx, "Cache file is valid; no need to authenticate", logKeyFile, cacheFilePath)
 
 	remaining := time.Until(cacheResults.ExpiresAt)
 
@@ -225,7 +226,7 @@ func getOrRefreshAuthenticatedCache(
 
 	cacheFilePath, err := getCacheFilePath(&sessionProfile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get cache file path: %w", err)
 	}
 
 	var cacheData cacheFileData
@@ -235,16 +236,17 @@ func getOrRefreshAuthenticatedCache(
 		return cache, nil
 	}
 
-	logger.Info(
+	logger.InfoContext(
+		requestCtx,
 		"Session cache is missing or expired; attempting automatic authentication",
-		"profile",
+		logKeyProfile,
 		profileName,
-		"err",
+		logKeyErr,
 		err,
 	)
 
 	if err := ensureAuthenticatedSSOSession(requestCtx, profileName); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not ensure authenticated SSO session: %w", err)
 	}
 
 	cache, err = cacheData.read(cacheFilePath)

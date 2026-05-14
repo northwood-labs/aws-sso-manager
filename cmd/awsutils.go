@@ -88,8 +88,8 @@ type (
 	}
 
 	listAWSAccountsCacheData struct {
-		CachedAt  time.Time    `json:"cached_at"`
-		ExpiresAt time.Time    `json:"expires_at"`
+		CachedAt  time.Time    `json:"cached_at"`  // lint:allow_format
+		ExpiresAt time.Time    `json:"expires_at"` // lint:allow_format
 		Accounts  listAccounts `json:"accounts"`
 	}
 
@@ -104,15 +104,15 @@ type (
 	// so that "get" and "lookup" commands can resolve identifiers without
 	// re-fetching from AWS.
 	listAWSAccountsLookupIndex struct {
-		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`
-		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`
-		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"`
-		ProfileName           string                                  `json:"profile_name"`
+		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`            // lint:allow_format
+		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`    // lint:allow_format
+		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"` // lint:allow_format
+		ProfileName           string                                  `json:"profile_name"`              // lint:allow_format
 	}
 
 	listAWSAccountsLookupCacheData struct {
-		CachedAt  time.Time                  `json:"cached_at"`
-		ExpiresAt time.Time                  `json:"expires_at"`
+		CachedAt  time.Time                  `json:"cached_at"`  // lint:allow_format
+		ExpiresAt time.Time                  `json:"expires_at"` // lint:allow_format
 		Index     listAWSAccountsLookupIndex `json:"index"`
 	}
 )
@@ -210,7 +210,13 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 
 	cacheDir, err := ensureAWSManagerCacheDir()
 	if err != nil {
-		input.getLogger().Error("Failed to ensure AWS accounts cache directory", "err", err)
+		input.getLogger().ErrorContext(
+			context.Background(),
+			"Failed to ensure AWS accounts cache directory",
+			logKeyErr,
+			err,
+		)
+
 		return ""
 	}
 
@@ -393,7 +399,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	index, ok, err := readListAWSAccountsLookupCache(lookupCachePath)
 	if err != nil {
-		return listAWSAccountsLookupIndex{}, err
+		return listAWSAccountsLookupIndex{}, fmt.Errorf("could not read lookup cache: %w", err)
 	}
 
 	if ok {
@@ -407,7 +413,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	accounts, ok, err := readListAWSAccountsCache(accountsCachePath)
 	if err != nil {
-		return listAWSAccountsLookupIndex{}, err
+		return listAWSAccountsLookupIndex{}, fmt.Errorf("could not read accounts cache: %w", err)
 	}
 
 	if !ok {
@@ -419,7 +425,14 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	index = buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
 	if err := writeListAWSAccountsLookupCache(lookupCachePath, index); err != nil {
-		input.getLogger().Error("Failed to write accounts lookup cache", "file", lookupCachePath, "err", err)
+		input.getLogger().ErrorContext(
+			context.Background(),
+			"Failed to write accounts lookup cache",
+			logKeyFile,
+			lookupCachePath,
+			logKeyErr,
+			err,
+		)
 	}
 
 	return index, nil
@@ -530,11 +543,12 @@ func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) erro
 
 // loadAWSConfig loads the AWS config file from disk and returns its sections.
 func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
-	logger.Debug("Opening AWS config", "config", awsConfigFilePath)
+	ctx := context.Background()
+	logger.DebugContext(ctx, "Opening AWS config", logKeyConfig, awsConfigFilePath)
 
 	sections, err := ini.OpenFile(awsConfigFilePath)
 	if err != nil {
-		logger.Debug("Creating a fresh AWS config", "config", awsConfigFilePath)
+		logger.DebugContext(ctx, "Creating a fresh AWS config", logKeyConfig, awsConfigFilePath)
 
 		awsConfigFilePath = createAWSConfigFile()
 
@@ -549,10 +563,12 @@ func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
 
 // createAWSConfigFile creates the config file if it does not exist.
 func createAWSConfigFile() string {
+	ctx := context.Background()
+
 	userHomeDir, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
-	logger.Debug("User home directory", "home", userHomeDir)
+	logger.DebugContext(ctx, "User home directory", logKeyHome, userHomeDir)
 
 	err = os.MkdirAll(path.Join(userHomeDir, ".aws"), 0o0755)
 	cobra.CheckErr(err)
@@ -688,7 +704,7 @@ func getCacheFilePath(sessionProfile *ssoProfile) (string, error) {
 		return "", fmt.Errorf("failed to get SSO cache file path: %w", err)
 	}
 
-	logger.Debug("Cached data file", "file", cacheFilePath)
+	logger.DebugContext(context.Background(), "Cached data file", logKeyFile, cacheFilePath)
 
 	return cacheFilePath, nil
 }
@@ -708,7 +724,7 @@ func authenticateSSOProfile(
 		)
 	}
 
-	logger.Debug("Current OS user", "user", currentUser.Username)
+	logger.DebugContext(context.Background(), "Current OS user", logKeyUser, currentUser.Username)
 
 	clientName := currentUser.Username + "-" + sessionProfile.Name + "-" + sessionProfile.Region
 	oidcClient := ssooidc.NewFromConfig(*sdkConfig)
@@ -848,32 +864,41 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 // on miss, then write the result back to cache. This keeps repeated commands
 // fast (sub-second) while ensuring fresh data is fetched when the cache expires.
 func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
+	ctx := context.Background()
 	cacheFilePath := input.cacheFilePath()
 	lookupCacheFilePath := input.lookupCacheFilePath()
 	inputLogger := input.getLogger()
 
 	if cacheFilePath != "" {
-		inputLogger.Debug("Checking AWS accounts cache", "file", cacheFilePath)
+		inputLogger.DebugContext(ctx, "Checking AWS accounts cache", logKeyFile, cacheFilePath)
 
 		cachedAccounts, ok, err := readListAWSAccountsCache(cacheFilePath)
 		if err != nil {
-			inputLogger.Error("Failed to read AWS accounts cache", "file", cacheFilePath, "err", err)
+			inputLogger.ErrorContext(
+				ctx,
+				"Failed to read AWS accounts cache",
+				logKeyFile,
+				cacheFilePath,
+				logKeyErr,
+				err,
+			)
 		} else if ok {
 			if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 				lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, cachedAccounts)
 
 				if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
-					inputLogger.Error(
+					inputLogger.ErrorContext(
+						ctx,
 						"Failed to write AWS accounts lookup cache",
-						"file",
+						logKeyFile,
 						lookupCacheFilePath,
-						"err",
+						logKeyErr,
 						err,
 					)
 				}
 			}
 
-			inputLogger.Debug("Using cached AWS accounts", "file", cacheFilePath)
+			inputLogger.DebugContext(ctx, "Using cached AWS accounts", logKeyFile, cacheFilePath)
 
 			return cachedAccounts, nil
 		}
@@ -881,29 +906,37 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 
 	accounts, err := listAWSAccountsFetcher(input)
 	if err != nil {
-		return accounts, err
+		return accounts, fmt.Errorf("could not fetch AWS accounts: %w", err)
 	}
 
 	if cacheFilePath != "" {
 		if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
-			inputLogger.Error("Failed to write AWS accounts cache", "file", cacheFilePath, "err", err)
+			inputLogger.ErrorContext(
+				ctx,
+				"Failed to write AWS accounts cache",
+				logKeyFile,
+				cacheFilePath,
+				logKeyErr,
+				err,
+			)
 		} else {
-			inputLogger.Debug("Wrote AWS accounts cache", "file", cacheFilePath)
+			inputLogger.DebugContext(ctx, "Wrote AWS accounts cache", logKeyFile, cacheFilePath)
 		}
 
 		if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 			lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
 
 			if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
-				inputLogger.Error(
+				inputLogger.ErrorContext(
+					ctx,
 					"Failed to write AWS accounts lookup cache",
-					"file",
+					logKeyFile,
 					lookupCacheFilePath,
-					"err",
+					logKeyErr,
 					err,
 				)
 			} else {
-				inputLogger.Debug("Wrote AWS accounts lookup cache", "file", lookupCacheFilePath)
+				inputLogger.DebugContext(ctx, "Wrote AWS accounts lookup cache", logKeyFile, lookupCacheFilePath)
 			}
 		}
 	}

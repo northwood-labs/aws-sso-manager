@@ -44,7 +44,7 @@ type (
 	}
 
 	listRole struct {
-		AccountID string `json:"account_id"`
+		AccountID string `json:"account_id"` // lint:allow_format
 		Name      string `json:"name"`
 		Profile   string `json:"profile"`
 	}
@@ -103,6 +103,8 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var profileName string
 
+			ctx := cmd.Context()
+
 			selectedOutputs := 0
 			if fJSON {
 				selectedOutputs++
@@ -120,7 +122,7 @@ var (
 				return errors.New("choose only one output format flag: --json, --csv, or --markdown")
 			}
 
-			logger.Info("Passed arguments", "count", len(args))
+			logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
 			if len(args) == 1 {
 				profileName = args[0]
@@ -130,21 +132,21 @@ var (
 
 			if profileName == "" {
 				if err := promptProfileSelect(&profileName); err != nil {
-					return err
+					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
 
-			logger.Info("Retrieving SSO session profile", "profile", profileName)
+			logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 			// Generate a SSO session profile from the profile name.
 			sessionProfile, err := getSsoSession(profileName)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not get SSO session: %w", err)
 			}
 
 			sdkConfig, err := getSDKConfig(cmd.Context(), sessionProfile)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not get AWS SDK config: %w", err)
 			}
 
 			cache, err := getOrRefreshAuthenticatedCache(cmd.Context(), profileName, sessionProfile)
@@ -178,7 +180,7 @@ var (
 					}(&accounts)).
 					Run()
 				if err != nil {
-					logger.Error("failed to fetch fresh data", "err", err)
+					logger.ErrorContext(ctx, "Failed to fetch fresh data", logKeyErr, err)
 				}
 
 				// Delete old cache after successful fetch
@@ -190,7 +192,14 @@ var (
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
 					if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
-						logger.Error("failed to write AWS accounts cache", "file", cacheFilePath, "err", err)
+						logger.ErrorContext(
+							ctx,
+							"Failed to write AWS accounts cache",
+							logKeyFile,
+							cacheFilePath,
+							logKeyErr,
+							err,
+						)
 					}
 
 					if shouldWriteLookupCache(listInput) {
@@ -200,7 +209,14 @@ var (
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
 
 							if err := writeListAWSAccountsLookupCache(lookupCachePath, lookupIndex); err != nil {
-								logger.Error("failed to write lookup cache", "file", lookupCachePath, "err", err)
+								logger.ErrorContext(
+									ctx,
+									"Failed to write lookup cache",
+									logKeyFile,
+									lookupCachePath,
+									logKeyErr,
+									err,
+								)
 							}
 						}
 					}
@@ -232,7 +248,7 @@ var (
 
 				fmt.Println(string(data))
 
-				return err
+				return nil
 			}
 
 			if len(accounts.Accounts) == 0 {

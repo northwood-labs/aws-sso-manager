@@ -41,6 +41,8 @@ func TestLogoutCommandRegistration(t *testing.T) {
 		{
 			name: "logoutCmd is registered on rootCmd",
 			fn: func(t *testing.T) {
+				t.Helper()
+
 				found := slices.Contains(rootCmd.Commands(), logoutCmd)
 
 				if !found {
@@ -51,6 +53,8 @@ func TestLogoutCommandRegistration(t *testing.T) {
 		{
 			name: "Use field is correct",
 			fn: func(t *testing.T) {
+				t.Helper()
+
 				if logoutCmd.Use != "logout [sso-profile-name]" {
 					t.Fatalf("expected Use %q, got %q", "logout [sso-profile-name]", logoutCmd.Use)
 				}
@@ -59,6 +63,8 @@ func TestLogoutCommandRegistration(t *testing.T) {
 		{
 			name: "accepts zero or one args",
 			fn: func(t *testing.T) {
+				t.Helper()
+
 				if err := logoutCmd.Args(logoutCmd, []string{}); err != nil {
 					t.Fatalf("expected 0 args to be valid: %v", err)
 				}
@@ -75,6 +81,8 @@ func TestLogoutCommandRegistration(t *testing.T) {
 		{
 			name: "RunE is non-nil",
 			fn: func(t *testing.T) {
+				t.Helper()
+
 				if logoutCmd.RunE == nil {
 					t.Fatal("expected RunE to be non-nil")
 				}
@@ -278,6 +286,8 @@ func writeTestAWSConfig(dir, profileName string) (string, error) {
 // Feature: logout-command, Property 1: Cache file deletion
 func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 	// **Validates: Requirements 4.1**
+	tmpDir := t.TempDir()
+
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(t, "profileName")
 
@@ -293,11 +303,6 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 
 		logger = slog.New(log.New(io.Discard))
 		asmConfig = viper.New()
-
-		tmpDir, err := os.MkdirTemp("", "logout-prop1-*")
-		if err != nil {
-			t.Fatalf("create temp dir: %v", err)
-		}
 
 		configFile, err := writeTestAWSConfig(tmpDir, profileName)
 		if err != nil {
@@ -345,6 +350,8 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 // Feature: logout-command, Property 2: Missing cache file is not an error
 func TestPropertyLogoutMissingFileNoError(t *testing.T) {
 	// **Validates: Requirements 4.3**
+	tmpDir := t.TempDir()
+
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(t, "profileName")
 
@@ -360,11 +367,6 @@ func TestPropertyLogoutMissingFileNoError(t *testing.T) {
 
 		logger = slog.New(log.New(io.Discard))
 		asmConfig = viper.New()
-
-		tmpDir, err := os.MkdirTemp("", "logout-prop2-*")
-		if err != nil {
-			t.Fatalf("create temp dir: %v", err)
-		}
 
 		configFile, err := writeTestAWSConfig(tmpDir, profileName)
 		if err != nil {
@@ -386,6 +388,8 @@ func TestPropertyLogoutMissingFileNoError(t *testing.T) {
 // Feature: logout-command, Property 3: Output always contains the profile name
 func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 	// **Validates: Requirements 4.2, 4.3**
+	tmpDir := t.TempDir()
+
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(t, "profileName")
 		cacheExists := rapid.Bool().Draw(t, "cacheExists")
@@ -404,11 +408,6 @@ func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 
 		logger = slog.New(log.New(io.Discard))
 		asmConfig = viper.New()
-
-		tmpDir, err := os.MkdirTemp("", "logout-prop3-*")
-		if err != nil {
-			t.Fatalf("create temp dir: %v", err)
-		}
 
 		configFile, err := writeTestAWSConfig(tmpDir, profileName)
 		if err != nil {
@@ -448,6 +447,8 @@ func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 // Feature: logout-command, Property 4: getSsoSession error propagation
 func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 	// **Validates: Requirements 3.3**
+	tmpDir := t.TempDir()
+
 	rapid.Check(t, func(t *rapid.T) {
 		// Generate a profile name that won't match any sso-session in the config.
 		invalidProfile := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(t, "invalidProfile")
@@ -467,11 +468,6 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 
 		// Create a config with a DIFFERENT sso-session name so the generated
 		// profile will never match.
-		tmpDir, err := os.MkdirTemp("", "logout-prop4-*")
-		if err != nil {
-			t.Fatalf("create temp dir: %v", err)
-		}
-
 		configPath := tmpDir + "/config"
 
 		content := "[sso-session zzz-never-match-this-profile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
@@ -488,7 +484,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 			return nil
 		}
 
-		err = logoutCmd.RunE(logoutCmd, []string{invalidProfile})
+		err := logoutCmd.RunE(logoutCmd, []string{invalidProfile})
 		if err == nil {
 			t.Fatalf("expected error for invalid profile %q, got nil", invalidProfile)
 		}
