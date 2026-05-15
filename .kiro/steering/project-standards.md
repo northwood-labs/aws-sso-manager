@@ -20,7 +20,7 @@ Go CLI tool (`github.com/northwood-labs/aws-sso-manager`, Go 1.26+) that manages
 Package-level variables are the intentional design for shared state. Do not refactor into dependency injection.
 
 | Variable             | Purpose                                     |
-| -------------------- | ------------------------------------------- |
+|----------------------|---------------------------------------------|
 | `asvConfig`          | Viper instance merging TOML, env, and flags |
 | `logger`             | Charmbracelet structured logger (stderr)    |
 | `awsConfigFilePath`  | Resolved path to `~/.aws/config`            |
@@ -44,7 +44,7 @@ See `testing-conventions.md` for full testing rules (loaded automatically with `
 ## Naming conventions
 
 | Item                        | Convention                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------- |
+|-----------------------------|---------------------------------------------------------------------------------|
 | Environment variable prefix | `ASM_` (not `ASV_`)                                                             |
 | Config file                 | `~/.config/aws-sso-manager/config.toml`                                         |
 | Cache directory             | `~/.config/aws-sso-manager/cache/`                                              |

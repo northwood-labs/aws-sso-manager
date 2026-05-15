@@ -70,7 +70,7 @@ Always call validate before get; always call get before set. Do not bypass this 
 `getProfileName(profileName, account, role)` reads pattern config from Viper under the `<profileName>.rename` namespace:
 
 | Config key                      | Purpose                                               |
-| ------------------------------- | ----------------------------------------------------- |
+|---------------------------------|-------------------------------------------------------|
 | `pattern.order`                 | Token sequence: `account`, `role`, `prefix`, `suffix` |
 | `pattern.delimiter`             | Separator between tokens (default: `-`)               |
 | `prefix` / `suffix`             | Static strings prepended/appended to the name         |

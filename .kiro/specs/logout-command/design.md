@@ -46,7 +46,7 @@ A single file containing:
 ### Reused components (no modifications)
 
 | Component                       | Source            | Purpose                                     |
-| ------------------------------- | ----------------- | ------------------------------------------- |
+|---------------------------------|-------------------|---------------------------------------------|
 | `getSsoSession(profileName)`    | `cmd/awsutils.go` | Resolves profile name → `ssoProfile` struct |
 | `getCacheFilePath(&ssoProfile)` | `cmd/awsutils.go` | Resolves `ssoProfile` → cache file path     |
 | `promptProfileSelect(*string)`  | `cmd/prompt.go`   | Interactive TUI profile picker              |
@@ -99,7 +99,7 @@ _For any_ profile name that does not correspond to an `[sso-session]` section in
 ## Error handling
 
 | Scenario                                                | Behavior                                                                            |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+|---------------------------------------------------------|-------------------------------------------------------------------------------------|
 | `getSsoSession` returns error (missing/invalid profile) | Return the error immediately; no file operation attempted                           |
 | `getCacheFilePath` returns error                        | Return the error immediately; no file operation attempted                           |
 | `os.Remove` succeeds                                    | Print confirmation message including profile name                                   |
@@ -115,7 +115,7 @@ All errors use `fmt.Errorf` with `%w` for wrapping, consistent with the project'
 Each correctness property maps to a property-based test in `cmd/logout_test.go`:
 
 | Property                        | Test function                                  | Strategy                                                                                                |
-| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+|---------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------|
 | 1: Cache file deletion          | `TestPropertyLogoutDeletesCacheFile`           | Generate random profile names, create temp AWS config + cache files, run logout, assert file removed    |
 | 2: Missing file no error        | `TestPropertyLogoutMissingFileNoError`         | Generate random profile names, create temp AWS config without cache file, run logout, assert nil return |
 | 3: Output contains profile name | `TestPropertyLogoutOutputContainsProfileName`  | Generate random profile names, capture stdout, assert output contains the profile name                  |
@@ -130,7 +130,7 @@ Configuration:
 ### Unit tests (example-based)
 
 | Scenario                  | What it verifies                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------- |
+|---------------------------|---------------------------------------------------------------------------------------|
 | Command registration      | `logoutCmd` is registered on `rootCmd` with correct `Use`, `Args`, and non-nil `RunE` |
 | Profile from arg          | Passing `args[0]` uses that as profile name                                           |
 | Profile from Viper config | No args + Viper `profile-name` set → uses config value                                |
@@ -140,7 +140,7 @@ Configuration:
 ### Test seams used
 
 | Seam                  | Purpose in logout tests                                            |
-| --------------------- | ------------------------------------------------------------------ |
+|-----------------------|--------------------------------------------------------------------|
 | `removeFile` (new)    | Intercept `os.Remove` to verify deletion calls and simulate errors |
 | `promptProfileSelect` | Stub interactive prompt to return a known profile name             |
 | `awsConfigFilePath`   | Point to a temp AWS config file with test `[sso-session]` sections |

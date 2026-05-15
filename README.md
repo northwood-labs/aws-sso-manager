@@ -147,7 +147,7 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 ## Comparison
 
 | Feature                                      | ASM (Us)                    | [aws-sso-cli] [^1] |
-| -------------------------------------------- | --------------------------- | ------------------ |
+|----------------------------------------------|-----------------------------|--------------------|
 | AWS SSO support                              | ✓                           | ✓                  |
 | Bulk SSO Role discovery                      | ✓                           | ✓                  |
 | Write `~/.aws/config`                        | ✓                           | ✓                  |

@@ -274,7 +274,7 @@ Recursive helper that walks the dot-delimited key path and deletes the leaf. Ret
 Keys are dot-delimited strings that map to TOML's nested table structure:
 
 | Key Example                    | TOML Equivalent                                |
-| ------------------------------ | ---------------------------------------------- |
+|--------------------------------|------------------------------------------------|
 | `profile-name`                 | `profile-name = "value"`                       |
 | `abc.rename.prefix`            | `[abc.rename]` → `prefix = "value"`            |
 | `abc.rename.pattern.delimiter` | `[abc.rename.pattern]` → `delimiter = "value"` |
@@ -342,7 +342,7 @@ _For any_ config mutation (set or delete), the backup file created immediately b
 ## Error handling
 
 | Scenario                            | Error Message                                          | Source               |
-| ----------------------------------- | ------------------------------------------------------ | -------------------- |
+|-------------------------------------|--------------------------------------------------------|----------------------|
 | `config set` with wrong arg count   | Cobra auto-generated: `"accepts 2 arg(s), received N"` | `cobra.ExactArgs(2)` |
 | `config get` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
 | `config del` with wrong arg count   | Cobra auto-generated: `"accepts 1 arg(s), received N"` | `cobra.ExactArgs(1)` |
@@ -388,7 +388,7 @@ Property-based tests use `pgregory.net/rapid` with a minimum of 100 iterations p
 Tests operate against a fresh Viper instance and a temp directory for the config file, following the existing pattern in `configutils_test.go` (save `asmConfig`, replace with fresh instance, restore via `defer`).
 
 | Test Function                          | Design Property | Tag                                                                                  |
-| -------------------------------------- | --------------- | ------------------------------------------------------------------------------------ |
+|----------------------------------------|-----------------|--------------------------------------------------------------------------------------|
 | `TestPropertyConfigSetGetRoundTrip`    | Property 1      | Feature: config-commands, Property 1: Set-then-get round trip                        |
 | `TestPropertyConfigSetDelGetRoundTrip` | Property 2      | Feature: config-commands, Property 2: Set-then-delete-then-get round trip            |
 | `TestPropertyConfigWrongArgCount`      | Property 3      | Feature: config-commands, Property 3: Wrong argument count returns error             |

@@ -32,7 +32,7 @@ The override resolution happens once per `buildUpdatedManagedSections` call (not
 ### Change surface
 
 | File                  | Change                                                                                                                                                                                                                           |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `cmd/update.go`       | `buildUpdatedManagedSections`: read `asmConfig.GetString(profileName + ".settings.region")` and `asmConfig.GetString(profileName + ".settings.output")` before the profile loop; use resolved values in the `m[...]` assignments |
 | `docs/config_file.md` | Add `%.settings.region` and `%.settings.output` to the TOML key tree diagram, add description sections for both keys, and add a `[%.settings]` table to the sample config                                                        |
 
@@ -83,7 +83,7 @@ m["output"] = resolvedOutput
 ### Existing components (No changes)
 
 | Component                                  | Why No Change                                                                                                    |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+|--------------------------------------------|------------------------------------------------------------------------------------------------------------------|
 | `SettingsConfig` struct                    | Already has `Region` and `Output` fields with correct JSON/TOML tags                                             |
 | `SSOProfileConfig` struct                  | Already embeds `Settings SettingsConfig`                                                                         |
 | `validateConfigKey()`                      | Already walks `SSOProfileConfig` via reflection — `%.settings.region` and `%.settings.output` validate correctly |
@@ -176,7 +176,7 @@ _For any_ valid config state (with or without settings overrides) and any set of
 This feature introduces no new error paths. The existing error handling in `buildUpdatedManagedSections` (INI value creation failures, section update failures) remains unchanged.
 
 | Scenario                                                | Behavior                                                                         |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+|---------------------------------------------------------|----------------------------------------------------------------------------------|
 | `settings.region` is empty or absent                    | Falls back to `sso_region` (existing behavior)                                   |
 | `settings.output` is empty or absent                    | Falls back to `"json"` (existing behavior)                                       |
 | `settings.region` contains an invalid AWS region string | Passed through as-is — AWS CLI will report the error at runtime, not our concern |
@@ -192,7 +192,7 @@ No new `error` returns, no new `fmt.Errorf` calls. The Viper `GetString` call re
 Four property tests, each running rapid's default 100+ iterations:
 
 | Property                   | Test Function                                | What It Exercises                                            |
-| -------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
+|----------------------------|----------------------------------------------|--------------------------------------------------------------|
 | 1: Region resolution       | `TestPropertyRegionOverrideResolution`       | `buildUpdatedManagedSections` with/without `settings.region` |
 | 2: Output resolution       | `TestPropertyOutputOverrideResolution`       | `buildUpdatedManagedSections` with/without `settings.output` |
 | 3: Settings key validation | `TestPropertySettingsKeyValidation`          | `validateConfigKey` for `%.settings.*` paths                 |

@@ -69,7 +69,7 @@ Example:
 
 ```markdown
 | Column A | Column B |
-| -------- | -------- |
+|----------|----------|
 | value    | value    |
 ```
 

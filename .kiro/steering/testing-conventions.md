@@ -37,7 +37,7 @@ listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) 
 Available seams and their purposes:
 
 | Seam                     | Purpose                                         |
-| ------------------------ | ----------------------------------------------- |
+|--------------------------|-------------------------------------------------|
 | `listAWSAccountsFetcher` | Mock AWS SSO API calls                          |
 | `osExit`                 | Capture exit codes without killing test process |
 | `runRootCommand`         | Test CLI dispatch without real execution        |
@@ -94,7 +94,7 @@ Each property must run at least 100 iterations (rapid's default). Do not reduce 
 Shared generators live in `cmd/testhelpers_test.go`. Reuse them instead of creating ad-hoc generators:
 
 | Generator                         | Produces                                                        |
-| --------------------------------- | --------------------------------------------------------------- |
+|-----------------------------------|-----------------------------------------------------------------|
 | `genAccountID()`                  | Valid 12-digit numeric account ID string                        |
 | `genListAccount()`                | Random account with valid ID, 1–5 roles, realistic fields       |
 | `genListAccounts(min, max)`       | Pre-sorted `listAccounts` matching production sort order        |
