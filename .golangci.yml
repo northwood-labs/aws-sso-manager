@@ -1713,7 +1713,7 @@ linters:
       # Example (to disable some checks): [ "all", "-SA1000", "-SA1001"]
       # Run `GL_DEBUG=staticcheck golangci-lint run --enable=staticcheck` to see all available checks and enabled by config checks.
       # Default: ["all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1021", "-ST1022"]
-      checks: [ "all" ]
+      checks: ["all"]
       # @config-manager:end linters-settings-staticcheck
 
     tagalign:
@@ -2158,11 +2158,6 @@ linters:
         linters:
           - mnd
 
-      - source: lint:allow_commented
-        text: "commentedOutCode: may want to remove commented-out code"
-        linters:
-          - gocritic
-
       - source: lint:allow_nesting
         linters:
           - nestif
@@ -2177,20 +2172,11 @@ linters:
           - goerr113
           - staticcheck
 
-      - source: lint:allow_unwrapped_errors
-        linters:
-          - wrapcheck
-
       - source: lint:allow_tls_min_version
         text: (SA1019|G402)
         linters:
           - staticcheck
           - gosec
-
-      - source: lint:allow_return_interface
-        text: (returns interface)
-        linters:
-          - ireturn
 
       - source: lint:not_a_secret
         text: (G101)
@@ -2212,16 +2198,6 @@ linters:
         linters:
           - gosec
 
-      - source: lint:allow_human_errors
-        text: (error-strings)
-        linters:
-          - revive
-
-      - source: lint:allow_package_name
-        text: (avoid meaningless package names)
-        linters:
-          - revive
-
       - source: lint:allow_large_memory
         text: (hugeParam)
         linters:
@@ -2231,11 +2207,6 @@ linters:
         linters:
           - gofumpt
           - tagliatelle
-
-      - source: lint:allow_unused
-        text: (is unused)
-        linters:
-          - unused
 
       - source: lint:allow_init
         text: (don't use `init` function)
@@ -2247,11 +2218,6 @@ linters:
         linters:
           - wsl
 
-      - source: lint:allow_no_pkg_comment
-        text: (ST1000)
-        linters:
-          - stylecheck
-
       - source: lint:allow_complexity
         text: (cognitive complexity)
         linters:
@@ -2262,7 +2228,7 @@ linters:
         linters:
           - goconst
 
-      - source: fmt\.(Fprint|Println)
+      - source: (fmt|lipgloss)\.(Fprint|Println)
         text: (is not checked)
         linters:
           - errcheck

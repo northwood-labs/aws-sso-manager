@@ -483,12 +483,12 @@
 [rules.MD060]
   # table-format
   enabled = true
-  style = "aligned"
+  style = "aligned-no-space"
   max-width = 0
   column-align = "auto"
   column-align-header = "auto"
   column-align-body = "auto"
-  loose-last-column = true
+  loose-last-column = false
   aligned-delimiter = true
 
 # https://rumdl.dev/md075/

@@ -152,7 +152,11 @@
     "golangci-lint run *",
     "go build *",
     "go vet *",
-    "go test *"
+    "go test *",
+    "find *",
+    "wc *",
+    "sed *",
+    "tail *"
   ],
   "kiroAgent.usageSummary": true,
   "makefile.configureOnOpen": false,
