@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -47,12 +46,10 @@ var initCmd = &cobra.Command{
 	aws-sso-manager init <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			ssoStartURL string
-			ssoRegion   string
-			ssoScopes   string
-			profileName string
-		)
+		ssoStartURL := ""
+		ssoRegion := ""
+		ssoScopes := ""
+		profileName := ""
 
 		ctx := cmd.Context()
 
@@ -75,16 +72,22 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		if asmConfig.Get("sso-start-url") != nil {
-			ssoStartURL = asmConfig.Get("sso-start-url").(string)
+		if v := asmConfig.Get("sso-start-url"); v != nil {
+			if s, ok := v.(string); ok {
+				ssoStartURL = s
+			}
 		}
 
-		if asmConfig.Get("sso-region") != nil {
-			ssoRegion = asmConfig.Get("sso-region").(string)
+		if v := asmConfig.Get("sso-region"); v != nil {
+			if s, ok := v.(string); ok {
+				ssoRegion = s
+			}
 		}
 
-		if asmConfig.Get("sso-scopes") != nil {
-			ssoScopes = asmConfig.Get("sso-scopes").(string)
+		if v := asmConfig.Get("sso-scopes"); v != nil {
+			if s, ok := v.(string); ok {
+				ssoScopes = s
+			}
 		}
 
 		configLock, err := acquireAWSConfigLock(cmd.Context())
@@ -99,7 +102,7 @@ var initCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Read the AWS config file", logKeyConfig, awsConfigFilePath)
 
-		sections, err := loadAWSConfig(awsConfigFilePath)
+		sections, err := loadAWSConfig(ctx, awsConfigFilePath)
 		cobra.CheckErr(err)
 
 		sessionName := "sso-session " + profileName
@@ -108,19 +111,18 @@ var initCmd = &cobra.Command{
 
 		_, ok := sections.GetSection(sessionName)
 		if ok {
-			return fmt.Errorf("config file already contains [%s] section. Delete it from the "+
-				"config file and re-run `init`", sessionName)
+			return fmt.Errorf("%w: [%s]; delete it and re-run init", ErrConfigSectionExists, sessionName)
 		}
 
 		// Guard against orphaned markers: the section header may have been manually
 		// removed while the managed-block markers remain. Appending new markers in
 		// that state would create a duplicate block.
-		if exists, err := markersExist(profileName); err != nil {
-			return fmt.Errorf("could not check managed markers: %w", err)
+		if exists, markerErr := markersExist(profileName); markerErr != nil {
+			return fmt.Errorf("could not check managed markers: %w", markerErr)
 		} else if exists {
 			return fmt.Errorf(
-				"config file already contains managed block markers for profile %q; "+
-					"remove the markers and re-run `init`",
+				"%w: profile %q; remove the markers and re-run init",
+				ErrConfigMarkersExist,
 				profileName,
 			)
 		}
@@ -137,7 +139,7 @@ var initCmd = &cobra.Command{
 				def = "my-organization"
 			}
 
-			err := huh.NewInput().
+			err = huh.NewInput().
 				Title("SSO start URL?").
 				Description("e.g., https://my-organization.awsapps.com/start or just 'my-organization'").
 				Value(&ssoStartURL).
@@ -162,7 +164,7 @@ var initCmd = &cobra.Command{
 				def = "us-east-1"
 			}
 
-			err := huh.NewInput().
+			err = huh.NewInput().
 				Title("SSO region?").
 				Description("e.g., " + def).
 				Value(&ssoRegion).
@@ -174,35 +176,38 @@ var initCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Create ssoStartURL entry.")
 
-		if v, err := configFile.NewStringValue(ssoStartURL); err != nil {
+		v, err := configFile.NewStringValue(ssoStartURL)
+		if err != nil {
 			return fmt.Errorf("failed to create 'sso_start_url' value: %w", err)
-		} else {
-			err = section.UpdateValue("sso_start_url", v)
-			if err != nil {
-				return fmt.Errorf("failed to update 'sso_start_url' value: %w", err)
-			}
+		}
+
+		err = section.UpdateValue("sso_start_url", v)
+		if err != nil {
+			return fmt.Errorf("failed to update 'sso_start_url' value: %w", err)
 		}
 
 		logger.InfoContext(ctx, "Create ssoRegion entry.")
 
-		if v, err := configFile.NewStringValue(ssoRegion); err != nil {
+		v, err = configFile.NewStringValue(ssoRegion)
+		if err != nil {
 			return fmt.Errorf("failed to create 'sso_region' value: %w", err)
-		} else {
-			err = section.UpdateValue("sso_region", v)
-			if err != nil {
-				return fmt.Errorf("failed to update 'sso_region' value: %w", err)
-			}
+		}
+
+		err = section.UpdateValue("sso_region", v)
+		if err != nil {
+			return fmt.Errorf("failed to update 'sso_region' value: %w", err)
 		}
 
 		logger.InfoContext(ctx, "Create ssoScope entry.")
 
-		if v, err := configFile.NewStringValue(ssoScopes); err != nil {
+		v, err = configFile.NewStringValue(ssoScopes)
+		if err != nil {
 			return fmt.Errorf("failed to create 'sso_registration_scopes' value: %w", err)
-		} else {
-			err = section.UpdateValue("sso_registration_scopes", v)
-			if err != nil {
-				return fmt.Errorf("failed to update 'sso_registration_scopes' value: %w", err)
-			}
+		}
+
+		err = section.UpdateValue("sso_registration_scopes", v)
+		if err != nil {
+			return fmt.Errorf("failed to update 'sso_registration_scopes' value: %w", err)
 		}
 
 		logger.InfoContext(ctx, "Write the configuration to disk.")
@@ -237,7 +242,7 @@ var initCmd = &cobra.Command{
 
 		managedBlock := strings.Join([]string{
 			"; -------- aws-sso-manager: start " + profileName + " --------",
-			strings.TrimSpace(generateSingleAWSConfig(section)),
+			strings.TrimSpace(generateSingleAWSConfig(&section)),
 			"; -------- aws-sso-manager: end " + profileName + " --------",
 		}, "\n") + "\n"
 
@@ -245,7 +250,7 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("write managed AWS config block: %w", err)
 		}
 
-		if err = tmpConfig.Chmod(0o0644); err != nil {
+		if err = tmpConfig.Chmod(0o0644); err != nil { // lint:allow_raw_number
 			return fmt.Errorf("set permissions on temporary AWS config file: %w", err)
 		}
 
@@ -265,7 +270,7 @@ var initCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func init() { // lint:allow_init
 	rootCmd.AddCommand(initCmd)
 
 	initCmd.Flags().StringP(
@@ -292,7 +297,7 @@ func init() {
 func normalizeSSOStartURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return "", errors.New("value cannot be empty")
+		return "", ErrValueEmpty
 	}
 
 	if strings.Contains(trimmed, "://") {
@@ -302,7 +307,7 @@ func normalizeSSOStartURL(raw string) (string, error) {
 		}
 
 		if parsed.Scheme == "" || parsed.Host == "" {
-			return "", fmt.Errorf("expected a full URL with scheme and host, got %q", raw)
+			return "", fmt.Errorf("%w: got %q", ErrStartURLInvalid, raw)
 		}
 
 		return trimmed, nil
@@ -317,7 +322,7 @@ func normalizeSSOStartURL(raw string) (string, error) {
 		}
 
 		if parsed.Host == "" {
-			return "", fmt.Errorf("expected a host or subdomain, got %q", raw)
+			return "", fmt.Errorf("%w: got %q", ErrStartURLHostInvalid, raw)
 		}
 
 		return candidate, nil

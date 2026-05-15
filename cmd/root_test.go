@@ -134,7 +134,7 @@ func TestExecuteExitsOnFangError(t *testing.T) {
 	})
 
 	runRootCommand = func(context.Context, *cobra.Command, ...os.Signal) error {
-		return errors.New("boom")
+		return errors.New("boom") // lint:allow_errorf
 	}
 
 	exitCode := -1
@@ -269,7 +269,7 @@ func TestEnvPrefixASM(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 12: Cache Duration Parsing
-func TestPropertyCacheDurationParsing(t *testing.T) {
+func TestPropertyCacheDurationParsing(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 10.6, 10.8**
 	t.Run("valid_go_durations", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {

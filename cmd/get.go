@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -70,13 +69,13 @@ var (
 		Use:   "accounts",
 		Short: "Returns linebreak-delimited AWS account IDs (or names with --name).",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			profileName, err := resolveGetProfileName()
 			if err != nil {
 				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
-			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
+			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(&listAWSAccountsInput{
 				Logger:      logger,
 				ProfileName: profileName,
 			})
@@ -107,9 +106,9 @@ var (
 		Use:   "roles --for [account]",
 		Short: "Returns linebreak-delimited role names for one AWS account ID.",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if strings.TrimSpace(fGetFor) == "" {
-				return errors.New("flag --for is required")
+				return ErrFlagForRequired
 			}
 
 			profileName, err := resolveGetProfileName()
@@ -117,7 +116,7 @@ var (
 				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
-			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
+			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(&listAWSAccountsInput{
 				Logger:      logger,
 				ProfileName: profileName,
 			})
@@ -139,6 +138,25 @@ var (
 	}
 )
 
+func init() { // lint:allow_init
+	rootCmd.AddCommand(getCmd)
+
+	getCmd.PersistentFlags().StringVarP(&fGetProfile, "profile", "p", "", "SSO profile name used for cache lookups")
+
+	getCmd.AddCommand(getAccountsCmd)
+	getCmd.AddCommand(getRolesCmd)
+
+	getAccountsCmd.Flags().BoolVarP(&fGetName, "name", "n", false, "print account names instead of account IDs")
+
+	getRolesCmd.Flags().StringVarP(
+		&fGetFor,
+		"for",
+		"f",
+		"",
+		"12-digit AWS account ID",
+	)
+}
+
 // resolveGetProfileName determines which SSO profile to use for cache lookups.
 // The explicit --profile flag takes priority so that scripts can override the
 // default without editing the config file.
@@ -150,7 +168,7 @@ func resolveGetProfileName() (string, error) {
 
 	profileName = strings.TrimSpace(asmConfig.GetString("profile-name"))
 	if profileName == "" {
-		return "", errors.New("no profile configured; set profile-name in config or pass --profile")
+		return "", ErrNoProfileConfigured
 	}
 
 	return profileName, nil
@@ -195,12 +213,12 @@ func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string) ([]string, error) {
 	trimmedID := strings.TrimSpace(accountID)
 	if !getAccountIDPattern.MatchString(trimmedID) {
-		return nil, fmt.Errorf("--for must be a 12-digit AWS account ID, got %q", accountID)
+		return nil, fmt.Errorf("%w: got %q", ErrAccountIDInvalid, accountID)
 	}
 
 	account, ok := index.AccountsByID[trimmedID]
 	if !ok {
-		return nil, fmt.Errorf("account ID %q was not found in lookup cache", trimmedID)
+		return nil, fmt.Errorf("%w: %q", ErrAccountIDNotFound, trimmedID)
 	}
 
 	// Copy before sorting so we don't mutate the cached slice.
@@ -210,23 +228,4 @@ func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string
 	})
 
 	return roles, nil
-}
-
-func init() {
-	rootCmd.AddCommand(getCmd)
-
-	getCmd.PersistentFlags().StringVarP(&fGetProfile, "profile", "p", "", "SSO profile name used for cache lookups")
-
-	getCmd.AddCommand(getAccountsCmd)
-	getCmd.AddCommand(getRolesCmd)
-
-	getAccountsCmd.Flags().BoolVarP(&fGetName, "name", "n", false, "print account names instead of account IDs")
-
-	getRolesCmd.Flags().StringVarP(
-		&fGetFor,
-		"for",
-		"f",
-		"",
-		"12-digit AWS account ID",
-	)
 }

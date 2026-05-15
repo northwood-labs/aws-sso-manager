@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -128,13 +129,13 @@ func TestLogoutProfileResolution(t *testing.T) {
 		awsConfigFilePath = tmpFile
 
 		// Stub removeFile to track what path was deleted.
-		removeFile = func(path string) error { return nil }
+		removeFile = func(_ string) error { return nil }
 
 		promptCalled := false
 
-		promptProfileSelect = func(target *string) error {
+		promptProfileSelect = func(_ *string) error {
 			promptCalled = true
-			return errors.New("should not be called")
+			return errors.New("should not be called") // lint:allow_errorf
 		}
 
 		err := logoutCmd.RunE(logoutCmd, []string{"myprofile"})
@@ -168,20 +169,21 @@ func TestLogoutProfileResolution(t *testing.T) {
 		tmpDir := t.TempDir()
 		tmpFile := tmpDir + "/config"
 
-		content := "[sso-session configured-profile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
+		content := "[sso-session configured-profile]\n" +
+			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
 		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 			t.Fatalf("write temp config: %v", err)
 		}
 
 		awsConfigFilePath = tmpFile
 
-		removeFile = func(path string) error { return nil }
+		removeFile = func(_ string) error { return nil }
 
 		promptCalled := false
 
-		promptProfileSelect = func(target *string) error {
+		promptProfileSelect = func(_ *string) error {
 			promptCalled = true
-			return errors.New("should not be called")
+			return errors.New("should not be called") // lint:allow_errorf
 		}
 
 		err := logoutCmd.RunE(logoutCmd, []string{})
@@ -208,12 +210,12 @@ func TestLogoutProfileResolution(t *testing.T) {
 
 		called := false
 
-		promptProfileSelect = func(target *string) error {
+		promptProfileSelect = func(_ *string) error {
 			called = true
-			return errors.New("spy: prompt called")
+			return errors.New("spy: prompt called") // lint:allow_errorf
 		}
 
-		_ = logoutCmd.RunE(logoutCmd, []string{})
+		_ = logoutCmd.RunE(logoutCmd, []string{}) // lint:allow_unhandled
 
 		if !called {
 			t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -251,7 +253,7 @@ func TestLogoutPermissionErrorWrapping(t *testing.T) {
 
 	permErr := os.ErrPermission
 
-	removeFile = func(path string) error { return permErr }
+	removeFile = func(_ string) error { return permErr }
 
 	err := logoutCmd.RunE(logoutCmd, []string{"testprofile"})
 	if err == nil {
@@ -312,24 +314,24 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 		awsConfigFilePath = configFile
 
 		// Resolve the cache file path the same way the command does.
-		sessionProfile, err := getSsoSession(profileName)
+		sessionProfile, err := getSsoSession(context.Background(), profileName)
 		if err != nil {
 			t.Fatalf("getSsoSession: %v", err)
 		}
 
-		cacheFilePath, err := getCacheFilePath(&sessionProfile)
+		cacheFilePath, err := getCacheFilePath(context.Background(), &sessionProfile)
 		if err != nil {
 			t.Fatalf("getCacheFilePath: %v", err)
 		}
 
 		// Create the cache file so there's something to delete.
 		cacheDir := cacheFilePath[:strings.LastIndex(cacheFilePath, "/")]
-		if err := os.MkdirAll(cacheDir, 0o755); err != nil {
-			t.Fatalf("create cache dir: %v", err)
+		if mkdirErr := os.MkdirAll(cacheDir, 0o755); mkdirErr != nil {
+			t.Fatalf("create cache dir: %v", mkdirErr)
 		}
 
-		if err := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600); err != nil {
-			t.Fatalf("write cache file: %v", err)
+		if writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600); writeErr != nil {
+			t.Fatalf("write cache file: %v", writeErr)
 		}
 
 		// Use real os.Remove for this property test.
@@ -376,7 +378,7 @@ func TestPropertyLogoutMissingFileNoError(t *testing.T) {
 		awsConfigFilePath = configFile
 
 		// Stub removeFile to return os.ErrNotExist (no cache file on disk).
-		removeFile = func(path string) error { return os.ErrNotExist }
+		removeFile = func(_ string) error { return os.ErrNotExist }
 
 		err = logoutCmd.RunE(logoutCmd, []string{profileName})
 		if err != nil {
@@ -417,9 +419,9 @@ func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 		awsConfigFilePath = configFile
 
 		if cacheExists {
-			removeFile = func(path string) error { return nil }
+			removeFile = func(_ string) error { return nil }
 		} else {
-			removeFile = func(path string) error { return os.ErrNotExist }
+			removeFile = func(_ string) error { return os.ErrNotExist }
 		}
 
 		// Capture stdout.
@@ -430,12 +432,12 @@ func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 
 		os.Stdout = w
 
-		_ = logoutCmd.RunE(logoutCmd, []string{profileName})
+		_ = logoutCmd.RunE(logoutCmd, []string{profileName}) // lint:allow_unhandled
 
-		w.Close()
+		_ = w.Close() // lint:allow_defer_close lint:allow_unhandled
 
 		buf := make([]byte, 4096)
-		n, _ := r.Read(buf)
+		n, _ := r.Read(buf) // lint:allow_unhandled
 		output := string(buf[:n])
 
 		if !strings.Contains(output, profileName) {
@@ -470,7 +472,8 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 		// profile will never match.
 		configPath := tmpDir + "/config"
 
-		content := "[sso-session zzz-never-match-this-profile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
+		content := "[sso-session zzz-never-match-this-profile]\n" +
+			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
 		if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
 			t.Fatalf("write temp config: %v", err)
 		}
@@ -479,7 +482,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 
 		removeCalled := false
 
-		removeFile = func(path string) error {
+		removeFile = func(_ string) error {
 			removeCalled = true
 			return nil
 		}

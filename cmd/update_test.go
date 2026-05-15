@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"io"
 	"log/slog"
 	"os"
@@ -29,7 +30,11 @@ import (
 	"pgregory.net/rapid"
 )
 
-func mustSetStringValue(t *testing.T, section configFile.Section, key, value string) configFile.Section {
+func mustSetStringValue(
+	t *testing.T,
+	section *configFile.Section,
+	key, value string,
+) {
 	t.Helper()
 
 	v, err := configFile.NewStringValue(value)
@@ -40,8 +45,6 @@ func mustSetStringValue(t *testing.T, section configFile.Section, key, value str
 	if err := section.UpdateValue(key, v); err != nil {
 		t.Fatalf("update value for %q: %v", key, err)
 	}
-
-	return section
 }
 
 func assertHeadersInOrder(t *testing.T, content string, headers ...string) {
@@ -68,15 +71,15 @@ func TestBuildUpdatedManagedSectionsDropsStaleProfiles(t *testing.T) {
 
 	ssoSection := configFile.NewSection(ssoProfile)
 
-	ssoSection = mustSetStringValue(t, ssoSection, "sso_region", "us-east-1")
+	mustSetStringValue(t, &ssoSection, "sso_region", "us-east-1")
 
 	staleSection := configFile.NewSection("profile stale-role")
 
-	staleSection = mustSetStringValue(t, staleSection, "sso_session", "myprofile")
-	staleSection = mustSetStringValue(t, staleSection, "sso_account_id", "999999999999")
-	staleSection = mustSetStringValue(t, staleSection, "sso_role_name", "OldRole")
-	staleSection = mustSetStringValue(t, staleSection, "region", "us-east-1")
-	staleSection = mustSetStringValue(t, staleSection, "output", "json")
+	mustSetStringValue(t, &staleSection, "sso_session", "myprofile")
+	mustSetStringValue(t, &staleSection, "sso_account_id", "999999999999")
+	mustSetStringValue(t, &staleSection, "sso_role_name", "OldRole")
+	mustSetStringValue(t, &staleSection, "region", "us-east-1")
+	mustSetStringValue(t, &staleSection, "output", "json")
 
 	sections := configFile.NewSections()
 
@@ -121,15 +124,15 @@ func TestBuildUpdatedManagedSectionsUpdatesRoleFields(t *testing.T) {
 
 	ssoSection := configFile.NewSection(ssoProfile)
 
-	ssoSection = mustSetStringValue(t, ssoSection, "sso_region", "us-west-2")
+	mustSetStringValue(t, &ssoSection, "sso_region", "us-west-2")
 
 	existingSection := configFile.NewSection("profile dev-admin")
 
-	existingSection = mustSetStringValue(t, existingSection, "sso_session", "wrong")
-	existingSection = mustSetStringValue(t, existingSection, "sso_account_id", "000000000000")
-	existingSection = mustSetStringValue(t, existingSection, "sso_role_name", "OldRole")
-	existingSection = mustSetStringValue(t, existingSection, "region", "us-east-1")
-	existingSection = mustSetStringValue(t, existingSection, "output", "text")
+	mustSetStringValue(t, &existingSection, "sso_session", "wrong")
+	mustSetStringValue(t, &existingSection, "sso_account_id", "000000000000")
+	mustSetStringValue(t, &existingSection, "sso_role_name", "OldRole")
+	mustSetStringValue(t, &existingSection, "region", "us-east-1")
+	mustSetStringValue(t, &existingSection, "output", "text")
 
 	sections := configFile.NewSections()
 
@@ -212,7 +215,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("write config: %v", err)
 	}
 
-	sections, err := loadAWSConfig(awsConfigFilePath)
+	sections, err := loadAWSConfig(context.Background(), awsConfigFilePath)
 	if err != nil {
 		t.Fatalf("loadAWSConfig: %v", err)
 	}
@@ -239,12 +242,12 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 	}
 
 	tmpManaged := filepath.Join(dir, "managed.ini")
-	if err := os.WriteFile(
+	if writeErr := os.WriteFile(
 		tmpManaged,
 		[]byte(strings.TrimSpace(generateAWSConfig(nextSections))+"\n"),
 		0o0644,
-	); err != nil {
-		t.Fatalf("write managed tmp: %v", err)
+	); writeErr != nil {
+		t.Fatalf("write managed tmp: %v", writeErr)
 	}
 
 	backupName, err := setManagedSection(tmpManaged, "nwl2")
@@ -252,7 +255,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("setManagedSection: %v", err)
 	}
 
-	content, err := os.ReadFile(backupName)
+	content, err := os.ReadFile(backupName) // lint:allow_dynamic_filename
 	if err != nil {
 		t.Fatalf("read backup: %v", err)
 	}
@@ -300,7 +303,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("setManagedSection second pass: %v", err)
 	}
 
-	content2, err := os.ReadFile(backupName2)
+	content2, err := os.ReadFile(backupName2) // lint:allow_dynamic_filename
 	if err != nil {
 		t.Fatalf("read backup second pass: %v", err)
 	}
@@ -312,7 +315,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 17: Update Managed Section Generation
-func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
+func TestPropertyUpdateManagedSectionGeneration(t *testing.T) { // lint:allow_complexity
 	logger = slog.New(log.New(io.Discard))
 
 	rapid.Check(t, func(t *rapid.T) {
@@ -331,8 +334,8 @@ func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
-			t.Fatalf("update sso_region: %v", err)
+		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
 		sections := configFile.NewSections()
@@ -407,8 +410,9 @@ func TestPropertyUpdateManagedSectionGeneration(t *testing.T) {
 	})
 }
 
-// Feature: config-output-region-overrides, Property 1: Region resolution respects config override with sso_region fallback
-func TestPropertyRegionOverrideResolution(t *testing.T) {
+// Feature: config-output-region-overrides, Property 1: Region resolution
+// respects config override with sso_region fallback
+func TestPropertyRegionOverrideResolution(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 1.1, 1.2, 1.3, 4.1**
 	logger = slog.New(log.New(io.Discard))
 
@@ -448,8 +452,8 @@ func TestPropertyRegionOverrideResolution(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
-			t.Fatalf("update sso_region: %v", err)
+		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
 		sections := configFile.NewSections()
@@ -490,7 +494,7 @@ func TestPropertyRegionOverrideResolution(t *testing.T) {
 }
 
 // Feature: config-output-region-overrides, Property 2: Output resolution respects config override with "json" fallback
-func TestPropertyOutputOverrideResolution(t *testing.T) {
+func TestPropertyOutputOverrideResolution(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 2.1, 2.2, 2.3, 4.2**
 	logger = slog.New(log.New(io.Discard))
 
@@ -530,8 +534,8 @@ func TestPropertyOutputOverrideResolution(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
-			t.Fatalf("update sso_region: %v", err)
+		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
 		sections := configFile.NewSections()
@@ -611,8 +615,8 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
-			t.Fatalf("update sso_region: %v", err)
+		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
 		sections := configFile.NewSections()
@@ -645,7 +649,7 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 }
 
 // Feature: config-output-region-overrides, Property 5: Per-profile settings override global settings
-func TestPropertyPerProfileOverridePrecedence(t *testing.T) {
+func TestPropertyPerProfileOverridePrecedence(t *testing.T) { // lint:allow_complexity
 	// **Validates: per-profile override takes precedence over global**
 	logger = slog.New(log.New(io.Discard))
 
@@ -693,8 +697,8 @@ func TestPropertyPerProfileOverridePrecedence(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if err := ssoSection.UpdateValue("sso_region", regionVal); err != nil {
-			t.Fatalf("update sso_region: %v", err)
+		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
 		sections := configFile.NewSections()

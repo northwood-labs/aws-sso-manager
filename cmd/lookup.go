@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -26,30 +25,6 @@ import (
 	"github.com/spf13/cobra"
 
 	clihelpers "github.com/northwood-labs/cli-helpers"
-)
-
-type (
-	// lookupAccountResponse is the JSON envelope for "lookup account --json".
-	// It bundles everything a caller needs to identify and interact with an
-	// account without making additional lookups.
-	lookupAccountResponse struct {
-		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
-		AccountID  string   `json:"account_id"`           // lint:allow_format
-		Name       string   `json:"name"`
-		Profiles   []string `json:"profiles"`
-		Roles      []string `json:"roles"`
-	}
-
-	// lookupRoleResponse is the JSON envelope for "lookup role --json".
-	// Including the query string lets callers correlate results with their input
-	// when processing multiple lookups in a pipeline.
-	lookupRoleResponse struct {
-		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
-		AccountID  string   `json:"account_id"`           // lint:allow_format
-		Name       string   `json:"name"`
-		Query      string   `json:"query"`
-		Matches    []string `json:"matches"`
-	}
 )
 
 var (
@@ -93,13 +68,13 @@ var (
 		# Lookup an account by one of the identifiers.
 		aws-sso-manager lookup account <account-identifier>
 		`)),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			profileName, err := resolveLookupProfileName()
 			if err != nil {
 				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
-			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
+			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(&listAWSAccountsInput{
 				Logger:      logger,
 				ProfileName: profileName,
 			})
@@ -149,9 +124,9 @@ var (
 		# Lookup a role by case-insensitive substring within one account.
 		aws-sso-manager lookup role <role-substring> --for <account-identifier>
 		`)),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			if strings.TrimSpace(fLookupFor) == "" {
-				return errors.New("flag --for is required")
+				return ErrFlagForRequired
 			}
 
 			profileName, err := resolveLookupProfileName()
@@ -159,7 +134,7 @@ var (
 				return fmt.Errorf("could not resolve profile name: %w", err)
 			}
 
-			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(listAWSAccountsInput{
+			lookupIndex, err := loadOrBuildListAWSAccountsLookupIndex(&listAWSAccountsInput{
 				Logger:      logger,
 				ProfileName: profileName,
 			})
@@ -174,10 +149,10 @@ var (
 
 			needle := strings.ToLower(strings.TrimSpace(args[0]))
 			if needle == "" {
-				return errors.New("role substring cannot be empty")
+				return ErrRoleSubstringEmpty
 			}
 
-			var matches []string
+			matches := []string{}
 
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needle) {
@@ -190,7 +165,7 @@ var (
 			})
 
 			if len(matches) == 0 {
-				return fmt.Errorf("no roles matched %q for account %s (%s)", args[0], account.Name, accountID)
+				return fmt.Errorf("%w: %q for account %s (%s)", ErrNoRolesMatched, args[0], account.Name, accountID)
 			}
 
 			if fJSON {
@@ -221,6 +196,49 @@ var (
 	}
 )
 
+type (
+	// lookupAccountResponse is the JSON envelope for "lookup account --json".
+	// It bundles everything a caller needs to identify and interact with an
+	// account without making additional lookups.
+	lookupAccountResponse struct {
+		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
+		AccountID  string   `json:"account_id"`           // lint:allow_format
+		Name       string   `json:"name"`
+		Profiles   []string `json:"profiles"`
+		Roles      []string `json:"roles"`
+	}
+
+	// lookupRoleResponse is the JSON envelope for "lookup role --json".
+	// Including the query string lets callers correlate results with their input
+	// when processing multiple lookups in a pipeline.
+	lookupRoleResponse struct {
+		SSOProfile string   `json:"sso_profile,omitzero"` // lint:allow_format
+		AccountID  string   `json:"account_id"`           // lint:allow_format
+		Name       string   `json:"name"`
+		Query      string   `json:"query"`
+		Matches    []string `json:"matches"`
+	}
+)
+
+func init() { // lint:allow_init
+	rootCmd.AddCommand(lookupCmd)
+
+	lookupCmd.PersistentFlags().
+		StringVarP(&fLookupProfile, "profile", "p", "", "SSO profile name used for cache lookups")
+	lookupCmd.PersistentFlags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
+
+	lookupCmd.AddCommand(lookupAccountCmd)
+	lookupCmd.AddCommand(lookupRoleCmd)
+
+	lookupRoleCmd.Flags().StringVarP(
+		&fLookupFor,
+		"for",
+		"f",
+		"",
+		"account identifier (account ID, account name, or profile name)",
+	)
+}
+
 // resolveLookupProfileName determines which SSO profile to use for cache
 // lookups. The --profile flag takes priority so scripts can target a specific
 // profile without changing the config file.
@@ -232,7 +250,7 @@ func resolveLookupProfileName() (string, error) {
 
 	profileName = strings.TrimSpace(asmConfig.GetString("profile-name"))
 	if profileName == "" {
-		return "", errors.New("no profile configured; set profile-name in config or pass --profile")
+		return "", ErrNoProfileConfigured
 	}
 
 	return profileName, nil
@@ -249,10 +267,13 @@ func resolveLookupProfileName() (string, error) {
 //
 // Exact matches are tried first so that a user who types a full name always
 // gets a single result, even if that name is also a substring of another.
-func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier string) ([]string, error) {
+func lookupAccountIDsByIdentifier( // lint:allow_complexity
+	index listAWSAccountsLookupIndex,
+	identifier string,
+) ([]string, error) {
 	trimmed := strings.TrimSpace(identifier)
 	if trimmed == "" {
-		return nil, errors.New("account identifier cannot be empty")
+		return nil, ErrAccountIdentEmpty
 	}
 
 	// Exact match by 12-digit account ID.
@@ -309,7 +330,7 @@ func lookupAccountIDsByIdentifier(index listAWSAccountsLookupIndex, identifier s
 		return matched, nil
 	}
 
-	return nil, fmt.Errorf("account identifier %q not found", identifier)
+	return nil, fmt.Errorf("%w: %q", ErrAccountIdentNotFound, identifier)
 }
 
 // resolveLookupAccount narrows the identifier down to exactly one account.
@@ -332,7 +353,8 @@ func resolveLookupAccount(
 		}
 
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf(
-			"account identifier %q is ambiguous%s; matches account IDs: %s",
+			"%w: %q%s; matches account IDs: %s",
+			ErrAccountIdentAmbiguous,
 			identifier,
 			profileNote,
 			strings.Join(accountIDs, ", "),
@@ -344,29 +366,11 @@ func resolveLookupAccount(
 	account, ok := index.AccountsByID[accountID]
 	if !ok {
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf(
-			"account data is missing from lookup cache for ID %s",
+			"%w: ID %s",
+			ErrAccountDataMissing,
 			accountID,
 		)
 	}
 
 	return accountID, account, nil
-}
-
-func init() {
-	rootCmd.AddCommand(lookupCmd)
-
-	lookupCmd.PersistentFlags().
-		StringVarP(&fLookupProfile, "profile", "p", "", "SSO profile name used for cache lookups")
-	lookupCmd.PersistentFlags().BoolVarP(&fJSON, "json", "j", false, "output in JSON format")
-
-	lookupCmd.AddCommand(lookupAccountCmd)
-	lookupCmd.AddCommand(lookupRoleCmd)
-
-	lookupRoleCmd.Flags().StringVarP(
-		&fLookupFor,
-		"for",
-		"f",
-		"",
-		"account identifier (account ID, account name, or profile name)",
-	)
 }

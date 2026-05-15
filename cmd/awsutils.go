@@ -42,6 +42,10 @@ import (
 	"github.com/northwood-labs/aws-config-parser/ini"
 )
 
+// listAWSAccountsFetcher is a package-level function variable so tests can
+// replace the real AWS API call with a mock without needing an interface.
+var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
+
 type (
 	// ssoProfile holds the parsed [sso-session] config for one AWS Organization.
 	// It's the bridge between the INI config on disk and the AWS SDK calls.
@@ -53,7 +57,6 @@ type (
 	}
 
 	customerAuthInput struct {
-		ctx            context.Context
 		sdkConfig      *aws.Config
 		registerClient *ssooidc.RegisterClientOutput
 		deviceAuth     *ssooidc.StartDeviceAuthorizationOutput
@@ -67,10 +70,10 @@ type (
 	cacheFileData struct {
 		ExpiresAt             time.Time `json:"expiresAt"`
 		RegistrationExpiresAt time.Time `json:"registrationExpiresAt"`
-		StartUrl              string    `json:"startUrl"`
+		StartURL              string    `json:"startUrl"`
 		Region                string    `json:"region"`
-		AccessToken           string    `json:"accessToken"`
-		ClientId              string    `json:"clientId"`
+		AccessToken           string    `json:"accessToken"` // lint:not_a_secret
+		ClientID              string    `json:"clientId"`
 		ClientSecret          string    `json:"clientSecret"`
 	}
 
@@ -117,24 +120,20 @@ type (
 	}
 )
 
-// listAWSAccountsFetcher is a package-level function variable so tests can
-// replace the real AWS API call with a mock without needing an interface.
-var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
-
 func (c *cacheFileData) save(cacheFilePath string) error {
-	marshaledJson, err := json.Marshal(c)
+	marshaledJSON, err := json.Marshal(c) // lint:allow_possible_insecure
 	if err != nil {
 		return fmt.Errorf("could not marshal data into JSON: %w ", err)
 	}
 
 	dir, _ := path.Split(cacheFilePath)
 
-	err = os.MkdirAll(dir, 0o755)
+	err = os.MkdirAll(dir, 0o755) // lint:allow_raw_number
 	if err != nil {
 		return fmt.Errorf("could not create a cache directory at %s: %w ", dir, err)
 	}
 
-	err = os.WriteFile(cacheFilePath, marshaledJson, 0o666)
+	err = os.WriteFile(cacheFilePath, marshaledJSON, 0o666) // lint:allow_raw_number
 	if err != nil {
 		return fmt.Errorf("could not create a cache file at %s: %w ", cacheFilePath, err)
 	}
@@ -143,7 +142,7 @@ func (c *cacheFileData) save(cacheFilePath string) error {
 }
 
 func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
-	data, err := os.ReadFile(cacheFilePath)
+	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		return nil, fmt.Errorf("could not read cache file at %s: %w ", cacheFilePath, err)
 	}
@@ -156,7 +155,7 @@ func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 	}
 
 	if time.Now().After(cache.ExpiresAt) {
-		return nil, errors.New("the SSO access token has expired")
+		return nil, ErrSSOTokenExpired
 	}
 
 	return &cache, nil
@@ -180,14 +179,14 @@ func ensureAWSManagerCacheDir() (string, error) {
 		cacheDir = filepath.Join(homeDir, ".config", "aws-sso-manager", "cache")
 	}
 
-	if err := os.MkdirAll(cacheDir, 0o0755); err != nil {
+	if err := os.MkdirAll(cacheDir, 0o0755); err != nil { // lint:allow_raw_number
 		return "", fmt.Errorf("could not create AWS manager cache directory: %w", err)
 	}
 
 	return cacheDir, nil
 }
 
-func (input listAWSAccountsInput) getLogger() *slog.Logger {
+func (input *listAWSAccountsInput) getLogger() *slog.Logger {
 	if input.Logger != nil {
 		return input.Logger
 	}
@@ -199,7 +198,7 @@ func (input listAWSAccountsInput) getLogger() *slog.Logger {
 // accounts cache. The SHA-256 hash includes the profile name and any active
 // filters so that filtered and unfiltered results are cached independently —
 // a filtered cache shouldn't be served for an unfiltered request.
-func (input listAWSAccountsInput) cacheFilePath() string {
+func (input *listAWSAccountsInput) cacheFilePath() string {
 	cacheKey := strings.Join([]string{
 		"listAWSAccounts.v1",
 		input.ProfileName,
@@ -223,7 +222,7 @@ func (input listAWSAccountsInput) cacheFilePath() string {
 	return filepath.Join(cacheDir, "accounts-"+hex.EncodeToString(hash[:])+".json")
 }
 
-func (input listAWSAccountsInput) lookupCacheFilePath() string {
+func (input *listAWSAccountsInput) lookupCacheFilePath() string {
 	cacheFilePath := input.cacheFilePath()
 	if cacheFilePath == "" {
 		return ""
@@ -235,7 +234,7 @@ func (input listAWSAccountsInput) lookupCacheFilePath() string {
 // shouldWriteLookupCache returns true only when no filters are active. The
 // lookup index must represent the complete account set — a filtered subset
 // would cause "get" and "lookup" commands to miss accounts.
-func shouldWriteLookupCache(input listAWSAccountsInput) bool {
+func shouldWriteLookupCache(input *listAWSAccountsInput) bool {
 	return strings.TrimSpace(input.AccountFilter) == "" && strings.TrimSpace(input.RoleFilter) == ""
 }
 
@@ -319,8 +318,8 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 	return index
 }
 
-func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookupIndex, bool, error) {
-	data, err := os.ReadFile(cacheFilePath)
+func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookupIndex, bool, error) { // lint:no_dupe
+	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		if os.IsNotExist(err) {
 			return listAWSAccountsLookupIndex{}, false, nil
@@ -339,7 +338,7 @@ func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookup
 
 	cacheTTL := cacheDuration
 	if cacheTTL <= 0 {
-		cacheTTL = 24 * time.Hour
+		cacheTTL = 24 * time.Hour // lint:allow_raw_number
 	}
 
 	var expiresAt time.Time
@@ -374,27 +373,29 @@ func writeListAWSAccountsLookupCache(cacheFilePath string, index listAWSAccounts
 		return fmt.Errorf("could not marshal accounts lookup cache file: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil { // lint:allow_raw_number
 		return fmt.Errorf("could not create accounts lookup cache directory: %w", err)
 	}
 
 	tmpPath := cacheFilePath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil { // lint:allow_raw_number
 		return fmt.Errorf("could not write temporary accounts lookup cache file: %w", err)
 	}
 
 	if err := os.Rename(tmpPath, cacheFilePath); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.Remove(tmpPath) // lint:allow_unhandled
 		return fmt.Errorf("could not replace accounts lookup cache file: %w", err)
 	}
 
 	return nil
 }
 
-func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSAccountsLookupIndex, error) {
+func loadOrBuildListAWSAccountsLookupIndex(
+	input *listAWSAccountsInput,
+) (listAWSAccountsLookupIndex, error) {
 	lookupCachePath := input.lookupCacheFilePath()
 	if lookupCachePath == "" {
-		return listAWSAccountsLookupIndex{}, errors.New("could not determine lookup cache file path")
+		return listAWSAccountsLookupIndex{}, ErrCachePathLookup
 	}
 
 	index, ok, err := readListAWSAccountsLookupCache(lookupCachePath)
@@ -408,7 +409,7 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	accountsCachePath := input.cacheFilePath()
 	if accountsCachePath == "" {
-		return listAWSAccountsLookupIndex{}, errors.New("could not determine accounts cache file path")
+		return listAWSAccountsLookupIndex{}, ErrCachePathAccounts
 	}
 
 	accounts, ok, err := readListAWSAccountsCache(accountsCachePath)
@@ -418,7 +419,8 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 
 	if !ok {
 		return listAWSAccountsLookupIndex{}, fmt.Errorf(
-			"lookup cache is missing and no accounts cache exists for profile %q",
+			"%w: profile %q",
+			ErrCacheMissing,
 			input.ProfileName,
 		)
 	}
@@ -438,18 +440,16 @@ func loadOrBuildListAWSAccountsLookupIndex(input listAWSAccountsInput) (listAWSA
 	return index, nil
 }
 
-func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
+func deleteListAWSAccountsCache(input *listAWSAccountsInput) error {
 	cacheFilePath := input.cacheFilePath()
 	if cacheFilePath == "" {
-		return errors.New("could not determine the cache file path")
+		return ErrCachePathGeneral
 	}
 
 	lookupCachePath := input.lookupCacheFilePath()
 
 	if err := os.Remove(cacheFilePath); err != nil {
-		if os.IsNotExist(err) {
-			// no-op
-		} else {
+		if !os.IsNotExist(err) {
 			return fmt.Errorf("could not remove cache file %s: %w", cacheFilePath, err)
 		}
 	}
@@ -472,8 +472,8 @@ func deleteListAWSAccountsCache(input listAWSAccountsInput) error {
 // readListAWSAccountsCache loads cached account data if it exists and hasn't
 // expired. Expired entries are proactively deleted so stale files don't
 // accumulate. Returns (data, true, nil) on hit, (empty, false, nil) on miss.
-func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) {
-	data, err := os.ReadFile(cacheFilePath)
+func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) { // lint:no_dupe
+	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		if os.IsNotExist(err) {
 			return listAccounts{}, false, nil
@@ -489,7 +489,7 @@ func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) 
 
 	cacheTTL := cacheDuration
 	if cacheTTL <= 0 {
-		cacheTTL = 24 * time.Hour
+		cacheTTL = 24 * time.Hour // lint:allow_raw_number
 	}
 
 	var expiresAt time.Time
@@ -524,17 +524,17 @@ func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) erro
 		return fmt.Errorf("could not marshal accounts cache file: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil { // lint:allow_raw_number
 		return fmt.Errorf("could not create accounts cache directory: %w", err)
 	}
 
 	tmpPath := cacheFilePath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil { // lint:allow_raw_number
 		return fmt.Errorf("could not write temporary accounts cache file: %w", err)
 	}
 
 	if err := os.Rename(tmpPath, cacheFilePath); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.Remove(tmpPath) // lint:allow_unhandled
 		return fmt.Errorf("could not replace accounts cache file: %w", err)
 	}
 
@@ -542,15 +542,14 @@ func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) erro
 }
 
 // loadAWSConfig loads the AWS config file from disk and returns its sections.
-func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
-	ctx := context.Background()
+func loadAWSConfig(ctx context.Context, awsConfigFilePath string) (ini.Sections, error) {
 	logger.DebugContext(ctx, "Opening AWS config", logKeyConfig, awsConfigFilePath)
 
 	sections, err := ini.OpenFile(awsConfigFilePath)
 	if err != nil {
 		logger.DebugContext(ctx, "Creating a fresh AWS config", logKeyConfig, awsConfigFilePath)
 
-		awsConfigFilePath = createAWSConfigFile()
+		awsConfigFilePath = createAWSConfigFile(ctx)
 
 		sections, err = ini.OpenFile(awsConfigFilePath)
 		if err != nil {
@@ -562,18 +561,20 @@ func loadAWSConfig(awsConfigFilePath string) (ini.Sections, error) {
 }
 
 // createAWSConfigFile creates the config file if it does not exist.
-func createAWSConfigFile() string {
-	ctx := context.Background()
-
-	userHomeDir, err := os.UserHomeDir()
+func createAWSConfigFile(ctx context.Context) string {
+	homeDir, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
-	logger.DebugContext(ctx, "User home directory", logKeyHome, userHomeDir)
+	logger.DebugContext(ctx, "User home directory", logKeyHome, homeDir)
 
-	err = os.MkdirAll(path.Join(userHomeDir, ".aws"), 0o0755)
+	err = os.MkdirAll(path.Join(homeDir, ".aws"), 0o0755) // lint:allow_raw_number
 	cobra.CheckErr(err)
 
-	awsConfigFile, err := os.OpenFile(awsConfigFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o0644)
+	awsConfigFile, err := os.OpenFile(
+		awsConfigFilePath,
+		os.O_CREATE|os.O_EXCL|os.O_WRONLY,
+		0o0644, // lint:allow_raw_number
+	)
 	if err == nil {
 		defer func() {
 			err = awsConfigFile.Close()
@@ -587,7 +588,7 @@ func createAWSConfigFile() string {
 }
 
 // generateSingleAWSConfig generates the AWS config file content from the given sections.
-func generateSingleAWSConfig(section ini.Section) string {
+func generateSingleAWSConfig(section *ini.Section) string {
 	var out strings.Builder
 
 	fmt.Fprintf(&out, "[%s]\n", section.Name)
@@ -625,10 +626,6 @@ func generateAWSConfig(sections ini.Sections) string {
 
 // getAWSConfig generates an SDK config from the SSO session profile.
 func getSDKConfig(ctx context.Context, sessionProfile ssoProfile) (aws.Config, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	awsConfig, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(sessionProfile.Region),
@@ -659,8 +656,8 @@ func getSDKConfig(ctx context.Context, sessionProfile ssoProfile) (aws.Config, e
 }
 
 // getSsoSession retrieves the SSO session profile from the AWS config file.
-func getSsoSession(profileName string) (ssoProfile, error) {
-	sections, err := loadAWSConfig(awsConfigFilePath)
+func getSsoSession(ctx context.Context, profileName string) (ssoProfile, error) {
+	sections, err := loadAWSConfig(ctx, awsConfigFilePath)
 	if err != nil {
 		return ssoProfile{}, fmt.Errorf("failed to load AWS config file: %w", err)
 	}
@@ -670,7 +667,8 @@ func getSsoSession(profileName string) (ssoProfile, error) {
 	section, ok := sections.GetSection(sessionName)
 	if !ok {
 		return ssoProfile{}, fmt.Errorf(
-			"the profile [%s] does not exist in the AWS config file",
+			"%w: [%s]",
+			ErrProfileNotExist,
 			sessionName,
 		)
 	}
@@ -685,7 +683,7 @@ func getSsoSession(profileName string) (ssoProfile, error) {
 	return profile, nil
 }
 
-func getCacheFilePath(sessionProfile *ssoProfile) (string, error) {
+func getCacheFilePath(ctx context.Context, sessionProfile *ssoProfile) (string, error) {
 	var (
 		key           string
 		cacheFilePath string
@@ -704,7 +702,7 @@ func getCacheFilePath(sessionProfile *ssoProfile) (string, error) {
 		return "", fmt.Errorf("failed to get SSO cache file path: %w", err)
 	}
 
-	logger.DebugContext(context.Background(), "Cached data file", logKeyFile, cacheFilePath)
+	logger.DebugContext(ctx, "Cached data file", logKeyFile, cacheFilePath)
 
 	return cacheFilePath, nil
 }
@@ -724,7 +722,7 @@ func authenticateSSOProfile(
 		)
 	}
 
-	logger.DebugContext(context.Background(), "Current OS user", logKeyUser, currentUser.Username)
+	logger.DebugContext(ctx, "Current OS user", logKeyUser, currentUser.Username)
 
 	clientName := currentUser.Username + "-" + sessionProfile.Name + "-" + sessionProfile.Region
 	oidcClient := ssooidc.NewFromConfig(*sdkConfig)
@@ -756,21 +754,20 @@ func authenticateSSOProfile(
 		)
 	}
 
-	authUrl := aws.ToString(deviceAuth.VerificationUriComplete)
+	authURL := aws.ToString(deviceAuth.VerificationUriComplete)
 
-	return authUrl, registerClient, deviceAuth, nil
+	return authURL, registerClient, deviceAuth, nil
 }
 
 // waitForCustomerToAuthenticate waits for the customer to complete the SSO authentication flow.
-func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, error) {
+func waitForCustomerToAuthenticate(
+	ctx context.Context,
+	input *customerAuthInput,
+) (cacheFileData, error) {
 	var err error
 
-	if input.ctx == nil {
-		input.ctx = context.Background()
-	}
-
 	token := new(ssooidc.CreateTokenOutput)
-	sleepPerCycle := 2 * time.Second
+	sleepPerCycle := 2 * time.Second // lint:allow_raw_number
 	startTime := time.Now()
 	delta := time.Since(startTime)
 	oidcClient := ssooidc.NewFromConfig(*input.sdkConfig)
@@ -778,7 +775,7 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	for delta < input.loginTimeout {
 		// Keep trying until the user approves the request in the browser
 		token, err = oidcClient.CreateToken(
-			input.ctx, &ssooidc.CreateTokenInput{
+			ctx, &ssooidc.CreateTokenInput{
 				ClientId:     input.registerClient.ClientId,
 				ClientSecret: input.registerClient.ClientSecret,
 				DeviceCode:   input.deviceAuth.DeviceCode,
@@ -796,7 +793,7 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 		invalidClientErr := new(types.InvalidClientException)
 		invalidClientMetaErr := new(types.InvalidClientMetadataException)
 		invalidGrantErr := new(types.InvalidGrantException)
-		invalidRedirectUriErr := new(types.InvalidRedirectUriException)
+		invalidRedirectURIErr := new(types.InvalidRedirectUriException)
 		invalidRequestErr := new(types.InvalidRequestException)
 		invalidRegionErr := new(types.InvalidRequestRegionException)
 		invalidScopeErr := new(types.InvalidScopeException)
@@ -804,39 +801,40 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 		unauthClientErr := new(types.UnauthorizedClientException)
 		unsupportedGrantErr := new(types.UnsupportedGrantTypeException)
 
-		if errors.As(err, &authPendingErr) {
+		switch { // nolint:gocritic // errors.As requires individual case evaluation
+		case errors.As(err, &authPendingErr):
 			time.Sleep(sleepPerCycle)
 
 			delta = time.Since(startTime)
 
 			continue
-		} else if errors.As(err, &accessDeniedErr) {
+		case errors.As(err, &accessDeniedErr):
 			return cacheFileData{}, fmt.Errorf("authentication denied: %w", err)
-		} else if errors.As(err, &expiredTokenErr) {
+		case errors.As(err, &expiredTokenErr):
 			return cacheFileData{}, fmt.Errorf("token expired; need to reauthenticate: %w", err)
-		} else if errors.As(err, &internalServerErr) {
+		case errors.As(err, &internalServerErr):
 			return cacheFileData{}, fmt.Errorf("internal server error: %w", err)
-		} else if errors.As(err, &invalidClientErr) {
+		case errors.As(err, &invalidClientErr):
 			return cacheFileData{}, fmt.Errorf("invalid client error: %w", err)
-		} else if errors.As(err, &invalidClientMetaErr) {
+		case errors.As(err, &invalidClientMetaErr):
 			return cacheFileData{}, fmt.Errorf("invalid client metadata error: %w", err)
-		} else if errors.As(err, &invalidGrantErr) {
+		case errors.As(err, &invalidGrantErr):
 			return cacheFileData{}, fmt.Errorf("invalid grant error: %w", err)
-		} else if errors.As(err, &invalidRedirectUriErr) {
+		case errors.As(err, &invalidRedirectURIErr):
 			return cacheFileData{}, fmt.Errorf("invalid redirect URL error: %w", err)
-		} else if errors.As(err, &invalidRequestErr) {
+		case errors.As(err, &invalidRequestErr):
 			return cacheFileData{}, fmt.Errorf("invalid request error: %w", err)
-		} else if errors.As(err, &invalidRegionErr) {
+		case errors.As(err, &invalidRegionErr):
 			return cacheFileData{}, fmt.Errorf("invalid region error: %w", err)
-		} else if errors.As(err, &invalidScopeErr) {
+		case errors.As(err, &invalidScopeErr):
 			return cacheFileData{}, fmt.Errorf("invalid scope error: %w", err)
-		} else if errors.As(err, &slowDownErr) {
+		case errors.As(err, &slowDownErr):
 			return cacheFileData{}, fmt.Errorf("too many requests: %w", err)
-		} else if errors.As(err, &unauthClientErr) {
+		case errors.As(err, &unauthClientErr):
 			return cacheFileData{}, fmt.Errorf("unauthorized client: %w", err)
-		} else if errors.As(err, &unsupportedGrantErr) {
+		case errors.As(err, &unsupportedGrantErr):
 			return cacheFileData{}, fmt.Errorf("unauthorized grant type: %w", err)
-		} else {
+		default:
 			return cacheFileData{}, fmt.Errorf("SSO workflow error: %w", err)
 		}
 	}
@@ -847,12 +845,12 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 	}
 
 	cacheFile := cacheFileData{
-		StartUrl:              input.sessionProfile.StartURL,
+		StartURL:              input.sessionProfile.StartURL,
 		Region:                input.sessionProfile.Region,
 		AccessToken:           *token.AccessToken,
 		ExpiresAt:             time.Unix(time.Now().Unix()+int64(token.ExpiresIn), 0).UTC(),
 		ClientSecret:          *input.registerClient.ClientSecret,
-		ClientId:              *input.registerClient.ClientId,
+		ClientID:              *input.registerClient.ClientId,
 		RegistrationExpiresAt: time.Unix(input.registerClient.ClientSecretExpiresAt, 0).UTC(),
 	}
 
@@ -863,7 +861,9 @@ func waitForCustomerToAuthenticate(input customerAuthInput) (cacheFileData, erro
 // implements a cache-aside pattern: check cache first, fall back to the AWS API
 // on miss, then write the result back to cache. This keeps repeated commands
 // fast (sub-second) while ensuring fresh data is fetched when the cache expires.
-func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
+func listAWSAccounts( // lint:allow_complexity
+	input *listAWSAccountsInput,
+) (listAccounts, error) {
 	ctx := context.Background()
 	cacheFilePath := input.cacheFilePath()
 	lookupCacheFilePath := input.lookupCacheFilePath()
@@ -949,26 +949,28 @@ func listAWSAccounts(input listAWSAccountsInput) (listAccounts, error) {
 // This is the only function that makes real AWS API calls for account data —
 // everything else reads from cache. Filters are applied during pagination
 // rather than after to avoid fetching roles for accounts that will be discarded.
-func fetchListAWSAccountsFromSSO(input listAWSAccountsInput) (listAccounts, error) {
+func fetchListAWSAccountsFromSSO( // lint:allow_complexity
+	input *listAWSAccountsInput,
+) (listAccounts, error) {
 	var accts listAccounts
 
 	if input.Cmd == nil {
-		return accts, errors.New("command is required")
+		return accts, ErrCommandRequired
 	}
 
 	if input.SDKConfig == nil {
-		return accts, errors.New("AWS SDK config is required")
+		return accts, ErrSDKConfigRequired
 	}
 
 	if input.Cache == nil {
-		return accts, errors.New("SSO cache data is required")
+		return accts, ErrSSOCacheRequired
 	}
 
 	ssoClient := sso.NewFromConfig(*input.SDKConfig)
 
 	paginator := sso.NewListAccountsPaginator(ssoClient, &sso.ListAccountsInput{
 		AccessToken: &input.Cache.AccessToken,
-		MaxResults:  aws.Int32(100),
+		MaxResults:  aws.Int32(100), // lint:allow_raw_number
 	})
 
 	for paginator.HasMorePages() {
@@ -994,7 +996,7 @@ func fetchListAWSAccountsFromSSO(input listAWSAccountsInput) (listAccounts, erro
 			rolePaginator := sso.NewListAccountRolesPaginator(ssoClient, &sso.ListAccountRolesInput{
 				AccessToken: &input.Cache.AccessToken,
 				AccountId:   account.AccountId,
-				MaxResults:  aws.Int32(100),
+				MaxResults:  aws.Int32(100), // lint:allow_raw_number
 			})
 
 			for rolePaginator.HasMorePages() {

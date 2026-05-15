@@ -74,7 +74,7 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 		t.Fatalf("setManagedSection: %v", err)
 	}
 
-	content, err := os.ReadFile(backupName)
+	content, err := os.ReadFile(backupName) // lint:allow_dynamic_filename
 	if err != nil {
 		t.Fatalf("read backup: %v", err)
 	}
@@ -394,7 +394,7 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 		t.Fatalf("setManagedSection: %v", err)
 	}
 
-	content, err := os.ReadFile(backupName)
+	content, err := os.ReadFile(backupName) // lint:allow_dynamic_filename
 	if err != nil {
 		t.Fatalf("read backup: %v", err)
 	}
@@ -431,8 +431,8 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		if err := lock.Release(); err != nil {
-			t.Fatalf("release lock: %v", err)
+		if releaseErr := lock.Release(); releaseErr != nil {
+			t.Fatalf("release lock: %v", releaseErr)
 		}
 	})
 
@@ -481,12 +481,12 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 		t.Fatalf("write config: %v", err)
 	}
 
-	gotPath := createAWSConfigFile()
+	gotPath := createAWSConfigFile(context.Background())
 	if gotPath != awsConfigFilePath {
 		t.Fatalf("expected path %q, got %q", awsConfigFilePath, gotPath)
 	}
 
-	content, err := os.ReadFile(awsConfigFilePath)
+	content, err := os.ReadFile(awsConfigFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		t.Fatalf("read config: %v", err)
 	}
@@ -528,7 +528,7 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 
 // Feature: aws-sso-manager, Property 7: Profile Name Generation with Pattern
 // **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
-func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
+func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
 
@@ -542,11 +542,11 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 		config := genProfilePatternConfig().Draw(rt, "patternConfig")
 
 		// Extract pattern config values
-		patternMap := config["pattern"].(map[string]any)
-		order := patternMap["order"].([]string)
-		delimiter := patternMap["delimiter"].(string)
-		prefix := config["prefix"].(string)
-		suffix := config["suffix"].(string)
+		patternMap, _ := config["pattern"].(map[string]any) // lint:allow_defer_close
+		order, _ := patternMap["order"].([]string)          // lint:allow_defer_close
+		delimiter, _ := patternMap["delimiter"].(string)    // lint:allow_defer_close
+		prefix, _ := config["prefix"].(string)              // lint:allow_defer_close
+		suffix, _ := config["suffix"].(string)              // lint:allow_defer_close
 
 		// Set up asvConfig with the pattern config (skip substr_match_replace for this test)
 		asmConfig.Set(profileName+".rename.pattern.order", order)
@@ -605,7 +605,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 6: Managed Block Marker Validation
-func TestPropertyManagedBlockMarkerValidation(t *testing.T) {
+func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_complexity
 	t.Run("well-formed configs produce no issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
 			logger = slog.New(log.New(io.Discard))

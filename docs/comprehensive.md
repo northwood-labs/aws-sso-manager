@@ -77,12 +77,12 @@ Branch behavior:
 3. Gets SSO session profile from AWS config via `getSsoSession`; finds cache file path via `getCacheFilePath`.
 4. If `cacheData.read` succeeds and the token is still valid, reports remaining validity and exits.
 5. If cache read fails or is expired, triggers device authorization flow:
-   * builds SDK config with `getSDKConfig(requestCtx, ...)`,
-   * starts auth via `authenticateSSOProfile`,
-   * extracts user code,
-   * optionally opens browser,
-   * polls token endpoint via `waitForCustomerToAuthenticate`,
-   * saves result via `cacheData.save`.
+  * builds SDK config with `getSDKConfig(requestCtx, ...)`,
+  * starts auth via `authenticateSSOProfile`,
+  * extracts user code,
+  * optionally opens browser,
+  * polls token endpoint via `waitForCustomerToAuthenticate`,
+  * saves result via `cacheData.save`.
 
 Branch behavior:
 
@@ -143,9 +143,9 @@ Branch behavior:
 3. Calls `getAllManagedSections()` to collect all `[sso-session <profile>]` section names from the AWS config.
 4. Builds a union of both sets to cover the full population: marker-only profiles and sso-session-only profiles.
 5. For each profile in the union, reports:
-   * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
-   * orphaned markers (marker present but no matching `sso-session` section);
-   * unmanaged sections (`sso-session` section present but no markers).
+  * structural issues from the marker scan (overlapping blocks, unmatched ends, duplicates, mismatches);
+  * orphaned markers (marker present but no matching `sso-session` section);
+  * unmanaged sections (`sso-session` section present but no markers).
 6. Exits 0 when all checks pass, exits 1 when any problem is found.
 
 ## 4. file and module responsibilities
@@ -157,22 +157,22 @@ Branch behavior:
 3. [cmd/lockutils.go](../cmd/lockutils.go) — Exclusive file locking for the AWS config. `acquireAWSConfigLock(ctx)` creates a lock file at `~/.config/.aws-sso-manager/.config.lock` and acquires an exclusive lock with a 5-second timeout (`awsConfigLockTimeout`) and 100 ms retry interval. Platform-specific implementations live in `lockutils_unix.go` (using `golang.org/x/sys/unix.Flock`) and `lockutils_windows.go` (using `golang.org/x/sys/windows.LockFileEx`). `Release()` unlocks and closes the file. Used by both `init` and `update` before any write operations.
 
 4. [cmd/awsutils.go](../cmd/awsutils.go) — AWS and persistence utility backbone:
-   * cache file serialization/read/expiry validation via `cacheData.read` and `cacheData.save`,
-   * AWS config load/create/generation via `loadAWSConfig`, `createAWSConfigFile`, `generateAWSConfig`,
-   * SDK config and SSO session discovery via `getSDKConfig` and `getSsoSession`,
-   * OIDC device auth workflow via `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
-   * account and role discovery/pagination/filtering via `listAWSAccounts`.
+  * cache file serialization/read/expiry validation via `cacheData.read` and `cacheData.save`,
+  * AWS config load/create/generation via `loadAWSConfig`, `createAWSConfigFile`, `generateAWSConfig`,
+  * SDK config and SSO session discovery via `getSDKConfig` and `getSsoSession`,
+  * OIDC device auth workflow via `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
+  * account and role discovery/pagination/filtering via `listAWSAccounts`.
 
 5. [cmd/configutils.go](../cmd/configutils.go) — Marker parsing and managed-block mutation utilities:
-   * whole-file structural scan via `inspectManagedMarkers` (returns `managedMarkerReport` with per-profile issues, counts, and profile list),
-   * profile marker check via `markersExist`,
-   * per-profile structural check via `validateMarkers`,
-   * whole-file structural check via `validateManagedMarkers`,
-   * managed-section extraction to temp file via `getManagedSection` (calls `validateManagedMarkers` first),
-   * inject-once managed-section rewrite via `setManagedSection`,
-   * full profile population from markers via `getAllMarkedProfiles`,
-   * sso-session section enumeration via `getAllManagedSections`,
-   * profile name synthesis from TOML rename settings via `getProfileName`.
+  * whole-file structural scan via `inspectManagedMarkers` (returns `managedMarkerReport` with per-profile issues, counts, and profile list),
+  * profile marker check via `markersExist`,
+  * per-profile structural check via `validateMarkers`,
+  * whole-file structural check via `validateManagedMarkers`,
+  * managed-section extraction to temp file via `getManagedSection` (calls `validateManagedMarkers` first),
+  * inject-once managed-section rewrite via `setManagedSection`,
+  * full profile population from markers via `getAllMarkedProfiles`,
+  * sso-session section enumeration via `getAllManagedSections`,
+  * profile name synthesis from TOML rename settings via `getProfileName`.
 
 6. [cmd/validate.go](../cmd/validate.go) — Standalone marker integrity command. Drives `inspectManagedMarkers` and `getAllManagedSections`, unions results, and reports per-profile OK/FAIL with detail. Aliases: `check`, `lint`.
 
@@ -208,15 +208,15 @@ Branch behavior:
 ### B. external integrations
 
 1. AWS SDK v2 config loader and SSO APIs:
-   * `config.LoadDefaultConfig` in `getSDKConfig`,
-   * `ssooidc RegisterClient/StartDeviceAuthorization/CreateToken` in `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
-   * SSO account/role paginators in `listAWSAccounts`.
+  * `config.LoadDefaultConfig` in `getSDKConfig`,
+  * `ssooidc RegisterClient/StartDeviceAuthorization/CreateToken` in `authenticateSSOProfile` and `waitForCustomerToAuthenticate`,
+  * SSO account/role paginators in `listAWSAccounts`.
 2. Terminal UI libraries: Cobra/Fang CLI, Huh forms/spinners, Lipgloss table rendering.
 3. OS/browser integration: browser open side effect in `auth` command (opt-in via `--browser` flag).
 4. Filesystem integration:
-   * cache and AWS config read/write via `loadAWSConfig`, `cacheData.read`, `cacheData.save`,
-   * atomic config replace via `os.CreateTemp` (init) and `os.Rename` (init, update),
-   * exclusive locking via `acquireAWSConfigLock` / `Release`.
+  * cache and AWS config read/write via `loadAWSConfig`, `cacheData.read`, `cacheData.save`,
+  * atomic config replace via `os.CreateTemp` (init) and `os.Rename` (init, update),
+  * exclusive locking via `acquireAWSConfigLock` / `Release`.
 
 ### C. state transitions
 
@@ -238,7 +238,7 @@ Confidence: High for side effects and error pivots directly visible in code.
 Items previously flagged have been resolved in the current codebase. The table below reflects current status.
 
 | #   | Risk / Gap                                                                                                   | Status                                                                                                                                                                                                                                                                                           |
-| --- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|-----|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1   | Update rewrite left trailing stale bytes (`O_WRONLY` without truncate)                                       | **Resolved** — `update` now uses `os.Rename` for atomic replacement; no truncate needed.                                                                                                                                                                                                         |
 | 2   | Incorrect error message context when `sso-session` missing in `update` (`profileHeaderName` used before set) | **Resolved** — error now uses the resolved `ssoProfile` variable.                                                                                                                                                                                                                                |
 | 3   | Potential injection duplication in managed section merge                                                     | **Resolved** — `setManagedSection` uses an `injectedInBlock` guard ensuring exactly one injection per block encounter.                                                                                                                                                                           |

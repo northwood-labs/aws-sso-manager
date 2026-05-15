@@ -52,11 +52,7 @@ var updateCmd = &cobra.Command{
 	aws-sso-manager update <sso-profile-name>
 	`)),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			ok          bool
-			profileName string
-			counter     int
-		)
+		profileName := ""
 
 		ctx := cmd.Context()
 
@@ -91,13 +87,13 @@ var updateCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Read the AWS config file", logKeyConfig, tmpFilename)
 
-		sections, err := loadAWSConfig(tmpFilename)
+		sections, err := loadAWSConfig(ctx, tmpFilename)
 		cobra.CheckErr(err)
 
 		logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 		// Generate a SSO session profile from the profile name.
-		sessionProfile, err := getSsoSession(profileName)
+		sessionProfile, err := getSsoSession(ctx, profileName)
 		if err != nil {
 			return fmt.Errorf("getting SSO session for profile %q: %w", profileName, err)
 		}
@@ -114,7 +110,7 @@ var updateCmd = &cobra.Command{
 
 		ssoProfile := "sso-session " + profileName
 
-		_, ok = sections.GetSection(ssoProfile)
+		_, ok := sections.GetSection(ssoProfile)
 		if !ok {
 			cobra.CheckErr(fmt.Sprintf("config file does not have section [%s]; need to run init", ssoProfile))
 		}
@@ -125,7 +121,7 @@ var updateCmd = &cobra.Command{
 			Type(spinner.Dots).
 			Action(func(accounts *listAccounts) func() {
 				return func() {
-					accts, err := listAWSAccounts(listAWSAccountsInput{
+					accts, fetchErr := listAWSAccounts(&listAWSAccountsInput{
 						Cmd:           cmd,
 						SDKConfig:     &sdkConfig,
 						Cache:         cache,
@@ -134,7 +130,7 @@ var updateCmd = &cobra.Command{
 						AccountFilter: fAccounts,
 						RoleFilter:    fRoles,
 					})
-					cobra.CheckErr(err)
+					cobra.CheckErr(fetchErr)
 
 					*accounts = accts
 				}
@@ -149,7 +145,11 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("building updated managed sections: %w", err)
 		}
 
-		f, err := os.OpenFile(tmpFilename, os.O_TRUNC|os.O_WRONLY, 0o0644)
+		f, err := os.OpenFile( // lint:allow_dynamic_filename
+			tmpFilename,
+			os.O_TRUNC|os.O_WRONLY,
+			0o0644, // lint:allow_raw_number
+		)
 		cobra.CheckErr(err)
 
 		defer func() {
@@ -168,7 +168,7 @@ var updateCmd = &cobra.Command{
 		logger.DebugContext(ctx, "Backup file", logKeyBackupFile, backupFilename)
 
 		// Set permissions to match the expected config file mode before rename.
-		err = os.Chmod(backupFilename, 0o0644)
+		err = os.Chmod(backupFilename, 0o0644) // lint:allow_raw_number
 		cobra.CheckErr(err)
 
 		logger.DebugContext(ctx, "Deleted file", logKeyFile, tmpFilename)
@@ -194,12 +194,16 @@ var updateCmd = &cobra.Command{
 	},
 }
 
+func init() { // lint:allow_init
+	rootCmd.AddCommand(updateCmd)
+}
+
 // buildUpdatedManagedSections creates a fresh set of INI sections from the
 // current account/role list. It intentionally starts from an empty Sections
 // (preserving only the [sso-session]) so that profiles for accounts or roles
 // the user no longer has access to are dropped. The returned count lets the
 // caller report how many profiles were written.
-func buildUpdatedManagedSections(
+func buildUpdatedManagedSections( // lint:allow_complexity
 	sections configFile.Sections,
 	ssoProfile,
 	profileName string,
@@ -210,7 +214,8 @@ func buildUpdatedManagedSections(
 	ssoSection, ok := sections.GetSection(ssoProfile)
 	if !ok {
 		return configFile.NewSections(), 0, fmt.Errorf(
-			"config file does not have section [%s]; need to run init",
+			"%w: [%s]; need to run init",
+			ErrConfigSectionMissing,
 			ssoProfile,
 		)
 	}
@@ -309,13 +314,14 @@ func buildUpdatedManagedSections(
 			}
 
 			for iniKey, iniValue := range m {
-				if v, err := configFile.NewStringValue(iniValue); err != nil {
+				v, err := configFile.NewStringValue(iniValue)
+				if err != nil {
 					return configFile.NewSections(), 0, fmt.Errorf("failed to create '%s' value: %w", iniKey, err)
-				} else {
-					err = section.UpdateValue(iniKey, v)
-					if err != nil {
-						return configFile.NewSections(), 0, fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
-					}
+				}
+
+				err = section.UpdateValue(iniKey, v)
+				if err != nil {
+					return configFile.NewSections(), 0, fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
 				}
 			}
 
@@ -329,7 +335,8 @@ func buildUpdatedManagedSections(
 			nextSections = nextSections.SetSection(profileHeaderName, section)
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
 				return configFile.NewSections(), 0, fmt.Errorf(
-					"failed to create or get section [%s]",
+					"%w: [%s]",
+					ErrConfigSectionCreate,
 					profileHeaderName,
 				)
 			}
@@ -337,8 +344,4 @@ func buildUpdatedManagedSections(
 	}
 
 	return nextSections, counter, nil
-}
-
-func init() {
-	rootCmd.AddCommand(updateCmd)
 }

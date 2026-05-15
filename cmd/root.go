@@ -38,6 +38,12 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
+const (
+	noVerbose    = 0
+	verboseInfo  = 1
+	verboseDebug = 2
+)
+
 var (
 	fConfigFile    string
 	fCacheDuration string
@@ -99,7 +105,7 @@ var (
 		# Update the .aws/config file with the AWS accounts/roles you have access to.
 		aws-sso-manager update [sso-profile-name]
 		`)),
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			charmlogger.SetStyles(clihelpers.GetLoggerStyles())
 
 			// Verbose levels: 0=warn (quiet default), 1=info (-v), 2=debug
@@ -107,13 +113,13 @@ var (
 			// expensive so it's only enabled at the highest level for deep
 			// debugging.
 			switch fVerbose {
-			case 0:
+			case noVerbose:
 				charmlogger.SetLevel(log.WarnLevel)
 				charmlogger.SetReportCaller(false)
-			case 1:
+			case verboseInfo:
 				charmlogger.SetLevel(log.InfoLevel)
 				charmlogger.SetReportCaller(false)
-			case 2:
+			case verboseDebug:
 				charmlogger.SetLevel(log.DebugLevel)
 				charmlogger.SetReportCaller(false)
 			default:
@@ -136,43 +142,8 @@ var (
 	}
 )
 
-// parseCacheDurationFlag extends Go's time.ParseDuration with a "d" (day) suffix
-// because cache lifetimes are commonly expressed in days (e.g., "1d", "2d12h")
-// and Go's stdlib doesn't support that. Day tokens are converted to hours before
-// parsing so the rest of the duration string is handled normally.
-func parseCacheDurationFlag(raw string) (time.Duration, error) {
-	trimmed := strings.TrimSpace(raw)
-	if trimmed == "" {
-		return 0, errors.New("cache duration cannot be empty")
-	}
-
-	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
-	normalized := trimmed
-
-	matches := dayTokenPattern.FindAllStringSubmatch(trimmed, -1)
-	for _, match := range matches {
-		days, err := strconv.Atoi(match[1])
-		if err != nil {
-			return 0, fmt.Errorf("invalid day token in cache duration %q: %w", raw, err)
-		}
-
-		normalized = strings.Replace(normalized, match[0], fmt.Sprintf("%dh", days*24), 1)
-	}
-
-	parsed, err := time.ParseDuration(normalized)
-	if err != nil {
-		return 0, fmt.Errorf("invalid cache duration %q: %w", raw, err)
-	}
-
-	if parsed <= 0 {
-		return 0, fmt.Errorf("cache duration must be greater than zero: %q", raw)
-	}
-
-	return parsed, nil
-}
-
 // This runs too early in the process to use the logger.
-func init() {
+func init() { // lint:allow_init
 	var err error
 
 	userHomeDir, err = os.UserHomeDir()
@@ -205,6 +176,46 @@ func init() {
 		&fVerbose, "verbose", "v",
 		"increase verbosity level (can be used multiple times)",
 	)
+}
+
+// parseCacheDurationFlag extends Go's time.ParseDuration with a "d" (day) suffix
+// because cache lifetimes are commonly expressed in days (e.g., "1d", "2d12h")
+// and Go's stdlib doesn't support that. Day tokens are converted to hours before
+// parsing so the rest of the duration string is handled normally.
+func parseCacheDurationFlag(raw string) (time.Duration, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return 0, ErrCacheDurationEmpty
+	}
+
+	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
+	normalized := trimmed
+
+	matches := dayTokenPattern.FindAllStringSubmatch(trimmed, -1)
+	for _, match := range matches {
+		days, err := strconv.Atoi(match[1])
+		if err != nil {
+			return 0, fmt.Errorf("invalid day token in cache duration %q: %w", raw, err)
+		}
+
+		normalized = strings.Replace(
+			normalized,
+			match[0],
+			fmt.Sprintf("%dh", days*24), // lint:allow_raw_number
+			1,
+		)
+	}
+
+	parsed, err := time.ParseDuration(normalized)
+	if err != nil {
+		return 0, fmt.Errorf("invalid cache duration %q: %w", raw, err)
+	}
+
+	if parsed <= 0 {
+		return 0, fmt.Errorf("%w: %q", ErrCacheDurationInvalid, raw)
+	}
+
+	return parsed, nil
 }
 
 // Execute configures the Cobra CLI app framework and executes the root command.
@@ -248,31 +259,13 @@ func initializeConfig(cmd *cobra.Command) error {
 		if os.IsNotExist(err) {
 			logger.InfoContext(ctx, "Config file does not exist", logKeyFile, fConfigFile)
 
-			return fmt.Errorf("config file does not exist at %s", fConfigFile)
+			return fmt.Errorf("%w: %s", ErrConfigFileNotExist, fConfigFile)
 		}
 
 		asmConfig.SetConfigFile(fConfigFile)
 	} else {
-		_, err := os.Stat(fConfigFile)
-		if os.IsNotExist(err) {
-			logger.InfoContext(ctx, "Config file does not exist. Create a new one.")
-
-			err = os.MkdirAll(filepath.Dir(defaultConfigFile), 0o0755)
-			if err != nil {
-				return fmt.Errorf("could not create config directory: %w", err)
-			}
-
-			asmConfig.SetConfigType("toml")
-
-			err = asmConfig.WriteConfigAs(defaultConfigFile)
-			if err != nil {
-				logger.InfoContext(ctx, "Config file already exists")
-
-				var configFileAlreadyExistsError viper.ConfigFileAlreadyExistsError
-				if !errors.As(err, &configFileAlreadyExistsError) {
-					return fmt.Errorf("could not write config file: %w", err)
-				}
-			}
+		if err := ensureDefaultConfigFile(ctx, defaultConfigFile); err != nil {
+			return fmt.Errorf("%w", err)
 		}
 
 		logger.InfoContext(ctx, "Using the config file", logKeyFile, fConfigFile)
@@ -298,6 +291,37 @@ func initializeConfig(cmd *cobra.Command) error {
 	err := asmConfig.BindPFlags(cmd.Flags())
 	if err != nil {
 		return fmt.Errorf("could not bind flags: %w", err)
+	}
+
+	return nil
+}
+
+// ensureDefaultConfigFile creates the default config file and its parent
+// directory if they do not already exist. This avoids deep nesting in
+// initializeConfig by isolating the "first-run" creation logic.
+func ensureDefaultConfigFile(ctx context.Context, defaultConfigFile string) error {
+	_, err := os.Stat(defaultConfigFile)
+	if !os.IsNotExist(err) {
+		return nil
+	}
+
+	logger.InfoContext(ctx, "Config file does not exist. Create a new one.")
+
+	mkdirErr := os.MkdirAll(filepath.Dir(defaultConfigFile), 0o0755) // lint:allow_raw_number
+	if mkdirErr != nil {
+		return fmt.Errorf("could not create config directory: %w", mkdirErr)
+	}
+
+	asmConfig.SetConfigType("toml")
+
+	writeErr := asmConfig.WriteConfigAs(defaultConfigFile)
+	if writeErr != nil {
+		logger.InfoContext(ctx, "Config file already exists")
+
+		var configFileAlreadyExistsError viper.ConfigFileAlreadyExistsError
+		if !errors.As(writeErr, &configFileAlreadyExistsError) {
+			return fmt.Errorf("could not write config file: %w", writeErr)
+		}
 	}
 
 	return nil

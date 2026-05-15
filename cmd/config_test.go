@@ -218,7 +218,7 @@ func TestPropertyConfigBackupContent(t *testing.T) {
 		}
 
 		// Read the config file content — this is the pre-mutation state.
-		preMutationContent, err := os.ReadFile(configPath)
+		preMutationContent, err := os.ReadFile(configPath) // lint:allow_dynamic_filename
 		if err != nil {
 			rt.Fatalf("could not read config file after first set: %v", err)
 		}
@@ -412,7 +412,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		asmConfig.SetConfigType("toml")
 		asmConfig.SetConfigFile(configPath)
 
-		_ = asmConfig.ReadInConfig()
+		_ = asmConfig.ReadInConfig() // lint:allow_unhandled
 
 		// Step 3: config get <key> — must return a non-nil error containing "is not set"
 		buf.Reset()
@@ -659,7 +659,7 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 	}
 
 	// Reload so asmConfig sees the key for the del command's existence check.
-	_ = asmConfig.ReadInConfig()
+	_ = asmConfig.ReadInConfig() // lint:allow_unhandled
 
 	// Force mode — should not prompt.
 	fForce = true
@@ -715,10 +715,10 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 	}
 
 	// Reload so asmConfig sees the key.
-	_ = asmConfig.ReadInConfig()
+	_ = asmConfig.ReadInConfig() // lint:allow_unhandled
 
 	// Swap confirmDeletion to decline.
-	confirmDeletion = func(key string, value any) (bool, error) {
+	confirmDeletion = func(_ string, _ any) (bool, error) {
 		return false, nil
 	}
 
@@ -805,20 +805,23 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 	}
 
 	// Make the directory read-only so the backup write fails.
-	if err := os.Chmod(dir, 0o0555); err != nil {
+	if err := os.Chmod(dir, 0o0544); err != nil { // lint:allow_755
 		t.Fatalf("chmod: %v", err)
 	}
 
 	t.Cleanup(func() {
 		// Restore write permission so TempDir cleanup succeeds.
-		_ = os.Chmod(dir, 0o0755)
+		err := os.Chmod(dir, 0o0755) // lint:allow_755
+		if err != nil {
+			t.Logf("failed to restore permissions: %v", err)
+		}
 	})
 
 	// This should not panic — backup failure is non-fatal.
 	backupConfigFile(configPath)
 
 	// Verify no backup was created.
-	matches, _ := filepath.Glob(filepath.Join(dir, "config-*.toml.bak"))
+	matches, _ := filepath.Glob(filepath.Join(dir, "config-*.toml.bak")) // lint:allow_unhandled
 	if len(matches) != 0 {
 		t.Fatalf("expected 0 backup files when dir is read-only, got %d", len(matches))
 	}
@@ -931,7 +934,8 @@ func TestValidateConfigKey(t *testing.T) {
 	}
 }
 
-// Feature: config-output-region-overrides, Property 3: Settings key validation accepts region/output and rejects unknown keys
+// Feature: config-output-region-overrides, Property 3: Settings key validation
+// accepts region/output and rejects unknown keys
 func TestPropertySettingsKeyValidation(t *testing.T) {
 	// **Validates: Requirements 3.1, 3.2, 3.3**
 	rapid.Check(t, func(t *rapid.T) {

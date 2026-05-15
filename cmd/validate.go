@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -69,7 +68,7 @@ var (
 		# Validate that the ~/.aws/config file is valid.
 		aws-sso-manager validate
 		`)),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			markerReport, err := inspectManagedMarkers()
 			if err != nil {
 				return fmt.Errorf("reading AWS config markers: %w", err)
@@ -118,7 +117,7 @@ var (
 				errs    []string
 			}
 
-			var results []result
+			results := []result{}
 
 			foundProblems := false
 
@@ -138,7 +137,7 @@ var (
 			}
 
 			for _, profile := range allProfiles {
-				var errs []string
+				errs := []string{}
 
 				// Check structural integrity of markers.
 				if hasMarker[profile] {
@@ -173,9 +172,9 @@ var (
 			// Print report.
 			for _, r := range results {
 				if len(r.errs) == 0 {
-					lipgloss.Println("  " + styleSuccess.Render("OK") + " " + r.profile)
+					_, _ = lipgloss.Println("  " + styleSuccess.Render("OK") + " " + r.profile) // lint:allow_unhandled
 				} else {
-					lipgloss.Println(styleFailure.Render("FAIL") + " " + r.profile)
+					_, _ = lipgloss.Println(styleFailure.Render("FAIL") + " " + r.profile) // lint:allow_unhandled
 
 					for _, e := range r.errs {
 						fmt.Printf("       → %s\n", e)
@@ -184,10 +183,10 @@ var (
 			}
 
 			if foundProblems {
-				return errors.New("one or more managed profiles have configuration problems")
+				return ErrValidationFailed
 			}
 
-			lipgloss.Printf(
+			_, _ = lipgloss.Printf( // lint:allow_unhandled
 				"\nAll %d managed profile(s) in %s are valid.\n",
 				len(results),
 				clihelpers.StyleInlineHighlight.Render(awsConfigFilePath),
@@ -198,6 +197,6 @@ var (
 	}
 )
 
-func init() {
+func init() { // lint:allow_init
 	rootCmd.AddCommand(validateCmd)
 }

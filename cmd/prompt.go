@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"charm.land/huh/v2"
@@ -30,7 +29,7 @@ var promptProfileSelect = func(target *string) error {
 	}
 
 	if len(sections) == 0 {
-		return errors.New("no SSO profiles found in AWS config; run `aws-sso-manager init` to create one")
+		return ErrNoSSOProfiles
 	}
 
 	return huh.NewSelect[string]().

@@ -17,7 +17,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -29,25 +28,6 @@ import (
 	"github.com/spf13/cobra"
 
 	clihelpers "github.com/northwood-labs/cli-helpers"
-)
-
-type (
-	listAccounts struct {
-		Accounts []listAccount `json:"accounts"`
-	}
-
-	listAccount struct {
-		ID    string     `json:"id"`
-		Name  string     `json:"name"`
-		Email string     `json:"email"`
-		Roles []listRole `json:"roles"`
-	}
-
-	listRole struct {
-		AccountID string `json:"account_id"` // lint:allow_format
-		Name      string `json:"name"`
-		Profile   string `json:"profile"`
-	}
 )
 
 var (
@@ -101,7 +81,7 @@ var (
 		aws-sso-manager list <sso-profile-name> --roles <substring>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var profileName string
+			profileName := ""
 
 			ctx := cmd.Context()
 
@@ -119,7 +99,7 @@ var (
 			}
 
 			if selectedOutputs > 1 {
-				return errors.New("choose only one output format flag: --json, --csv, or --markdown")
+				return ErrOutputFormatConflict
 			}
 
 			logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
@@ -139,7 +119,7 @@ var (
 			logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 			// Generate a SSO session profile from the profile name.
-			sessionProfile, err := getSsoSession(profileName)
+			sessionProfile, err := getSsoSession(ctx, profileName)
 			if err != nil {
 				return fmt.Errorf("could not get SSO session: %w", err)
 			}
@@ -154,7 +134,7 @@ var (
 				return fmt.Errorf("could not ensure authentication for profile %q: %w", profileName, err)
 			}
 
-			listInput := listAWSAccountsInput{
+			listInput := &listAWSAccountsInput{
 				Cmd:           cmd,
 				SDKConfig:     &sdkConfig,
 				Cache:         cache,
@@ -172,8 +152,8 @@ var (
 					Type(spinner.Dots).
 					Action(func(accounts *listAccounts) func() {
 						return func() {
-							accts, err := listAWSAccountsFetcher(listInput)
-							cobra.CheckErr(err)
+							accts, fetchErr := listAWSAccountsFetcher(listInput)
+							cobra.CheckErr(fetchErr)
 
 							*accounts = accts
 						}
@@ -184,21 +164,21 @@ var (
 				}
 
 				// Delete old cache after successful fetch
-				if err := deleteListAWSAccountsCache(listInput); err != nil {
-					return fmt.Errorf("could not clear accounts cache: %w", err)
+				if delErr := deleteListAWSAccountsCache(listInput); delErr != nil {
+					return fmt.Errorf("could not clear accounts cache: %w", delErr)
 				}
 
 				// Write fresh data to cache
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
-					if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
+					if writeErr := writeListAWSAccountsCache(cacheFilePath, accounts); writeErr != nil {
 						logger.ErrorContext(
 							ctx,
 							"Failed to write AWS accounts cache",
 							logKeyFile,
 							cacheFilePath,
 							logKeyErr,
-							err,
+							writeErr,
 						)
 					}
 
@@ -208,14 +188,17 @@ var (
 						if lookupCachePath != "" {
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
 
-							if err := writeListAWSAccountsLookupCache(lookupCachePath, lookupIndex); err != nil {
+							if lookupErr := writeListAWSAccountsLookupCache(
+								lookupCachePath,
+								lookupIndex,
+							); lookupErr != nil {
 								logger.ErrorContext(
 									ctx,
 									"Failed to write lookup cache",
 									logKeyFile,
 									lookupCachePath,
 									logKeyErr,
-									err,
+									lookupErr,
 								)
 							}
 						}
@@ -228,8 +211,8 @@ var (
 					Type(spinner.Dots).
 					Action(func(accounts *listAccounts) func() {
 						return func() {
-							accts, err := listAWSAccounts(listInput)
-							cobra.CheckErr(err)
+							accts, fetchErr := listAWSAccounts(listInput)
+							cobra.CheckErr(fetchErr)
 
 							*accounts = accts
 						}
@@ -241,9 +224,9 @@ var (
 			}
 
 			if fJSON {
-				data, err := json.Marshal(accounts)
-				if err != nil {
-					return fmt.Errorf("could not marshal accounts to JSON: %w", err)
+				data, jsonErr := json.Marshal(accounts)
+				if jsonErr != nil {
+					return fmt.Errorf("could not marshal accounts to JSON: %w", jsonErr)
 				}
 
 				fmt.Println(string(data))
@@ -296,7 +279,26 @@ var (
 	}
 )
 
-func init() {
+type (
+	listAccounts struct {
+		Accounts []listAccount `json:"accounts"`
+	}
+
+	listAccount struct {
+		ID    string     `json:"id"`
+		Name  string     `json:"name"`
+		Email string     `json:"email"`
+		Roles []listRole `json:"roles"`
+	}
+
+	listRole struct {
+		AccountID string `json:"account_id"` // lint:allow_format
+		Name      string `json:"name"`
+		Profile   string `json:"profile"`
+	}
+)
+
+func init() { // lint:allow_init
 	rootCmd.AddCommand(listCmd)
 
 	listCmd.Flags().StringVarP(&fAccounts, "accounts", "a", "", "Filter by account name substring")
@@ -367,6 +369,8 @@ func padRight(value string, width int) string {
 // column-aligned padding. This format is useful for pasting into PRs, wikis,
 // or documentation where a rendered table is more readable than raw CSV.
 func renderMarkdownTable(headers []string, rows [][]string) string {
+	const SeparatorWidthMax = 3
+
 	widths := make([]int, len(headers))
 
 	for i, header := range headers {
@@ -395,7 +399,7 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 	buffer.WriteString("|")
 
 	for i := range headers {
-		separatorWidth := max(widths[i], 3)
+		separatorWidth := max(widths[i], SeparatorWidthMax)
 
 		buffer.WriteString(" ")
 		buffer.WriteString(strings.Repeat("-", separatorWidth))

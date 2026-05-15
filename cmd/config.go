@@ -53,7 +53,7 @@ var (
 	configSetCmd = &cobra.Command{
 		Use:   "set <key> <value>",
 		Short: "Set a configuration value.",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(2), // lint:allow_raw_number
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Add a new config entry.
 		aws-sso-manager config set <key> <value>
@@ -68,7 +68,7 @@ var (
 
 			configPath := asmConfig.ConfigFileUsed()
 
-			if err := os.MkdirAll(filepath.Dir(configPath), 0o0755); err != nil {
+			if err := os.MkdirAll(filepath.Dir(configPath), 0o0755); err != nil { // lint:allow_raw_number
 				return fmt.Errorf("could not create config directory: %w", err)
 			}
 
@@ -108,7 +108,7 @@ var (
 			value := asmConfig.Get(key)
 
 			if value == nil {
-				return fmt.Errorf("key %q is not set", key)
+				return fmt.Errorf("%w: %q", ErrConfigKeyNotSet, key)
 			}
 
 			fmt.Fprintln(cmd.OutOrStdout(), value)
@@ -133,7 +133,7 @@ var (
 			value := asmConfig.Get(key)
 
 			if value == nil {
-				return fmt.Errorf("key %q is not set", key)
+				return fmt.Errorf("%w: %q", ErrConfigKeyNotSet, key)
 			}
 
 			if !fForce {
@@ -166,7 +166,7 @@ var (
 	// confirmDeletion is a test seam for the deletion confirmation prompt.
 	// Tests swap this to avoid TUI interaction.
 	confirmDeletion = func(key string, value any) (bool, error) {
-		var confirmed bool
+		confirmed := false
 
 		err := huh.NewConfirm().
 			Title(fmt.Sprintf("Delete %q (current value: %v)?", key, value)).
@@ -180,7 +180,7 @@ var (
 	}
 )
 
-func init() {
+func init() { // lint:allow_init
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(configSetCmd)
 	configCmd.AddCommand(configGetCmd)
@@ -195,7 +195,7 @@ func init() {
 func printAllConfigKeys(cmd *cobra.Command) error {
 	configPath := asmConfig.ConfigFileUsed()
 
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) // lint:allow_dynamic_filename
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Fprintln(cmd.OutOrStdout(), "No configuration values set.")
@@ -207,7 +207,7 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 	}
 
 	var tree map[string]any
-	if err := toml.Unmarshal(data, &tree); err != nil {
+	if err = toml.Unmarshal(data, &tree); err != nil {
 		return fmt.Errorf("could not parse config file: %w", err)
 	}
 
@@ -251,9 +251,9 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 	var pairs [][2]string
 
 	for k, v := range tree {
-		fullKey := k
-		if prefix != "" {
-			fullKey = prefix + "." + k
+		fullKey := prefix + "." + k
+		if prefix == "" {
+			fullKey = k
 		}
 
 		switch val := v.(type) {
@@ -277,6 +277,8 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 // a mutation so the user can recover from accidental changes. Failures are
 // logged as warnings because atomic writes already protect against corruption.
 func backupConfigFile(configPath string) {
+	const NumberOfBackups = 5
+
 	ctx := context.Background()
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -287,20 +289,24 @@ func backupConfigFile(configPath string) {
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	backupPath := filepath.Join(dir, fmt.Sprintf("config-%s.toml.bak", timestamp))
 
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) // lint:allow_dynamic_filename
 	if err != nil {
 		logger.WarnContext(ctx, "Could not read config for backup", logKeyErr, err)
 
 		return
 	}
 
-	if err := os.WriteFile(backupPath, data, 0o0644); err != nil {
+	if err := os.WriteFile( // lint:allow_possible_insecure
+		backupPath,
+		data,
+		0o0644, // lint:allow_raw_number
+	); err != nil {
 		logger.WarnContext(ctx, "Could not write config backup", logKeyErr, err)
 
 		return
 	}
 
-	pruneConfigBackups(dir, 5)
+	pruneConfigBackups(dir, NumberOfBackups)
 }
 
 // pruneConfigBackups keeps only the most recent `keep` backup files in dir,
@@ -337,7 +343,7 @@ func pruneConfigBackups(dir string, keep int) {
 func setConfigKey(configPath, key, value string) error {
 	var tree map[string]any
 
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) // lint:allow_dynamic_filename
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return fmt.Errorf("could not read config file: %w", err)
@@ -345,8 +351,8 @@ func setConfigKey(configPath, key, value string) error {
 
 		tree = make(map[string]any)
 	} else {
-		if err := toml.Unmarshal(data, &tree); err != nil {
-			return fmt.Errorf("could not parse config file: %w", err)
+		if unmarshalErr := toml.Unmarshal(data, &tree); unmarshalErr != nil {
+			return fmt.Errorf("could not parse config file: %w", unmarshalErr)
 		}
 	}
 
@@ -427,20 +433,20 @@ func writeAtomicBytes(configPath string, data []byte) error {
 	tmpPath := tmp.Name()
 
 	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		_ = os.Remove(tmpPath)
+		_ = tmp.Close()        // lint:allow_unhandled
+		_ = os.Remove(tmpPath) // lint:allow_unhandled
 
 		return fmt.Errorf("could not write config: %w", err)
 	}
 
 	if err := tmp.Close(); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.Remove(tmpPath) // lint:allow_unhandled
 
 		return fmt.Errorf("could not close temporary config file: %w", err)
 	}
 
 	if err := os.Rename(tmpPath, configPath); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.Remove(tmpPath) // lint:allow_unhandled
 
 		return fmt.Errorf("could not replace config file: %w", err)
 	}
@@ -452,18 +458,18 @@ func writeAtomicBytes(configPath string, data []byte) error {
 // file. Viper has no Delete method, so we parse the raw TOML into a map, remove
 // the key, and write back atomically.
 func deleteConfigKey(configPath, key string) error {
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) // lint:allow_dynamic_filename
 	if err != nil {
 		return fmt.Errorf("could not read config file: %w", err)
 	}
 
 	var tree map[string]any
-	if err := toml.Unmarshal(data, &tree); err != nil {
+	if err = toml.Unmarshal(data, &tree); err != nil {
 		return fmt.Errorf("could not parse config file: %w", err)
 	}
 
 	if !deleteNestedKey(tree, strings.Split(key, ".")) {
-		return fmt.Errorf("key %q not found in config file", key)
+		return fmt.Errorf("%w: %q", ErrConfigKeyNotFound, key)
 	}
 
 	tree = filterConfigTree(tree)

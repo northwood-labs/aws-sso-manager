@@ -84,7 +84,7 @@ func TestNormalizeSSOStartURL(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 1: SSO Start URL Normalization Round Trip
-func TestPropertySSOStartURLNormalization(t *testing.T) {
+func TestPropertySSOStartURLNormalization(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 1.5, 1.6, 1.7**
 
 	// Sub-property 1: Bare subdomains (no dots, no slashes, no "://")

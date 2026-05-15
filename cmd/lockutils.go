@@ -45,21 +45,21 @@ type awsConfigLock struct {
 // the config file. The lock file lives under ~/.config/.aws-sso-manager/ rather
 // than ~/.aws/ to avoid polluting the AWS config directory.
 func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	lockCtx, cancel := context.WithTimeout(ctx, awsConfigLockTimeout)
 	defer cancel()
 
 	lockDir := filepath.Join(userHomeDir, ".config", ".aws-sso-manager")
-	if err := os.MkdirAll(lockDir, 0o0755); err != nil {
+	if err := os.MkdirAll(lockDir, 0o0755); err != nil { // lint:allow_raw_number
 		return nil, fmt.Errorf("create AWS config directory %q for locking: %w", lockDir, err)
 	}
 
 	lockPath := filepath.Join(lockDir, ".config.lock")
 
-	lockFile, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0o0600)
+	lockFile, err := os.OpenFile( // lint:allow_dynamic_filename
+		lockPath,
+		os.O_CREATE|os.O_RDWR,
+		0o0600, // lint:allow_raw_number
+	)
 	if err != nil {
 		return nil, fmt.Errorf("open AWS config lock file %q: %w", lockPath, err)
 	}
@@ -71,17 +71,17 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			// stale lock file can identify which process held it. Truncate first
 			// to clear any leftover PID from a previous holder.
 			if truncateErr := lockFile.Truncate(0); truncateErr != nil {
-				_ = lockFile.Close()
+				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("truncate AWS config lock file %q: %w", lockPath, truncateErr)
 			}
 
 			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil {
-				_ = lockFile.Close()
+				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("seek AWS config lock file %q: %w", lockPath, seekErr)
 			}
 
 			if _, writeErr := fmt.Fprintf(lockFile, "%d\n", os.Getpid()); writeErr != nil {
-				_ = lockFile.Close()
+				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("write AWS config lock file %q: %w", lockPath, writeErr)
 			}
 
@@ -91,13 +91,13 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 		// The lock is held by another process. Only retry on transient "busy"
 		// errors; anything else (e.g., permission denied) is a hard failure.
 		if !isLockBusy(err) {
-			_ = lockFile.Close()
+			_ = lockFile.Close() // lint:allow_unhandled
 			return nil, fmt.Errorf("acquire AWS config lock %q: %w", lockPath, err)
 		}
 
 		select {
 		case <-lockCtx.Done():
-			_ = lockFile.Close()
+			_ = lockFile.Close() // lint:allow_unhandled
 			return nil, fmt.Errorf("timed out waiting for AWS config lock %q: %w", lockPath, lockCtx.Err())
 		case <-time.After(awsConfigLockRetryInterval):
 		}

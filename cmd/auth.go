@@ -51,7 +51,7 @@ var (
 		aws-sso-manager auth <sso-profile-name>
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var profileName string
+			profileName := ""
 
 			requestCtx := cmd.Context()
 			if requestCtx == nil {
@@ -77,7 +77,7 @@ var (
 	}
 )
 
-func init() {
+func init() { // lint:allow_init
 	rootCmd.AddCommand(authCmd)
 
 	authCmd.Flags().BoolVarP(
@@ -93,13 +93,13 @@ func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName strin
 	logger.InfoContext(requestCtx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 	// Generate a SSO session profile from the profile name.
-	sessionProfile, err := getSsoSession(profileName)
+	sessionProfile, err := getSsoSession(requestCtx, profileName)
 	if err != nil {
 		return fmt.Errorf("could not get SSO session: %w", err)
 	}
 
 	// Where does the cache file live?
-	cacheFilePath, err := getCacheFilePath(&sessionProfile)
+	cacheFilePath, err := getCacheFilePath(requestCtx, &sessionProfile)
 	if err != nil {
 		return fmt.Errorf("could not get cache file path: %w", err)
 	}
@@ -109,11 +109,16 @@ func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName strin
 	// Can we read the cache?
 	cacheResults, err := cacheData.read(cacheFilePath)
 	if err != nil {
-		if err := authenticateAndCacheSSOSession(requestCtx, profileName, sessionProfile, cacheFilePath); err != nil {
-			return fmt.Errorf("could not authenticate SSO session: %w", err)
+		if authErr := authenticateAndCacheSSOSession(
+			requestCtx,
+			profileName,
+			sessionProfile,
+			cacheFilePath,
+		); authErr != nil {
+			return fmt.Errorf("could not authenticate SSO session: %w", authErr)
 		}
 	} else {
-		reportValidCachedSSOSession(profileName, cacheFilePath, cacheResults)
+		reportValidCachedSSOSession(requestCtx, profileName, cacheFilePath, cacheResults)
 	}
 
 	_, err = cacheData.read(cacheFilePath)
@@ -164,7 +169,7 @@ func authenticateAndCacheSSOSession(
 		Border(lipgloss.RoundedBorder()).
 		Padding(1, 2, 0, 2) // lint:allow_raw_number
 
-	lipgloss.Println(
+	_, _ = lipgloss.Println( // lint:allow_unhandled
 		codeWrapper.Render(
 			lipgloss.Sprintf(
 				"Ensure the code matches: %s\n",
@@ -180,13 +185,12 @@ func authenticateAndCacheSSOSession(
 		fmt.Println("Confirm: " + authURL + "\n")
 	}
 
-	cacheData, err := waitForCustomerToAuthenticate(customerAuthInput{
-		ctx:            requestCtx,
+	cacheData, err := waitForCustomerToAuthenticate(requestCtx, &customerAuthInput{
 		sdkConfig:      &sdkConfig,
 		registerClient: registerClient,
 		deviceAuth:     deviceAuth,
 		sessionProfile: sessionProfile,
-		loginTimeout:   60 * time.Second,
+		loginTimeout:   60 * time.Second, // lint:allow_raw_number
 	})
 	if err != nil {
 		return fmt.Errorf("could not complete authentication: %w", err)
@@ -202,8 +206,7 @@ func authenticateAndCacheSSOSession(
 	return nil
 }
 
-func reportValidCachedSSOSession(profileName, cacheFilePath string, cacheResults *cacheFileData) {
-	ctx := context.Background()
+func reportValidCachedSSOSession(ctx context.Context, profileName, cacheFilePath string, cacheResults *cacheFileData) {
 	logger.InfoContext(ctx, "Cache file is valid; no need to authenticate", logKeyFile, cacheFilePath)
 
 	remaining := time.Until(cacheResults.ExpiresAt)
@@ -220,11 +223,7 @@ func getOrRefreshAuthenticatedCache(
 	profileName string,
 	sessionProfile ssoProfile,
 ) (*cacheFileData, error) {
-	if requestCtx == nil {
-		requestCtx = context.Background()
-	}
-
-	cacheFilePath, err := getCacheFilePath(&sessionProfile)
+	cacheFilePath, err := getCacheFilePath(requestCtx, &sessionProfile)
 	if err != nil {
 		return nil, fmt.Errorf("could not get cache file path: %w", err)
 	}
@@ -245,8 +244,8 @@ func getOrRefreshAuthenticatedCache(
 		err,
 	)
 
-	if err := ensureAuthenticatedSSOSession(requestCtx, profileName); err != nil {
-		return nil, fmt.Errorf("could not ensure authenticated SSO session: %w", err)
+	if authErr := ensureAuthenticatedSSOSession(requestCtx, profileName); authErr != nil {
+		return nil, fmt.Errorf("could not ensure authenticated SSO session: %w", authErr)
 	}
 
 	cache, err = cacheData.read(cacheFilePath)

@@ -53,7 +53,7 @@ var (
 		If you do not specify the profile, account ID, or role, you will be
 		interactively prompted to select them from your AWS access.
 		`),
-		Args: cobra.RangeArgs(0, 2),
+		Args: cobra.RangeArgs(0, 2), // lint:allow_raw_number
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Prompt for both the AWS console URL and the SSO profile.
 		aws-sso-manager console
@@ -67,16 +67,11 @@ var (
 		aws-sso-manager console --clipboard=false
 		`)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				consoleURL  string
-				profileName string
-				startHost   string
-				err         error
-				accounts    listAccounts
-
-				accountID = fAccountID
-				roleName  = fRole
-			)
+			consoleURL := ""
+			profileName := ""
+			accounts := listAccounts{}
+			accountID := fAccountID
+			roleName := fRole
 
 			ctx := cmd.Context()
 			if ctx == nil {
@@ -92,14 +87,14 @@ var (
 				default:
 					profileName = args[0]
 				}
-			} else if len(args) == 2 {
+			} else if len(args) == 2 { // lint:allow_raw_number
 				profileName = args[0]
 				consoleURL = args[1]
 			} else {
 				profileName = asmConfig.GetString("profile-name")
 			}
 
-			var groups []*huh.Group
+			groups := []*huh.Group{}
 
 			if consoleURL == "" {
 				logger.DebugContext(ctx, "AWS Console URL is undefined. Collect it from user.")
@@ -137,13 +132,13 @@ var (
 			logger.InfoContext(ctx, "Retrieving SSO session profile", logKeyProfile, profileName)
 
 			// profileName should be defined at this point.
-			startHost, err = getStartURL(profileName)
+			startHost, err := getStartURL(profileName)
 			if err != nil {
 				return fmt.Errorf("failed to get start URL; re-init to create profile: %w", err)
 			}
 
 			// Generate a SSO session profile from the profile name.
-			sessionProfile, err := getSsoSession(profileName)
+			sessionProfile, err := getSsoSession(ctx, profileName)
 			if err != nil {
 				return fmt.Errorf("could not get SSO session: %w", err)
 			}
@@ -177,7 +172,7 @@ var (
 				Type(spinner.Dots).
 				Action(func(accounts *listAccounts) func() {
 					return func() {
-						accts, err := listAWSAccounts(listAWSAccountsInput{
+						accts, fetchErr := listAWSAccounts(&listAWSAccountsInput{
 							Cmd:           cmd,
 							SDKConfig:     &sdkConfig,
 							Cache:         cache,
@@ -186,7 +181,7 @@ var (
 							AccountFilter: fAccounts,
 							RoleFilter:    fRoles,
 						})
-						cobra.CheckErr(err)
+						cobra.CheckErr(fetchErr)
 
 						*accounts = accts
 					}
@@ -205,7 +200,7 @@ var (
 						Value(&accountID).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							var accts []huh.Option[string]
+							accts := []huh.Option[string]{}
 
 							for _, acct := range accounts.Accounts {
 								accts = append(accts, huh.NewOption(
@@ -232,7 +227,7 @@ var (
 						Value(&roleName).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							var roles []huh.Option[string]
+							roles := []huh.Option[string]{}
 
 							roleList := getRolesForAccount(accounts.Accounts, accountID)
 
@@ -289,7 +284,7 @@ var (
 	}
 )
 
-func init() {
+func init() { // lint:allow_init
 	consoleCmd.Flags().StringVarP(
 		&fAccountID,
 		"account-id",
@@ -331,10 +326,10 @@ func init() {
 func minMaxRows[T any](rows []T) int {
 	return int(
 		math.Min(
-			10,
+			10, // lint:allow_raw_number
 
 			math.Max(
-				5,
+				5, // lint:allow_raw_number
 				float64(
 					len(rows),
 				),
@@ -346,9 +341,9 @@ func minMaxRows[T any](rows []T) int {
 // getRolesForAccount returns the roles for a specific account ID. This is used
 // by the console command's interactive prompt to show only the roles available
 // for the selected account.
-func getRolesForAccount(accounts []listAccount, accountId string) []listRole {
+func getRolesForAccount(accounts []listAccount, accountID string) []listRole {
 	for _, acct := range accounts {
-		if acct.ID == accountId {
+		if acct.ID == accountID {
 			return acct.Roles
 		}
 	}
@@ -374,7 +369,7 @@ func getStartURL(profileName string) (string, error) {
 		return u.Hostname(), nil
 	}
 
-	return "", fmt.Errorf("could not discover 'sso_start_url' for profile '%s'", profileName)
+	return "", fmt.Errorf("%w: %q", ErrStartURLNotFound, profileName)
 }
 
 // stripAccountFromURL removes the account-specific subdomain from an AWS

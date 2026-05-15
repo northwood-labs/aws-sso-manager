@@ -80,7 +80,7 @@ func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 // overlaps, orphaned end markers, and unclosed start markers. A single pass is
 // important because the config file can be large and we want the validate
 // command to be fast.
-func inspectManagedMarkers() (*managedMarkerReport, error) {
+func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_complexity
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("opening AWS config file: %w", err)
@@ -121,7 +121,8 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 
 			if activeProfile != "" {
 				issue := fmt.Sprintf(
-					"overlapping managed block markers at line %d: found start marker for profile %q while profile %q block is still open",
+					"overlapping managed block markers at line %d: "+
+						"found start marker for profile %q while profile %q block is still open",
 					lineNo,
 					profile,
 					activeProfile,
@@ -155,7 +156,8 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 
 			if activeProfile != profile {
 				issue := fmt.Sprintf(
-					"overlapping managed block markers at line %d: found end marker for profile %q while profile %q block is still open",
+					"overlapping managed block markers at line %d: "+
+						"found end marker for profile %q while profile %q block is still open",
 					lineNo,
 					profile,
 					activeProfile,
@@ -220,17 +222,15 @@ func inspectManagedMarkers() (*managedMarkerReport, error) {
 // allowing organizations to enforce consistent naming conventions (e.g.,
 // "prod-admin" instead of "My Production Account-AdministratorAccess").
 // When no pattern is configured, it falls back to a safe default.
-func getProfileName(profileName, account, role string) string {
+func getProfileName(profileName, account, role string) string { // lint:allow_complexity
 	var (
 		order     = asmConfig.GetStringSlice(profileName + ".rename.pattern.order")
 		delimiter = asmConfig.GetString(profileName + ".rename.pattern.delimiter")
 		prefix    = asmConfig.GetString(profileName + ".rename.prefix")
 		suffix    = asmConfig.GetString(profileName + ".rename.suffix")
 
-		// accountGlobal = asvConfig.GetStringMapString(profileName + ".rename.accounts.global_regex_replace")
 		accountSubstr = asmConfig.GetStringMapString(profileName + ".rename.accounts.substr_match_replace")
-		// roleGlobal    = asvConfig.GetStringMapString(profileName + ".rename.roles.global_regex_replace")
-		roleSubstr = asmConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
+		roleSubstr    = asmConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
 	)
 
 	if len(order) == 0 {
@@ -378,7 +378,7 @@ func validateMarkers(profileName string) error {
 
 	var errs []error
 	for _, issue := range report.issues[profileName] {
-		errs = append(errs, errors.New(issue))
+		errs = append(errs, fmt.Errorf("%w: %s", ErrManagedMarkerIssue, issue))
 	}
 
 	if len(errs) > 0 {
@@ -400,7 +400,7 @@ func validateManagedMarkers() error {
 
 	for _, profile := range report.profiles {
 		for _, issue := range report.issues[profile] {
-			errs = append(errs, errors.New(issue))
+			errs = append(errs, fmt.Errorf("%w: %s", ErrManagedMarkerIssue, issue))
 		}
 	}
 
@@ -433,8 +433,8 @@ func getManagedSection(profileName string) (string, error) {
 	}
 
 	defer func() {
-		_ = tmp.Close()
-		_ = f.Close()
+		_ = tmp.Close() // lint:allow_unhandled
+		_ = f.Close()   // lint:allow_unhandled
 	}()
 
 	scanner := bufio.NewScanner(f)
@@ -449,17 +449,19 @@ func getManagedSection(profileName string) (string, error) {
 			doCopy = true
 
 			continue
-		} else if strings.Contains(line, "aws-sso-manager: end "+profileName) {
+		}
+
+		if strings.Contains(line, "aws-sso-manager: end "+profileName) {
 			logger.DebugContext(context.Background(), "<| "+line)
 			break
-		} else {
-			logger.DebugContext(context.Background(), " | "+line)
+		}
 
-			if doCopy {
-				_, err = tmp.WriteString(line + "\n")
-				if err != nil {
-					return "", fmt.Errorf("writing to temp file: %w", err)
-				}
+		logger.DebugContext(context.Background(), " | "+line)
+
+		if doCopy {
+			_, err = tmp.WriteString(line + "\n")
+			if err != nil {
+				return "", fmt.Errorf("writing to temp file: %w", err)
 			}
 		}
 	}
@@ -477,7 +479,7 @@ func getManagedSection(profileName string) (string, error) {
 // directory as the config so that the final os.Rename is an atomic
 // same-filesystem operation — this prevents a half-written config if the
 // process is interrupted.
-func setManagedSection(tmpFile, profileName string) (string, error) {
+func setManagedSection(tmpFile, profileName string) (string, error) { // lint:allow_complexity
 	// Create the backup in the same directory as the config file so that
 	// os.Rename can atomically swap it in without crossing filesystem
 	// boundaries.
@@ -486,7 +488,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 		return "", fmt.Errorf("creating backup temp file: %w", err)
 	}
 
-	replacement, err := os.ReadFile(tmpFile)
+	replacement, err := os.ReadFile(tmpFile) // lint:allow_dynamic_filename
 	if err != nil {
 		return "", fmt.Errorf("reading replacement file: %w", err)
 	}
@@ -497,8 +499,8 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 	}
 
 	defer func() {
-		_ = conf.Close()
-		_ = backup.Close()
+		_ = conf.Close()   // lint:allow_unhandled
+		_ = backup.Close() // lint:allow_unhandled
 	}()
 
 	confScanner := bufio.NewScanner(conf)
@@ -520,7 +522,9 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			injectedInBlock = false
 
 			continue
-		} else if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
+		}
+
+		if strings.Contains(confLine, "aws-sso-manager: end "+profileName) {
 			logger.DebugContext(context.Background(), "<| "+confLine)
 
 			_, err = backup.WriteString(confLine + "\n")
@@ -532,22 +536,22 @@ func setManagedSection(tmpFile, profileName string) (string, error) {
 			injectedInBlock = false
 
 			continue
+		}
+
+		logger.DebugContext(context.Background(), " | "+confLine)
+
+		if inManagedBlock {
+			if !injectedInBlock {
+				if _, err = backup.Write(replacement); err != nil {
+					return "", fmt.Errorf("writing replacement to backup: %w", err)
+				}
+
+				injectedInBlock = true
+			}
 		} else {
-			logger.DebugContext(context.Background(), " | "+confLine)
-
-			if inManagedBlock {
-				if !injectedInBlock {
-					if _, err = backup.Write(replacement); err != nil {
-						return "", fmt.Errorf("writing replacement to backup: %w", err)
-					}
-
-					injectedInBlock = true
-				}
-			} else {
-				_, err = backup.WriteString(confLine + "\n")
-				if err != nil {
-					return "", fmt.Errorf("writing line to backup: %w", err)
-				}
+			_, err = backup.WriteString(confLine + "\n")
+			if err != nil {
+				return "", fmt.Errorf("writing line to backup: %w", err)
 			}
 		}
 	}
@@ -584,7 +588,7 @@ func getAllManagedSections() ([]string, error) {
 	}
 
 	defer func() {
-		_ = conf.Close()
+		_ = conf.Close() // lint:allow_unhandled
 	}()
 
 	confScanner := bufio.NewScanner(conf)

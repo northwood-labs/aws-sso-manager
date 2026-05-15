@@ -46,7 +46,7 @@ func TestListAWSAccountsCacheFilePathUsesPackageDefaultDir(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), ".config", "aws-sso-manager", "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
@@ -71,7 +71,7 @@ func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:        slog.New(log.New(io.Discard)),
 		ProfileName:   "nwl2",
 		AccountFilter: "sandbox",
@@ -99,8 +99,8 @@ func TestListAWSAccountsUsesCacheWhenPresent(t *testing.T) {
 
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
 
-	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
-		return listAccounts{}, errors.New("fetcher should not be called on a cache hit")
+	listAWSAccountsFetcher = func(_ *listAWSAccountsInput) (listAccounts, error) {
+		return listAccounts{}, errors.New("fetcher should not be called on a cache hit") // lint:allow_errorf
 	}
 
 	got, err := listAWSAccounts(input)
@@ -125,7 +125,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 
 	t.Cleanup(func() { cacheDuration = oldCacheDuration })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Cmd:         &cobra.Command{},
 		SDKConfig:   &aws.Config{},
 		Cache:       &cacheFileData{AccessToken: "token"},
@@ -146,12 +146,12 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 		t.Fatalf("marshal expired cache: %v", err)
 	}
 
-	if err := writeListAWSAccountsCache(cachePath, listAccounts{}); err != nil {
-		t.Fatalf("seed cache file: %v", err)
+	if writeErr := writeListAWSAccountsCache(cachePath, listAccounts{}); writeErr != nil {
+		t.Fatalf("seed cache file: %v", writeErr)
 	}
 
-	if err := os.WriteFile(cachePath, data, 0o0600); err != nil {
-		t.Fatalf("write expired cache: %v", err)
+	if writeErr := os.WriteFile(cachePath, data, 0o0600); writeErr != nil {
+		t.Fatalf("write expired cache: %v", writeErr)
 	}
 
 	expected := listAccounts{
@@ -172,7 +172,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
 
-	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
+	listAWSAccountsFetcher = func(_ *listAWSAccountsInput) (listAccounts, error) {
 		fetchCount++
 		return expected, nil
 	}
@@ -210,7 +210,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Cmd:         &cobra.Command{},
 		SDKConfig:   &aws.Config{},
 		Cache:       &cacheFileData{AccessToken: "token"},
@@ -235,7 +235,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
 
-	listAWSAccountsFetcher = func(input listAWSAccountsInput) (listAccounts, error) {
+	listAWSAccountsFetcher = func(_ *listAWSAccountsInput) (listAccounts, error) {
 		return expected, nil
 	}
 
@@ -298,7 +298,7 @@ func TestLoadOrBuildListAWSAccountsLookupIndexBuildsFromAccountsCache(t *testing
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
@@ -348,7 +348,7 @@ func TestDeleteListAWSAccountsCacheRemovesExistingFile(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
@@ -390,7 +390,7 @@ func TestDeleteListAWSAccountsCacheIgnoresMissingFile(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
@@ -407,7 +407,7 @@ func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 	awsManagerCacheDir = filepath.Join(t.TempDir(), "cache")
 	t.Cleanup(func() { awsManagerCacheDir = oldCacheDir })
 
-	input := listAWSAccountsInput{
+	input := &listAWSAccountsInput{
 		Logger:      slog.New(log.New(io.Discard)),
 		ProfileName: "nwl2",
 	}
@@ -459,7 +459,7 @@ func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
 
-	listAWSAccountsFetcher = func(_ listAWSAccountsInput) (listAccounts, error) {
+	listAWSAccountsFetcher = func(_ *listAWSAccountsInput) (listAccounts, error) {
 		fetcherCalled = true
 		return newAccounts, nil
 	}
@@ -470,12 +470,12 @@ func TestNoCacheFetchThenDeleteOrdering(t *testing.T) {
 		t.Fatalf("listAWSAccountsFetcher: %v", err)
 	}
 
-	if err := deleteListAWSAccountsCache(input); err != nil {
-		t.Fatalf("deleteListAWSAccountsCache: %v", err)
+	if delErr := deleteListAWSAccountsCache(input); delErr != nil {
+		t.Fatalf("deleteListAWSAccountsCache: %v", delErr)
 	}
 
-	if err := writeListAWSAccountsCache(cachePath, freshData); err != nil {
-		t.Fatalf("writeListAWSAccountsCache (new data): %v", err)
+	if writeErr := writeListAWSAccountsCache(cachePath, freshData); writeErr != nil {
+		t.Fatalf("writeListAWSAccountsCache (new data): %v", writeErr)
 	}
 
 	// 5. Verify the fetcher was called
@@ -544,7 +544,7 @@ func TestPropertyAccountAndRoleSorting(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 4: Account and Role Filtering
-func TestPropertyAccountAndRoleFiltering(t *testing.T) {
+func TestPropertyAccountAndRoleFiltering(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 3.13, 3.14**
 	rapid.Check(t, func(t *rapid.T) {
 		original := genListAccounts(1, 10).Draw(t, "accounts")
@@ -610,7 +610,7 @@ func TestPropertyAccountAndRoleFiltering(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 5: Lookup Index Round Trip
-func TestPropertyLookupIndexRoundTrip(t *testing.T) {
+func TestPropertyLookupIndexRoundTrip(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 3.19, 7.1, 10.11**
 	rapid.Check(t, func(t *rapid.T) {
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")
@@ -689,7 +689,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 		accountFilter := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "accountFilter")
 		roleFilter := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "roleFilter")
 
-		input := listAWSAccountsInput{
+		input := &listAWSAccountsInput{
 			Logger:        slog.New(log.New(io.Discard)),
 			ProfileName:   profileName,
 			AccountFilter: accountFilter,
@@ -706,7 +706,7 @@ func TestPropertyCacheFilePathDeterminism(t *testing.T) {
 
 		// Different inputs produce different paths (with high probability)
 		differentProfile := profileName + "x"
-		differentInput := listAWSAccountsInput{
+		differentInput := &listAWSAccountsInput{
 			Logger:        slog.New(log.New(io.Discard)),
 			ProfileName:   differentProfile,
 			AccountFilter: accountFilter,
@@ -739,7 +739,7 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 
 		accounts := genListAccounts(1, 3).Draw(t, "accounts")
 
-		input := listAWSAccountsInput{
+		input := &listAWSAccountsInput{
 			Logger:      slog.New(log.New(io.Discard)),
 			ProfileName: rapid.StringMatching(`[a-z]{3,8}`).Draw(t, "profile"),
 		}
@@ -750,10 +750,19 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 			CachedAt: time.Now().Add(-duration / 2).UTC(),
 			Accounts: accounts,
 		}
-		data, _ := json.Marshal(notExpired)
 
-		os.MkdirAll(filepath.Dir(cachePath), 0o755)
-		os.WriteFile(cachePath, data, 0o600)
+		data, err := json.Marshal(notExpired)
+		if err != nil {
+			t.Fatalf("json.Marshal: %v", err)
+		}
+
+		if mkdirErr := os.MkdirAll(filepath.Dir(cachePath), 0o755); mkdirErr != nil {
+			t.Fatalf("os.MkdirAll: %v", mkdirErr)
+		}
+
+		if writeErr := os.WriteFile(cachePath, data, 0o600); writeErr != nil {
+			t.Fatalf("os.WriteFile: %v", writeErr)
+		}
 
 		got, ok, err := readListAWSAccountsCache(cachePath)
 		if err != nil {
@@ -774,8 +783,14 @@ func TestPropertyCacheExpiryDetection(t *testing.T) {
 			Accounts: accounts,
 		}
 
-		data, _ = json.Marshal(expired)
-		os.WriteFile(cachePath, data, 0o600)
+		data, err = json.Marshal(expired)
+		if err != nil {
+			t.Fatalf("json.Marshal: %v", err)
+		}
+
+		if writeErr := os.WriteFile(cachePath, data, 0o600); writeErr != nil {
+			t.Fatalf("os.WriteFile: %v", writeErr)
+		}
 
 		_, ok, err = readListAWSAccountsCache(cachePath)
 		if err != nil {

@@ -82,7 +82,7 @@ func TestRenderMarkdownTable(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 3: Output Formats Contain All Data
-func TestPropertyOutputFormatsContainAllData(t *testing.T) {
+func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 3.9, 3.10, 3.11**
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")

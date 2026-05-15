@@ -93,7 +93,7 @@ func TestResolveLookupAccountAmbiguous(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 15: Lookup Account Resolution Correctness
-func TestPropertyLookupAccountResolution(t *testing.T) {
+func TestPropertyLookupAccountResolution(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(t *rapid.T) {
 		index := genLookupIndex().Draw(t, "index")
 
@@ -163,7 +163,7 @@ func TestPropertyLookupAccountResolution(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 16: Lookup Role Substring Search
-func TestPropertyLookupRoleSubstringSearch(t *testing.T) {
+func TestPropertyLookupRoleSubstringSearch(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(t *rapid.T) {
 		// 1. Generate random accounts with roles.
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")
