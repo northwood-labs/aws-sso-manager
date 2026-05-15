@@ -102,7 +102,7 @@ The architecture follows a flat command-based structure within a single `cmd` pa
 * **Output format enforcement**: Exactly one of `--json`, `--csv`, `--markdown`, or default TUI table.
 * **Filtering**: `--accounts` and `--roles` flags for case-insensitive substring filtering.
 * **`--no-cache`**: Per Req 3.18, fetches fresh data first, then deletes old cache (behavior change from current code which deletes first).
-* **Rendering**: TUI table via `lipgloss/table` with rounded borders; CSV with quoted fields; GFM markdown table.
+* **Rendering**: TUI table via `lipgloss/table` with rounded borders; CSV with quoted fields; GFM Markdown table.
 * **Data flow**: Auth → spinner → `listAWSAccounts` (cache-aware) → format → output.
 
 ### Update command (`cmd/update.go`)
@@ -295,7 +295,7 @@ _Validates: Requirements 3.7._
 
 ### Property 3: output formats contain all data
 
-_For any_ non-empty `listAccounts` and profile name, the CSV output from `renderCSVTable` should contain every account ID, account name, role name, and generated profile name present in the input data. Similarly, the markdown output from `renderMarkdownTable` should contain the same data. The JSON output from `json.Marshal` should round-trip back to an equivalent `listAccounts` struct.
+_For any_ non-empty `listAccounts` and profile name, the CSV output from `renderCSVTable` should contain every account ID, account name, role name, and generated profile name present in the input data. Similarly, the Markdown output from `renderMarkdownTable` should contain the same data. The JSON output from `json.Marshal` should round-trip back to an equivalent `listAccounts` struct.
 
 _Validates: Requirements 3.9, 3.10, 3.11._
 

@@ -74,7 +74,7 @@ This plan covers four areas: (1) intentional behavior changes from the requireme
     * **Validates: Requirements 3.7.**
   * [x] 7.3 Write property test for output formats containing all data (Property 3)
     * **Property 3: Output Formats Contain All Data**
-    * Generate random `listAccounts` and profile name; render CSV via `renderCSVTable`, markdown via `renderMarkdownTable`, and JSON via `json.Marshal`; verify every account ID, name, role name, and profile name appears in each output
+    * Generate random `listAccounts` and profile name; render CSV via `renderCSVTable`, Markdown via `renderMarkdownTable`, and JSON via `json.Marshal`; verify every account ID, name, role name, and profile name appears in each output
     * Add in `cmd/list_test.go`
     * **Validates: Requirements 3.9, 3.10, 3.11.**
   * [x] 7.4 Write property test for account and role filtering (Property 4)

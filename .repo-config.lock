@@ -32,14 +32,14 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-14T02:30:45Z'
+last_sync_time = '2026-05-15T22:43:19Z'
 source_hash = ''
 dest_hash = 'sha256:5fa520cedd6483b2cfd55dd91bcaa4803560d97f57010b0b6c39f9b30e80f555'
 
 [files.'.rumdl.toml']
-last_sync_time = '2026-05-13T15:03:23Z'
+last_sync_time = '2026-05-15T22:43:19Z'
 source_hash = ''
-dest_hash = 'sha256:51c5f857a2110a5c021e1a19069c0c51f2fb353f51a858e9d210b2aea4fe4e01'
+dest_hash = 'sha256:f324cf957209522a4ef08976d24ae70edc47f246da3b47e192ea24607975aec3'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-04-30T04:56:36Z'

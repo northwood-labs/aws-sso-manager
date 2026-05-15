@@ -5,12 +5,12 @@ fileMatchPattern: "**/*.md"
 
 # Markdown Style Guide
 
-This project enforces markdown conventions via `.rumdl.toml` and `.editorconfig`. Follow these rules when writing or editing any `.md` file.
+This project enforces Markdown conventions via `.rumdl.toml` and `.editorconfig`. Follow these rules when writing or editing any `.md` file.
 
 ## Indentation and whitespace
 
 <!-- @config-manager:start whitespace -->
-* Use 2-space indentation for markdown files (per `.editorconfig`).
+* Use 2-space indentation for Markdown files (per `.editorconfig`).
 * Use LF line endings, no trailing whitespace.
 * End every file with a single trailing newline.
 * Maximum one consecutive blank line (no double blanks).
