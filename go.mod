@@ -1,6 +1,6 @@
 module github.com/northwood-labs/aws-sso-manager
 
-go 1.26.2
+go 1.26.3
 
 replace github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.9.4
 
@@ -19,7 +19,7 @@ require (
 	github.com/invopop/jsonschema v0.14.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/northwood-labs/aws-config-parser v1.8.4
-	github.com/northwood-labs/cli-helpers v0.0.0-20260514231409-ae3a28638f52
+	github.com/northwood-labs/cli-helpers v0.0.0-20260515231418-3b8a0503004d
 	github.com/pelletier/go-toml/v2 v2.3.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/cobra v1.10.2

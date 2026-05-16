@@ -168,8 +168,8 @@ github.com/muesli/termenv v0.16.0 h1:S5AlUN9dENB57rsbnkPyfdGuWIlkmzJjbFf0Tf5FWUc
 github.com/muesli/termenv v0.16.0/go.mod h1:ZRfOIKPFDYQoDFF4Olj7/QJbW60Ol/kL1pU3VfY/Cnk=
 github.com/northwood-labs/aws-config-parser v1.8.4 h1:TUCKoEjpyDFlGiOBM0lmM6NenjtoXg3WgzYoH503Fek=
 github.com/northwood-labs/aws-config-parser v1.8.4/go.mod h1:CLIYC0JmElW3kT4WS67uY8DZBqf/z8aNiOeDBeiI+2A=
-github.com/northwood-labs/cli-helpers v0.0.0-20260514231409-ae3a28638f52 h1:Y75GOb173dmG/uerQfgPhgO36CBHINFUHVeLpGMrIkM=
-github.com/northwood-labs/cli-helpers v0.0.0-20260514231409-ae3a28638f52/go.mod h1:RxzlMkYAdUdnLWQxkbteV9ijSEmzeOCiPNG19FDq4/s=
+github.com/northwood-labs/cli-helpers v0.0.0-20260515231418-3b8a0503004d h1:O+DgtYhAz6XB7iCOt74ZvppOaGRBC3r8hhDKILk4dCE=
+github.com/northwood-labs/cli-helpers v0.0.0-20260515231418-3b8a0503004d/go.mod h1:RxzlMkYAdUdnLWQxkbteV9ijSEmzeOCiPNG19FDq4/s=
 github.com/pb33f/ordered-map/v2 v2.3.1 h1:5319HDO0aw4DA4gzi+zv4FXU9UlSs3xGZ40wcP1nBjY=
 github.com/pb33f/ordered-map/v2 v2.3.1/go.mod h1:qxFQgd0PkVUtOMCkTapqotNgzRhMPL7VvaHKbd1HnmQ=
 github.com/pelletier/go-toml/v2 v2.3.1 h1:MYEvvGnQjeNkRF1qUuGolNtNExTDwct51yp7olPtrEc=

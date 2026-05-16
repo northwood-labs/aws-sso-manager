@@ -1,6 +1,6 @@
 module github.com/northwood-labs/aws-sso-manager/tools/configschema
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/invopop/jsonschema v0.14.0
@@ -73,7 +73,7 @@ require (
 	github.com/muesli/roff v0.1.0 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/northwood-labs/aws-config-parser v1.8.4 // indirect
-	github.com/northwood-labs/cli-helpers v0.0.0-20260514231409-ae3a28638f52 // indirect
+	github.com/northwood-labs/cli-helpers v0.0.0-20260515231418-3b8a0503004d // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
