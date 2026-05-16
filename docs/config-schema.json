@@ -1,120 +1,120 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
     "AccountRenameConfig": {
+      "additionalProperties": false,
       "properties": {
         "global_regex_replace": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Regex patterns applied to every account name. Key is the regex and value is the replacement."
+          "description": "Regex patterns applied to every account name. Key is the regex and value is the replacement.",
+          "type": "object"
         },
         "substr_match_replace": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "If the account name contains the key the entire name is replaced with the value."
+          "description": "If the account name contains the key the entire name is replaced with the value.",
+          "type": "object"
         }
       },
-      "additionalProperties": false,
       "type": "object"
     },
     "PatternConfig": {
+      "additionalProperties": false,
       "properties": {
+        "delimiter": {
+          "default": "-",
+          "description": "Delimiter between tokens in the generated profile name.",
+          "type": "string"
+        },
         "order": {
+          "description": "Ordered list of tokens to include in the generated profile name.",
           "items": {
-            "type": "string",
             "enum": [
               "PREFIX",
               "ACCOUNT",
               "ROLE",
               "SUFFIX"
-            ]
+            ],
+            "type": "string"
           },
-          "type": "array",
-          "description": "Ordered list of tokens to include in the generated profile name."
-        },
-        "delimiter": {
-          "type": "string",
-          "description": "Delimiter between tokens in the generated profile name.",
-          "default": "-"
+          "type": "array"
         }
       },
-      "additionalProperties": false,
       "type": "object"
     },
     "RenameConfig": {
+      "additionalProperties": false,
       "properties": {
-        "prefix": {
-          "type": "string",
-          "description": "Standard prefix added to all generated profile names for this SSO profile."
-        },
-        "suffix": {
-          "type": "string",
-          "description": "Standard suffix added to all generated profile names for this SSO profile."
+        "accounts": {
+          "$ref": "#/$defs/AccountRenameConfig",
+          "description": "Rules for rewriting AWS account names in generated profile names."
         },
         "pattern": {
           "$ref": "#/$defs/PatternConfig",
           "description": "Controls how profile name tokens are ordered and delimited."
         },
-        "accounts": {
-          "$ref": "#/$defs/AccountRenameConfig",
-          "description": "Rules for rewriting AWS account names in generated profile names."
+        "prefix": {
+          "description": "Standard prefix added to all generated profile names for this SSO profile.",
+          "type": "string"
         },
         "roles": {
           "$ref": "#/$defs/RoleRenameConfig",
           "description": "Rules for rewriting AWS role names in generated profile names."
+        },
+        "suffix": {
+          "description": "Standard suffix added to all generated profile names for this SSO profile.",
+          "type": "string"
         }
       },
-      "additionalProperties": false,
       "type": "object"
     },
     "RoleRenameConfig": {
+      "additionalProperties": false,
       "properties": {
         "global_regex_replace": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Regex patterns applied to every role name. Key is the regex and value is the replacement."
+          "description": "Regex patterns applied to every role name. Key is the regex and value is the replacement.",
+          "type": "object"
         },
         "substr_match_replace": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "If the role name contains the key the entire name is replaced with the value."
+          "description": "If the role name contains the key the entire name is replaced with the value.",
+          "type": "object"
         }
       },
-      "additionalProperties": false,
       "type": "object"
     },
     "SSOProfileConfig": {
+      "additionalProperties": false,
       "properties": {
         "rename": {
           "$ref": "#/$defs/RenameConfig",
           "description": "Profile name generation and rewriting rules for this SSO profile."
         }
       },
-      "additionalProperties": false,
-      "type": "object",
       "required": [
         "rename"
-      ]
+      ],
+      "type": "object"
     }
   },
-  "properties": {
-    "profile-name": {
-      "type": "string",
-      "description": "Default SSO profile name used when no profile is explicitly provided to the CLI."
-    }
-  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": {
     "$ref": "#/$defs/SSOProfileConfig"
   },
-  "type": "object",
+  "description": "Schema for ~/.config/aws-sso-manager/config.toml",
+  "properties": {
+    "profile-name": {
+      "description": "Default SSO profile name used when no profile is explicitly provided to the CLI.",
+      "type": "string"
+    }
+  },
   "title": "aws-sso-manager configuration",
-  "description": "Schema for ~/.config/aws-sso-manager/config.toml"
+  "type": "object"
 }

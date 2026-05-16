@@ -1,7 +1,9 @@
 {
-  "version": 1,
-  "languages": [],
-  "include": [],
+  "cavemanMode": "lite",
+  "embeddingDim": 768,
+  "embeddingModel": "nomic-ai/nomic-embed-text-v1.5",
+  "enableArchitecture": true,
+  "enableEmbeddings": true,
   "exclude": [
     "node_modules/**",
     "dist/**",
@@ -10,21 +12,19 @@
     "*.min.js",
     ".kirograph/**"
   ],
-  "maxFileSize": 1048576,
   "extractDocstrings": true,
-  "trackCallSites": true,
-  "enableEmbeddings": true,
-  "embeddingModel": "nomic-ai/nomic-embed-text-v1.5",
-  "embeddingDim": 768,
-  "useVecIndex": false,
-  "semanticEngine": "cosine",
-  "typesenseDashboard": false,
-  "qdrantDashboard": false,
-  "minLogLevel": "warn",
   "frameworkHints": [
     "go"
   ],
   "fuzzyResolutionThreshold": 0.5,
-  "enableArchitecture": true,
-  "cavemanMode": "lite"
+  "include": [],
+  "languages": [],
+  "maxFileSize": 1048576,
+  "minLogLevel": "warn",
+  "qdrantDashboard": false,
+  "semanticEngine": "cosine",
+  "trackCallSites": true,
+  "typesenseDashboard": false,
+  "useVecIndex": false,
+  "version": 1
 }

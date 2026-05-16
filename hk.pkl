@@ -21,7 +21,12 @@ local linters = new Mapping<String, Step> {
     glob = "**/*"
     fix = "cd {{ workspace }} && editorconfig-checker"
   }
-  ["rumdl"] = Builtins.rumdl
+  ["validate-json"] {
+    glob = "**/*.json"
+    check = "failed=0; for f in {{ files }}; do jq . \"$f\" | diff -u \"$f\" - || failed=1; done; exit $failed"
+    fix = "for f in {{ files }}; do tmp=$(mktemp) && jq -S . \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"; done"
+  }
+  ["markdown-lint"] = Builtins.rumdl
   // @config-manager:end standard
 
   // @config-manager:start golang
@@ -89,11 +94,6 @@ local linters = new Mapping<String, Step> {
   // Glob: **/*.hcl
   // Fix: hclfmt -w {{ files }}
 
-  // jq ​
-  // Glob: **/*.json
-  // Check (diff): failed=0 for f in {{ files }}; do jq . "$f" | diff -u "$f" - || failed=1 done exit $failed
-  // Fix: for f in {{ files }}; do tmp=$(mktemp) && jq -S . "$f" > "$tmp" && mv "$tmp" "$f" done
-
   // lychee ​
   // Check: lychee --no-progress {{ files }}
 
@@ -142,6 +142,16 @@ local linters = new Mapping<String, Step> {
   // Glob: **/*.rs
   // Check: rustfmt --check --edition 2024 {{ files }}
   // Fix: rustfmt --edition 2024 {{ files }}
+
+  // 	@ $(HEADER) "=====> Checking license usage..."
+  // @ - trivy fs --config trivy-license.yaml --format json . 2>/dev/null > .licenses.cache.json
+  // @ cat .licenses.cache.json | jq -Mr '[.Results[] | select(.Packages) | .Packages[] | select(.Licenses)
+  // | .Licenses[]] | to_entries | group_by(.value)[] | {Name: .[0].value, Count: length} | "\(.Name): \(.Count)"'
+
+  // @ $(HEADER) "=====> Checking license headers..."
+  // @ echo "Missing/outdated:"
+  // @ - licensei header
+
 }
 
 hooks {
@@ -150,15 +160,7 @@ hooks {
     fix = true
     stash = "git"
     steps {
-      ["prelint"] {
-        check = "mise run prelint"
-        exclusive = true
-      }
       ...linters
-      ["postlint"] {
-        check = "mise run postlint"
-        exclusive = true
-      }
     }
   }
   ["pre-push"] {

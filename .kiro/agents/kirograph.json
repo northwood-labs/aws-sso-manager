@@ -1,12 +1,4 @@
 {
-  "name": "kirograph",
-  "description": "KiroGraph-aware agent — uses the semantic code graph for faster, smarter exploration.",
-  "resources": [
-    ".kiro/steering/kirograph.md"
-  ],
-  "tools": [
-    "*"
-  ],
   "allowedTools": [
     "@kirograph/kirograph_search",
     "@kirograph/kirograph_context",
@@ -27,14 +19,9 @@
     "@kirograph/kirograph_surprising",
     "@kirograph/kirograph_diff"
   ],
-  "includeMcpJson": true,
+  "description": "KiroGraph-aware agent — uses the semantic code graph for faster, smarter exploration.",
   "hooks": {
     "agentSpawn": [
-      {
-        "command": "kirograph sync-if-dirty --quiet 2>/dev/null || true"
-      }
-    ],
-    "userPromptSubmit": [
       {
         "command": "kirograph sync-if-dirty --quiet 2>/dev/null || true"
       }
@@ -43,6 +30,19 @@
       {
         "command": "kirograph sync-if-dirty --quiet 2>/dev/null || true"
       }
+    ],
+    "userPromptSubmit": [
+      {
+        "command": "kirograph sync-if-dirty --quiet 2>/dev/null || true"
+      }
     ]
-  }
+  },
+  "includeMcpJson": true,
+  "name": "kirograph",
+  "resources": [
+    ".kiro/steering/kirograph.md"
+  ],
+  "tools": [
+    "*"
+  ]
 }

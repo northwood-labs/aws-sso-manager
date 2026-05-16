@@ -1,9 +1,12 @@
 {
-  "name": "KiroGraph Mark Dirty on Save",
-  "version": "1.0.0",
   "description": "Mark the KiroGraph index as dirty when source files are saved. Sync is deferred to agent idle.",
+  "name": "KiroGraph Mark Dirty on Save",
+  "then": {
+    "command": "kirograph mark-dirty 2>/dev/null || true",
+    "type": "runCommand"
+  },
+  "version": "1.0.0",
   "when": {
-    "type": "fileEdited",
     "patterns": [
       "**/*.ts",
       "**/*.tsx",
@@ -19,10 +22,7 @@
       "**/*.swift",
       "**/*.kt",
       "**/*.dart"
-    ]
-  },
-  "then": {
-    "type": "runCommand",
-    "command": "kirograph mark-dirty 2>/dev/null || true"
+    ],
+    "type": "fileEdited"
   }
 }

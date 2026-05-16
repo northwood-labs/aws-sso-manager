@@ -1,9 +1,12 @@
 {
-  "name": "KiroGraph Sync on Delete",
-  "version": "1.0.0",
   "description": "Remove deleted files from the KiroGraph index immediately.",
+  "name": "KiroGraph Sync on Delete",
+  "then": {
+    "command": "kirograph sync-if-dirty 2>/dev/null || true",
+    "type": "runCommand"
+  },
+  "version": "1.0.0",
   "when": {
-    "type": "fileDeleted",
     "patterns": [
       "**/*.ts",
       "**/*.tsx",
@@ -19,10 +22,7 @@
       "**/*.swift",
       "**/*.kt",
       "**/*.dart"
-    ]
-  },
-  "then": {
-    "type": "runCommand",
-    "command": "kirograph sync-if-dirty 2>/dev/null || true"
+    ],
+    "type": "fileDeleted"
   }
 }

@@ -1,9 +1,12 @@
 {
-  "name": "KiroGraph Mark Dirty on Create",
-  "version": "1.0.0",
   "description": "Mark the KiroGraph index as dirty when source files are created.",
+  "name": "KiroGraph Mark Dirty on Create",
+  "then": {
+    "command": "kirograph mark-dirty 2>/dev/null || true",
+    "type": "runCommand"
+  },
+  "version": "1.0.0",
   "when": {
-    "type": "fileCreated",
     "patterns": [
       "**/*.ts",
       "**/*.tsx",
@@ -19,10 +22,7 @@
       "**/*.swift",
       "**/*.kt",
       "**/*.dart"
-    ]
-  },
-  "then": {
-    "type": "runCommand",
-    "command": "kirograph mark-dirty 2>/dev/null || true"
+    ],
+    "type": "fileCreated"
   }
 }
