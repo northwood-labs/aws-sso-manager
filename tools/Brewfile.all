@@ -6,8 +6,8 @@
 # https://www.gnu.org/software/bash/
 brew "bash"
 
-# https://salsa.debian.org/debian/bash-completion
-brew "bash-completion"
+# https://github.com/scop/bash-completion
+brew "bash-completion@2"
 
 # https://www.gnu.org/software/coreutils/
 brew "coreutils"

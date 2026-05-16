@@ -31,8 +31,7 @@
 #-------------------------------------------------------------------------------
 # FILES WITH HOOKS
 
-# Go tools
-# https://go.dev/doc/modules/managing-dependencies#tools
+# Brewfile tools
 [[files]]
   stub = 'configs/stubs/tools/Brewfile.golang'
   source = 'configs/templates/tools/Brewfile.golang'

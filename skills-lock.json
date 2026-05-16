@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "skills": {
     "aws-iam": {
-      "source": "aws/agent-toolkit-for-aws",
-      "sourceType": "github",
+      "computedHash": "e6b01570731dc3a67e26ecaaa5ce0d1d7b54f39f5e041a057f23f3b22c57cd9c",
       "skillPath": "skills/core-skills/aws-iam/SKILL.md",
-      "computedHash": "e6b01570731dc3a67e26ecaaa5ce0d1d7b54f39f5e041a057f23f3b22c57cd9c"
+      "source": "aws/agent-toolkit-for-aws",
+      "sourceType": "github"
     }
-  }
+  },
+  "version": 1
 }
