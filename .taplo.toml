@@ -19,4 +19,4 @@
   reorder_inline_tables = true
   reorder_keys = false
   trailing_newline = true
-# @config-manager:end standard
+  # @config-manager:end standard

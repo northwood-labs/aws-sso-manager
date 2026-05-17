@@ -107,10 +107,10 @@
     "without",
     "yet",
   ]
-# @config-manager:end headings
+  # @config-manager:end headings
 
-#-------------------------------------------------------------------------------
-# LIST RULES
+  #-------------------------------------------------------------------------------
+  # LIST RULES
 
 # @config-manager:start lists
 # https://rumdl.dev/md004/
@@ -170,10 +170,10 @@
 [MD077]
   # list-continuation-indent
   enabled = true
-# @config-manager:end lists
+  # @config-manager:end lists
 
-#-------------------------------------------------------------------------------
-# WHITESPACE RULES
+  #-------------------------------------------------------------------------------
+  # WHITESPACE RULES
 
 # @config-manager:start whitespace
 # https://rumdl.dev/md009/
@@ -239,10 +239,10 @@
   # no-multiple-consecutive-spaces
   enabled = true
   allow-sentence-double-space = false
-# @config-manager:end whitespace
+  # @config-manager:end whitespace
 
-#-------------------------------------------------------------------------------
-# FORMATTING RULES
+  #-------------------------------------------------------------------------------
+  # FORMATTING RULES
 
 # @config-manager:start formatting
 # https://rumdl.dev/md026/
@@ -326,7 +326,7 @@
   # strong-style
   enabled = true
   style = "asterisk"
-# @config-manager:end formatting
+  # @config-manager:end formatting
 
 # https://rumdl.dev/md044/
 [MD044]
@@ -351,8 +351,8 @@
     # @config-manager:end proper-names
   ]
 
-#-------------------------------------------------------------------------------
-# CODE BLOCK RULES
+  #-------------------------------------------------------------------------------
+  # CODE BLOCK RULES
 
 # @config-manager:start code-block
 # https://rumdl.dev/md014/
@@ -378,10 +378,10 @@
   # code-fence-style
   enabled = true
   style = "backtick"
-# @config-manager:end code-block
+  # @config-manager:end code-block
 
-#-------------------------------------------------------------------------------
-# LINK AND IMAGE RULES
+  #-------------------------------------------------------------------------------
+  # LINK AND IMAGE RULES
 
 # @config-manager:start link-image
 # https://rumdl.dev/md011/
@@ -457,10 +457,10 @@
   min-level = 2
   max-level = 4
   enforce-order = true
-# @config-manager:end link-image
+  # @config-manager:end link-image
 
-#-------------------------------------------------------------------------------
-# TABLE RULES
+  #-------------------------------------------------------------------------------
+  # TABLE RULES
 
 # @config-manager:start tables
 # https://rumdl.dev/md055/
@@ -497,10 +497,10 @@
 [MD075]
   # orphaned-table-rows
   enabled = true
-# @config-manager:end tables
+  # @config-manager:end tables
 
-#-------------------------------------------------------------------------------
-# FOOTNOTE RULES
+  #-------------------------------------------------------------------------------
+  # FOOTNOTE RULES
 
 # @config-manager:start footnotes
 # https://rumdl.dev/md066/
@@ -517,20 +517,20 @@
 [MD068]
   # empty-footnote-definition
   enabled = true
-# @config-manager:end footnotes
+  # @config-manager:end footnotes
 
-#-------------------------------------------------------------------------------
-# FRONTMATTER RULES
+  #-------------------------------------------------------------------------------
+  # FRONTMATTER RULES
 
 # @config-manager:start frontmatter
 # https://rumdl.dev/md071/
 [MD071]
   # blank-line-after-frontmatter
   enabled = true
-# @config-manager:end frontmatter
+  # @config-manager:end frontmatter
 
-#-------------------------------------------------------------------------------
-# OTHER RULES
+  #-------------------------------------------------------------------------------
+  # OTHER RULES
 
 # @config-manager:start other
 # https://rumdl.dev/md061/
@@ -542,10 +542,10 @@
     #
     #
   ]
-# @config-manager:end other
+  # @config-manager:end other
 
-#-------------------------------------------------------------------------------
-# GLOBAL CONFIG
+  #-------------------------------------------------------------------------------
+  # GLOBAL CONFIG
 
 [global]
   # @config-manager:start globals

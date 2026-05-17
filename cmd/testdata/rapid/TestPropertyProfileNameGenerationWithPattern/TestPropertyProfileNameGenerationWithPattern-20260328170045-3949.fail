@@ -3,7 +3,7 @@
 # 2026/03/28 17:00:45.925343 [TestPropertyProfileNameGenerationWithPattern] [rapid] draw role: "A00"
 # 2026/03/28 17:00:45.925347 [TestPropertyProfileNameGenerationWithPattern] [rapid] draw patternConfig: map[string]interface {}{"accounts":map[string]interface {}{"substr_match_replace":map[string]interface {}{}}, "pattern":map[string]interface {}{"delimiter":"-", "order":[]string{"ACCOUNT"}}, "prefix":"", "roles":map[string]interface {}{"substr_match_replace":map[string]interface {}{}}, "suffix":""}
 # 2026/03/28 17:00:45.925364 [TestPropertyProfileNameGenerationWithPattern] expected output "a" to contain account "a  "
-# 
+#
 v0.4.8#13979699426390813174
 0x0
 0x0

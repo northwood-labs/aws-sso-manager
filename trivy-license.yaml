@@ -179,7 +179,7 @@ license:
     - 0BSD
     - CC0-1.0
     - Unlicense
-  # @config-manager:end license
+    # @config-manager:end license
 
 misconfiguration:
   # @config-manager:start misconfiguration

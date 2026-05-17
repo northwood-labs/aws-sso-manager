@@ -94,7 +94,6 @@ recommendations = [
   # @config-manager:end deep-security
 ]
 
-
 # 1Password.op-vscode
 # Ariga.atlas-hcl (database)
 # formulahendry.auto-close-tag (frontend)

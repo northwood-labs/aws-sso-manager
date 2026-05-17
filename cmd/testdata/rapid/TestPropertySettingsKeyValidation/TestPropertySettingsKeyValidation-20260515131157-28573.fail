@@ -1,7 +1,7 @@
 # 2026/05/15 13:11:57.707457 [TestPropertySettingsKeyValidation] [rapid] draw profile: "a0"
 # 2026/05/15 13:11:57.707461 [TestPropertySettingsKeyValidation] [rapid] draw awsProfile: "a--"
 # 2026/05/15 13:11:57.707464 [TestPropertySettingsKeyValidation] expected "a0".settings.global.region to be valid, got: %!w(<nil>)
-# 
+#
 v0.4.8#7713096973860716192
 0x0
 0x0

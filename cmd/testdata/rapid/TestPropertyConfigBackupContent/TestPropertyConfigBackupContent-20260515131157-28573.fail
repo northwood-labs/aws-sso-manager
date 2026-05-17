@@ -1,7 +1,7 @@
 # 2026/05/15 13:11:57.677756 [TestPropertyConfigBackupContent] [rapid] draw key1: "a0.rename.prefix"
 # 2026/05/15 13:11:57.677759 [TestPropertyConfigBackupContent] [rapid] draw value1: " "
 # 2026/05/15 13:11:57.677761 [TestPropertyConfigBackupContent] first config set failed: invalid config key: %!w(<nil>)
-# 
+#
 v0.4.8#6346387405381486425
 0x0
 0x0

@@ -85,8 +85,8 @@
   stub = 'configs/stubs/yamlfmt.yml'
   destination = '.yamlfmt.yml'
 
-#-------------------------------------------------------------------------------
-# KIRO DIRECTORY
+  #-------------------------------------------------------------------------------
+  # KIRO DIRECTORY
 
 [[files]]
   stub = 'configs/stubs/.kirograph/'
@@ -97,8 +97,8 @@
   source = 'configs/templates/.kiro/steering/markdown-style.md'
   destination = '.kiro/steering/markdown-style.md'
 
-#-------------------------------------------------------------------------------
-# GITHUB DIRECTORY
+  #-------------------------------------------------------------------------------
+  # GITHUB DIRECTORY
 
 # GitHub CODEOWNERS
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
@@ -126,8 +126,8 @@
   stub = 'configs/stubs/.github/dependabot.yml'
   destination = '.github/dependabot.yml'
 
-#-------------------------------------------------------------------------------
-# VSCODE DIRECTORY
+  #-------------------------------------------------------------------------------
+  # VSCODE DIRECTORY
 
 [[files]]
   stub = 'configs/stubs/.vscode/README.md'
@@ -185,8 +185,8 @@
   [files.post_update_hook]
     bash = 'bash .vscode/settings.sh'
 
-#-------------------------------------------------------------------------------
-# FILES WITH HOOKS
+    #-------------------------------------------------------------------------------
+    # FILES WITH HOOKS
 
 # EditorConfig Checker
 # https://editorconfig-checker.github.io

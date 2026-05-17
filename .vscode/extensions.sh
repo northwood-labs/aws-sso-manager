@@ -18,14 +18,17 @@ sorted_files="$(echo "${files}" | sort)"
 
 while IFS= read -r file; do
     name="${file#"${SCRIPT_DIR}/"}"                      # strip script directory prefix
-    tname="${name#extensions-}"                            # strip extensions- prefix
+    tname="${name#extensions-}"                          # strip extensions- prefix
     key="${tname%.toml}"                                 # strip .toml suffix
     key="$(echo "${key}" | tr -cd '[:alpha:][:digit:]')" # alphanumeric only
     vars+=("--var" "${key}=toml:file:${file}")
     keys+=("\$${key}.recommendations...")
 done < <(echo "${sorted_files}")
 
-merge="[$(IFS=', '; echo "${keys[*]}")]"
+merge="[$(
+    IFS=', '
+    echo "${keys[*]}"
+)]"
 
 # We want the spaces in the string represented by ${vars[*]}. This allows the
 # output to be independent CLI flags.

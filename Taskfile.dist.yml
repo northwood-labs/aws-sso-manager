@@ -1,3 +1,4 @@
+---
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 
 ##
@@ -62,7 +63,7 @@ tasks:
         msg: "hk must be installed to manage hooks. Run 'task install-tools` first."
     cmds:
       - task: internal:header
-        vars: { TEXT: "Installing Git hooks..." }
+        vars: {TEXT: "Installing Git hooks..."}
       - hk install
 
   install-tools:
@@ -74,7 +75,7 @@ tasks:
       in arbitrary order.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Installing dependencies from Brewfiles..." }
+        vars: {TEXT: "Installing dependencies from Brewfiles..."}
       - >
         gfind ./tools -type f -name "Brewfile.*"
         | gxargs -I% brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file="%"
@@ -90,7 +91,7 @@ tasks:
       merge tool.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Configuring project Git configuration..." }
+        vars: {TEXT: "Configuring project Git configuration..."}
       - git config blame.ignoreRevsFile .git-blame-ignore-revs
   # @config-manager:end gitconfig-standard
 
@@ -108,7 +109,7 @@ tasks:
       linting everything.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Linting changed files..." }
+        vars: {TEXT: "Linting changed files..."}
       - hk fix --no-fail-fast
 
   lint:deep:
@@ -120,7 +121,7 @@ tasks:
       the repository. This is slower, but more comprehensive.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Linting ALL files..." }
+        vars: {TEXT: "Linting ALL files..."}
       - hk fix --all --no-fail-fast
   # @config-manager:end linting-standard
   #-----------------------------------------------------------------------------
@@ -181,6 +182,6 @@ tasks:
       These are user-specific and do not belong in any Git repo.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Cleaning .DS_Store files..." }
+        vars: {TEXT: "Cleaning .DS_Store files..."}
       - '{{ .FIND }} . -type f -name ".DS_Store" | {{ .XARGS }} -I% rm -fv "%"'
   # @config-manager:end cleaning-standard

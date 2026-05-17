@@ -34,7 +34,7 @@ tasks:
       GOEXPERIMENT: jsonv2
     cmds:
       - task: internal:header
-        vars: { TEXT: "Building and installing..." }
+        vars: {TEXT: "Building and installing..."}
       - go install -a -ldflags="-s -w" -trimpath .
 
   tidy:
@@ -43,7 +43,7 @@ tasks:
       Runs 'go mod tidy' for all go.mod files in the project.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Tidy and download the Go dependencies..." }
+        vars: {TEXT: "Tidy and download the Go dependencies..."}
       - |
         {{ .FIND }} . -type f -name "go.mod" \
           | {{ .XARGS }} -I% dirname "%" \
@@ -57,7 +57,7 @@ tasks:
       This is useful for keeping the dependencies up to date with little effort.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Upgrade the minor versions of Go dependencies..." }
+        vars: {TEXT: "Upgrade the minor versions of Go dependencies..."}
       - |
         {{ .FIND }} . -type f -name "go.mod" \
           | {{ .XARGS }} -I% dirname "%" \
@@ -77,9 +77,9 @@ tasks:
       documentation for the project and identify where the gaps are.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Displaying Go documentation..." }
+        vars: {TEXT: "Displaying Go documentation..."}
       - task: internal:error
-        vars: { TEXT: "Type Ctrl-C to quit." }
+        vars: {TEXT: "Type Ctrl-C to quit."}
       - go doc -http
 
   #-----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ tasks:
     prompt: Are you certain that you want to remove Go's module and test cache?
     cmds:
       - task: internal:header
-        vars: { TEXT: "Cleaning Go cache..." }
+        vars: {TEXT: "Cleaning Go cache..."}
       - go clean -i -r -x -testcache -modcache -cache || true
 
   clean-bench:
@@ -99,7 +99,7 @@ tasks:
     summary: Cleans all benchmarking-related files.
     cmds:
       - task: internal:header
-        vars: { TEXT: "Cleaning artifacts from benchmarks..." }
+        vars: {TEXT: "Cleaning artifacts from benchmarks..."}
       - '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% rm -fv "%"'
       - '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% rm -fv "%"'
 

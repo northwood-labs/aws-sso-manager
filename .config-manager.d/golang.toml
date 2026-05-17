@@ -6,19 +6,19 @@
   source = 'configs/templates/golangci.yml'
   destination = '.golangci.yml'
 
-#-------------------------------------------------------------------------------
-# KIRO DIRECTORY
+  #-------------------------------------------------------------------------------
+  # KIRO DIRECTORY
 
 [[files]]
   stub = 'configs/stubs/.kiro/steering/go-zero-diagnostics.md'
   source = 'configs/templates/.kiro/steering/go-zero-diagnostics.md'
   destination = '.kiro/steering/go-zero-diagnostics.md'
 
-#-------------------------------------------------------------------------------
-# GITHUB DIRECTORY
+  #-------------------------------------------------------------------------------
+  # GITHUB DIRECTORY
 
-#-------------------------------------------------------------------------------
-# VSCODE DIRECTORY
+  #-------------------------------------------------------------------------------
+  # VSCODE DIRECTORY
 
 [[files]]
   stub = 'configs/stubs/.vscode/extensions-golang.toml'
@@ -28,8 +28,8 @@
   [files.post_update_hook]
     bash = 'bash .vscode/extensions.sh'
 
-#-------------------------------------------------------------------------------
-# FILES WITH HOOKS
+    #-------------------------------------------------------------------------------
+    # FILES WITH HOOKS
 
 # Brewfile tools
 [[files]]

@@ -55,4 +55,4 @@
   terraform = true
   typescript = true
   typescriptreact = true
-# @config-manager:end llm
+  # @config-manager:end llm

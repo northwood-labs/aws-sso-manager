@@ -1,7 +1,7 @@
 # 2026/05/15 13:11:57.700042 [TestPropertyConfigDelConfirmation] [rapid] draw key: "a0.rename.prefix"
 # 2026/05/15 13:11:57.700045 [TestPropertyConfigDelConfirmation] [rapid] draw value: " "
 # 2026/05/15 13:11:57.700050 [TestPropertyConfigDelConfirmation] config set failed: invalid config key: %!w(<nil>)
-# 
+#
 v0.4.8#3463853621625152856
 0x0
 0x0

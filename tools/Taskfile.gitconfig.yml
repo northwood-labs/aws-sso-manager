@@ -1,3 +1,4 @@
+---
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 
 ##
@@ -21,7 +22,7 @@ tasks:
       configurations that help keep things consistent across all projects.
     cmds:
       - task: header
-        vars: { TEXT: "Configuring global Git configuration..." }
+        vars: {TEXT: "Configuring global Git configuration..."}
       - git config --global alias.aa 'add -A'
       - git config --global alias.st 'status'
       - git config --global alias.co 'checkout'

@@ -2,7 +2,7 @@
 # 2026/05/15 13:11:57.673141 [TestPropertyConfigBackupRetention] [rapid] draw key: "a0.rename.prefix"
 # 2026/05/15 13:11:57.673142 [TestPropertyConfigBackupRetention] [rapid] draw value: " "
 # 2026/05/15 13:11:57.673144 [TestPropertyConfigBackupRetention] config set failed on mutation 0: invalid config key: %!w(<nil>)
-# 
+#
 v0.4.8#15880680335426014184
 0x0
 0x0

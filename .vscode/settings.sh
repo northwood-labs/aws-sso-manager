@@ -25,7 +25,10 @@ while IFS= read -r file; do
     keys+=("\$${key}")
 done < <(echo "${sorted_files}")
 
-merge="merge($(IFS=', '; echo "${keys[*]}"))"
+merge="merge($(
+    IFS=', '
+    echo "${keys[*]}"
+))"
 
 # We want the spaces in the string represented by ${vars[*]}. This allows the
 # output to be independent CLI flags.

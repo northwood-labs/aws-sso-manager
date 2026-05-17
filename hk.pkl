@@ -8,8 +8,13 @@ local linters = new Mapping<String, Step> {
   ["check-byte-order-marker"] = Builtins.check_byte_order_marker
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+  ["check-json"] = Builtins.jq
   ["check-merge-conflict"] = Builtins.check_merge_conflict
   ["check-symlinks"] = Builtins.check_symlinks
+  ["check-toml"] = Builtins.taplo_format
+  ["check-trailing-whitespace"] = Builtins.trailing_whitespace
+  ["check-xml"] = Builtins.xmllint
+  ["check-yaml"] = Builtins.yamlfmt
   // ["contextlint"] = Builtins.contextlint // Needs more tuning.
   ["editorconfig-checker"] {
     workspace_indicator = ".editorconfig-checker.json"
@@ -37,12 +42,11 @@ local linters = new Mapping<String, Step> {
     fix =
       "pkl format --write {{ files }}; code=$?; if [ $code -eq 11 ]; then exit 0; else exit $code; fi;"
   }
-  ["validate-json"] {
-    glob = "**/*.json"
-    check =
-      "failed=0; for f in {{ files }}; do jq . \"$f\" | diff -u \"$f\" - || failed=1; done; exit $failed"
-    fix =
-      "for f in {{ files }}; do tmp=$(mktemp) && jq -S . \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"; done"
+  ["shellcheck"] = Builtins.shellcheck
+  ["shfmt"] {
+    glob = List("**/*.bash", "**/*.bats", "**/*.mksh", "**/*.sh", "**/*.zsh")
+    check = "shfmt -s -d -i=4 -bn -ci -sr --apply-ignore {{ files }}"
+    fix = "shfmt -s -w -i=4 -bn -ci -sr --apply-ignore {{ files }}"
   }
   // @config-manager:end standard
 
@@ -159,10 +163,10 @@ hooks {
     fix = true
     stash = "git"
     steps {
-      ["check-conventional-commit"] {
-        // Presently, gommit is more configurable than hk's built-in checker.
-        check = "gommit check message {{ commit_msg_file }}"
-      }
+      // ["check-conventional-commit"] {
+      //   // Presently, gommit is more configurable than hk's built-in checker.
+      //   check = "gommit check message {{ commit_msg_file }}"
+      // }
       ...linters
     }
   }
