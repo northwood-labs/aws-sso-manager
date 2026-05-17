@@ -18,7 +18,34 @@
 'kiroAgent.notifications.agent.actionRequired' = true
 'kiroAgent.notifications.agent.failure' = true
 'kiroAgent.notifications.agent.success' = true
-'kiroAgent.trustedCommands' = [ 'cat *', 'curl *', 'grep *' ]
+'kiroAgent.trustedCommands' = [
+  #
+  'aube *',
+  'aubr *',
+  'aubx *',
+  'cat *',
+  'curl *',
+  'find *',
+  'go build *',
+  'go test *',
+  'go vet *',
+  'gofumpt *',
+  'golangci-lint run *',
+  'golines *',
+  'grep *',
+  'hk *',
+  'make *',
+  'npm *',
+  'npx *',
+  'pnpm *',
+  'pnpx *',
+  'sed *',
+  'tail *',
+  'task *',
+  'wc *',
+  'wget *',
+  #
+]
 'remote.defaultExtensionsIfInstalledLocally' = [
   'GitHub.copilot',
   'GitHub.copilot-chat',

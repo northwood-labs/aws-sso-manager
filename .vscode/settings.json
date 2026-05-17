@@ -2,6 +2,13 @@
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
+  "[go]": {
+    "editor.defaultFormatter": "golang.go",
+    "editor.formatOnSave": true
+  },
+  "[gohtml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
@@ -40,7 +47,26 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
-  "emeraldwalk.runonsave": {},
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "cmd": "go tool golines --base-formatter=gofumpt --write-output --max-len=120 ${file}",
+        "match": "\\.go$"
+      },
+      {
+        "cmd": "go tool modernize -fix ${file}",
+        "match": "\\.go$"
+      },
+      {
+        "cmd": "go tool gofumpt -w ${file}",
+        "match": "\\.go$"
+      },
+      {
+        "cmd": "go tool fieldalignment -fix ${file}",
+        "match": "\\.go$"
+      }
+    ]
+  },
   "evenBetterToml.formatter.alignEntries": true,
   "evenBetterToml.formatter.indentString": "  ",
   "evenBetterToml.formatter.indentTables": true,
@@ -110,6 +136,23 @@
     }
   ],
   "gitlens.autolinks": [],
+  "go.coverOnTestPackage": false,
+  "go.delveConfig": {
+    "debugAdapter": "dlv-dap"
+  },
+  "go.enableCodeLens": {
+    "runtest": true
+  },
+  "go.formatTool": "gofumpt",
+  "go.installDependenciesWhenBuilding": true,
+  "go.lintTool": "golangci-lint",
+  "go.testExplorer.alwaysRunBenchmarks": true,
+  "go.toolsManagement.autoUpdate": true,
+  "go.useLanguageServer": true,
+  "go.vetOnSave": "workspace",
+  "gopls": {
+    "ui.semanticTokens": true
+  },
   "json.schemas": [
     {
       "fileMatch": [
@@ -140,23 +183,35 @@
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.enableCodebaseIndexing": true,
   "kiroAgent.enableTabAutocomplete": true,
-  "kiroAgent.modelSelection": "auto",
+  "kiroAgent.modelSelection": "Auto",
   "kiroAgent.notifications.agent.actionRequired": true,
   "kiroAgent.notifications.agent.failure": true,
   "kiroAgent.notifications.agent.success": true,
   "kiroAgent.trustedCommands": [
+    "aube *",
+    "aubr *",
+    "aubx *",
     "cat *",
     "curl *",
-    "grep *",
-    "golangci-lint run --fix ./... 2>&1",
-    "golangci-lint run *",
-    "go build *",
-    "go vet *",
-    "go test *",
     "find *",
-    "wc *",
+    "go build *",
+    "go test *",
+    "go vet *",
+    "gofumpt *",
+    "golangci-lint run *",
+    "golines *",
+    "grep *",
+    "hk *",
+    "make *",
+    "npm *",
+    "npx *",
+    "pnpm *",
+    "pnpx *",
     "sed *",
-    "tail *"
+    "tail *",
+    "task *",
+    "wc *",
+    "wget *"
   ],
   "kiroAgent.usageSummary": true,
   "makefile.configureOnOpen": false,

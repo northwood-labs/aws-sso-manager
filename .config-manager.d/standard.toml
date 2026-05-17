@@ -186,17 +186,7 @@
     bash = 'bash .vscode/settings.sh'
 
     #-------------------------------------------------------------------------------
-    # FILES WITH HOOKS
-
-# EditorConfig Checker
-# https://editorconfig-checker.github.io
-[[files]]
-  stub = 'configs/stubs/ecrc.toml'
-  source = 'configs/templates/ecrc.toml'
-  destination = 'ecrc.toml'
-
-  [files.post_update_hook]
-    bash = 'tomljson ecrc.toml > .editorconfig-checker.json'
+    # TOOLING
 
 # Imported taskfiles
 # https://taskfile.dev/docs/guide#flatten-includes
@@ -209,6 +199,24 @@
   stub = 'configs/stubs/tools/Taskfile.internal.yml'
   source = 'configs/templates/tools/Taskfile.internal.yml'
   destination = 'tools/Taskfile.internal.yml'
+
+[[files]]
+  stub = 'configs/stubs/tools/ogvs.config.yaml'
+  source = 'configs/templates/tools/ogvs.config.yaml'
+  destination = 'tools/ogvs.config.yaml'
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS
+
+# EditorConfig Checker
+# https://editorconfig-checker.github.io
+[[files]]
+  stub = 'configs/stubs/ecrc.toml'
+  source = 'configs/templates/ecrc.toml'
+  destination = 'ecrc.toml'
+
+  [files.post_update_hook]
+    bash = 'tomljson ecrc.toml > .editorconfig-checker.json'
 
 # Brewfile tools
 # https://docs.brew.sh/Brew-Bundle-and-Brewfile

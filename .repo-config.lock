@@ -16,6 +16,11 @@ last_sync_time = '2026-05-17T00:29:47Z'
 source_hash = ''
 dest_hash = 'sha256:3bec63195a5ab3ff6069b0b8f34fd3570238693d1f9f433f10fb87d7ce8d503d'
 
+[files.'.gitattributes']
+last_sync_time = '2026-05-17T19:36:40Z'
+source_hash = ''
+dest_hash = 'sha256:6bb89c67d790f50f25782aaf405efb03a5cf6aef03cfabdb26c697f52c73b4d3'
+
 [files.'.githooks/commit-msg.sh']
 last_sync_time = '2026-05-03T01:39:29Z'
 source_hash = ''
@@ -27,9 +32,9 @@ source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-05-04T20:02:42Z'
+last_sync_time = '2026-05-17T22:08:18Z'
 source_hash = ''
-dest_hash = 'sha256:a1c6dfbecdb0538e828395281c5f7d6645b43ae341c42379be0c9423ac25f421'
+dest_hash = 'sha256:cdb7fb343b14466bf5552d83406a937da0285d6e38bcaee17651120d35b978f4'
 
 [files.'.gommit.toml']
 last_sync_time = '2026-05-04T05:39:52Z'
@@ -37,7 +42,7 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-17T00:59:18Z'
+last_sync_time = '2026-05-17T19:36:40Z'
 source_hash = ''
 dest_hash = 'sha256:615b8b3caad55c5ebd4da808f4f47f8b65494b1263b51e8a25864d8f80c7cbca'
 
@@ -77,24 +82,29 @@ source_hash = ''
 dest_hash = 'sha256:036bd5cd077eddc5896822af6493fdffc27c91eaea2d18ed1649bd86a91bbc57'
 
 [files.'.vscode/extensions.sh']
-last_sync_time = '2026-05-03T00:14:02Z'
+last_sync_time = '2026-05-17T19:53:12Z'
 source_hash = ''
-dest_hash = 'sha256:ae6e2dc189e07fc8b3883e08a77c1b137a0edafa806534a93d9b34a6b2d38aac'
+dest_hash = 'sha256:d525ead29cc7ddab318b5376924a61171fa7da3cdfa7d69203dacbf297eb2976'
+
+[files.'.vscode/settings-go.toml']
+last_sync_time = '2026-05-17T22:08:19Z'
+source_hash = ''
+dest_hash = 'sha256:505ea96c94be42c5af23314a1c0409508deeb6a5694957c52bca53f1819a0827'
 
 [files.'.vscode/settings-llm.toml']
-last_sync_time = '2026-05-02T01:36:50Z'
+last_sync_time = '2026-05-17T19:53:12Z'
 source_hash = ''
-dest_hash = 'sha256:9bbb97fe94ba1deff426840fdb4a00d198edb1986d09c682eae32ad637d7f244'
+dest_hash = 'sha256:8a6f92cdea30d6c0b3b797f1541cbac5910dec52a07ff6c27b0134c41cb2e871'
 
 [files.'.vscode/settings-standard.toml']
-last_sync_time = '2026-05-13T15:03:24Z'
+last_sync_time = '2026-05-17T19:53:13Z'
 source_hash = ''
-dest_hash = 'sha256:fc90c518494d8d4332eca0a63339e673078a60668323aecc148fb6cef030585f'
+dest_hash = 'sha256:24a00b5cc2809aac3f9464d9fa1c5554018996a292b6e54317b670e120fffd96'
 
 [files.'.vscode/settings.sh']
-last_sync_time = '2026-04-28T18:00:31Z'
+last_sync_time = '2026-05-17T19:53:12Z'
 source_hash = ''
-dest_hash = 'sha256:199b7c6dd6ea109356c64443c4749ba739443bee98faf6c22769456863720221'
+dest_hash = 'sha256:40f8b9893bfc72b3efff1f2fe0c30f99387d6d7c39adfe0c581c419b95efa425'
 
 [files.'.yamlfmt.yml']
 last_sync_time = '2026-05-03T01:45:01Z'
@@ -111,15 +121,20 @@ last_sync_time = '2026-05-04T19:51:03Z'
 source_hash = ''
 dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
 
+[files.'tools/Brewfile.golang']
+last_sync_time = '2026-05-17T22:08:34Z'
+source_hash = ''
+dest_hash = 'sha256:d3118074d0c2920bc9ebd384cdb9559af4cc9c32a90efd4868943b98a305ca9c'
+
 [files.'tools/Brewfile.standard']
 last_sync_time = '2026-05-17T00:29:54Z'
 source_hash = ''
 dest_hash = 'sha256:490a1eddadab7e204292cbd886a9045cd4e28b8ddc290a82a209b81e1a144fbf'
 
 [files.'tools/Taskfile.gitconfig.yml']
-last_sync_time = '2026-05-17T00:59:18Z'
+last_sync_time = '2026-05-17T22:08:34Z'
 source_hash = ''
-dest_hash = 'sha256:1a3b2024efee6b1dadb90bbd9787f617212ae8b17ad1e60f936bda20b4058207'
+dest_hash = 'sha256:88272d6113557cf4c0dd946a94938388df42473d2f9c019e4f700abca028207c'
 
 [files.'tools/go-tool-golang.sh']
 last_sync_time = '2026-05-10T17:16:53Z'

@@ -90,22 +90,29 @@ Example:
 <!-- @config-manager:start proper-names -->
 These terms must use exact casing wherever they appear in prose (not enforced inside code blocks or HTML):
 
+* Commonmark
+* CSS
+* GFM
+* GitHub-Flavored Markdown
+* HTML
 * JSON
 * macOS
+* Markdown
 * Northwood Labs
 * OpenTofu
 * Terraform
 * Terragrunt
 * Terratest
 * TOML
+* XML
 * YAML
 <!-- @config-manager:end proper-names -->
 
 ## HTML
 
-<!-- @config-manager:start html -->
+<!-- @config-manager:start elements -->
 Inline HTML is restricted to these allowed elements: `a`, `b`, `br`, `code`, `details`, `div`, `img`, `li`, `nobr`, `ol`, `p`, `pre`, `span`, `summary`, `ul`. All other HTML elements will trigger a lint warning.
-<!-- @config-manager:end html -->
+<!-- @config-manager:end elements -->
 
 ## Blockquotes
 

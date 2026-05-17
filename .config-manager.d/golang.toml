@@ -28,15 +28,32 @@
   [files.post_update_hook]
     bash = 'bash .vscode/extensions.sh'
 
+[[files]]
+  stub = 'configs/stubs/.vscode/settings-go.toml'
+  source = 'configs/templates/.vscode/settings-go.toml'
+  destination = '.vscode/settings-go.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
+
     #-------------------------------------------------------------------------------
-    # FILES WITH HOOKS
+    # TOOLING
+
+# Imported taskfiles
+# https://taskfile.dev/docs/guide#flatten-includes
+[[files]]
+  stub = 'configs/stubs/tools/Taskfile.golang.yml'
+  source = 'configs/templates/tools/Taskfile.golang.yml'
+  destination = 'tools/Taskfile.golang.yml'
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS
 
 # Brewfile tools
 [[files]]
   stub = 'configs/stubs/tools/Brewfile.golang'
   source = 'configs/templates/tools/Brewfile.golang'
   destination = 'tools/Brewfile.golang'
-  executable = true
 
   [files.post_update_hook]
     bash = 'brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=tools/Brewfile.golang'

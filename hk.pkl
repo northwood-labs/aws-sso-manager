@@ -1,4 +1,5 @@
 // https://github.com/jdx/hk/blob/main/hk.pkl
+// https://github.com/jdx/hk/releases/latest
 amends "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Builtins.pkl"
 
@@ -60,6 +61,17 @@ local linters = new Mapping<String, Step> {
     check = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod -diff"
     fix = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod"
   }
+  ["go-modernize"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    check = "cd {{ workspace }} && modernize -fix -diff ./..."
+    fix = "cd {{ workspace }} && modernize -fix ./..."
+  }
+  ["go-same-receiver-pointer"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "cd {{ workspace }} && smrcptr --constructor=true ./..."
+  }
   ["go-vet"] {
     workspace_indicator = "go.mod"
     glob = "**/*.go"
@@ -70,10 +82,39 @@ local linters = new Mapping<String, Step> {
     glob = "**/*.go"
     check = "cd {{ workspace }} && govulncheck ./..."
   }
-  ["go-unconvert"] {
+  ["go-unconvert-darwin-amd64"] {
     workspace_indicator = "go.mod"
     glob = "**/*.go"
-    fix = "cd {{ workspace }} && unconvert -fastmath -tests -apply -v ./..."
+    fix =
+      "cd {{ workspace }} && GOOS=darwin GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
+  }
+  ["go-unconvert-darwin-arm64"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix =
+      "cd {{ workspace }} && GOOS=darwin GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
+  }
+  ["go-unconvert-linux-amd64"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "cd {{ workspace }} && GOOS=linux GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
+  }
+  ["go-unconvert-linux-arm64"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix = "cd {{ workspace }} && GOOS=linux GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
+  }
+  ["go-unconvert-windows-amd64"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix =
+      "cd {{ workspace }} && GOOS=windows GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
+  }
+  ["go-unconvert-windows-arm64"] {
+    workspace_indicator = "go.mod"
+    glob = "**/*.go"
+    fix =
+      "cd {{ workspace }} && GOOS=windows GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
   }
   ["hadolint"] = Builtins.hadolint
   ["hcl-fmt"] = Builtins.hclfmt
@@ -85,6 +126,9 @@ local linters = new Mapping<String, Step> {
   // ["mdschema"] = Builtins.mdschema // Needs more tuning.
   ["mise-fmt"] = Builtins.mise
   ["mixed-line-ending"] = Builtins.mixed_line_ending
+  ["osv-scanner"] {
+    fix = "osv-scanner -r ."
+  }
   ["pkl-eval"] = (Builtins.pkl) {
     glob = "**/*.pkl"
   }
@@ -104,12 +148,20 @@ local linters = new Mapping<String, Step> {
     check = "uvx sqlfluff lint {{ files }}"
     fix = "uvx sqlfluff fix {{ files }}"
   }
+  ["svg-optimize"] {
+    glob = "**/*.svg"
+    fix = "ogvs --config tools/ogvs.config.yaml {{ files }}"
+  }
   ["tflint"] = Builtins.tf_lint
   ["trivy-licenses"] {
     check = "trivy fs --config trivy-license.yaml --ignorefile .trivyignore ."
   }
   ["trivy-vulns"] {
     check = "trivy fs --config trivy-vuln.yaml --ignorefile .trivyignore ."
+  }
+  ["trufflehog"] {
+    check =
+      "trufflehog git file://. --since-commit HEAD --only-verified --fail --json 2>/dev/null | jq '.'"
   }
   // https://vale.sh/docs
   // @config-manager:end standard
@@ -125,25 +177,6 @@ local linters = new Mapping<String, Step> {
   // DO NOT enable this and `opentofu-format` at the same time. Choose one or the other.
   ["terraform-format"] = Builtins.terraform
   // @config-manager:end terraform
-
-  // python-debug-statements ​
-  // Glob: **/*.py
-  // Check: hk util python-debug-statements {{files}}
-
-  // ruff ​
-  // Glob: **/*.py, **/*.pyi
-  // Check: ruff check --force-exclude {{ files }}
-  // Fix: ruff check --force-exclude --fix {{ files }}
-
-  // ruff-format ​
-  // Glob: **/*.py, **/*.pyi
-  // Check (diff): ruff format --quiet --force-exclude --diff {{ files }}
-  // Fix: ruff format --quiet --force-exclude {{ files }}
-
-  // rustfmt ​
-  // Glob: **/*.rs
-  // Check: rustfmt --check --edition 2024 {{ files }}
-  // Fix: rustfmt --edition 2024 {{ files }}
 }
 
 hooks {

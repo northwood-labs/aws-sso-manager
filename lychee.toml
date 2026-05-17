@@ -35,10 +35,6 @@ cache_exclude_status = "500.."
 # File to read and write cookies
 cookie_jar = ".lychee-cookie-jar"
 
-# Number of threads to utilize.
-# Defaults to number of cores available to the system if omitted.
-# threads = 2
-
 # Maximum number of allowed redirects.
 max_redirects = 3
 
@@ -47,12 +43,6 @@ max_retries = 3
 
 # Include hidden files/directories which begin with `.`.
 hidden = true
-
-# Maximum number of concurrent link checks.
-# max_concurrency = 14
-
-# extension applied to files without extension
-# default_extension = "md"
 
 #-------------------------------------------------------------------------------
 # REQUESTS
@@ -67,21 +57,10 @@ timeout = 20
 retry_wait_time = 2
 
 # Comma-separated list of accepted status codes for valid links.
-# Supported values are:
-#
-# accept = ["200..=204", "429"]
-# accept = "200..=204, 429"
-# accept = ["200", "429"]
-# accept = "200, 429"
-# accept = [ "200", "429" ]
+accept = [ "200..=308", "429" ]
 
 # Proceed for server connections considered insecure (invalid TLS).
 insecure = false
-
-# Only test links with the given schemes (e.g. https).
-# Omit to check links with any other scheme.
-# At the moment, we support http, https, file, and mailto.
-# scheme = [ "https" ]
 
 # When links are available using HTTPS, treat HTTP links as errors.
 require_https = true
@@ -115,9 +94,6 @@ exclude_loopback = true
 
 # Check mail addresses
 include_mail = true
-
-# Only check local files
-# offline = true
 
 #-------------------------------------------------------------------------------
 # OTHER

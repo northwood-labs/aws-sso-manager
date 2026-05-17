@@ -338,6 +338,10 @@
   names = [
     # @config-manager:start proper-names
     "Commonmark",
+    "CSS",
+    "GFM",
+    "GitHub-Flavored Markdown",
+    "HTML",
     "JSON",
     "macOS",
     "Markdown",
@@ -347,6 +351,7 @@
     "Terragrunt",
     "Terratest",
     "TOML",
+    "XML",
     "YAML",
     # @config-manager:end proper-names
   ]

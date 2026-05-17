@@ -2,10 +2,17 @@
 # brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=Brewfile.standard
 ##
 
+#-------------------------------------------------------------------------------
+# TAPS
+
 # @config-manager:start taps
 tap "go-task/tap"
+tap "okooo5km/tap"
 tap "trufflesecurity/trufflehog"
 # @config-manager:end taps
+
+#-------------------------------------------------------------------------------
+# FORMULAE
 
 # @config-manager:start brew
 # https://github.com/editorconfig-checker/editorconfig-checker
@@ -47,6 +54,9 @@ brew "jq"
 # https://lychee.cli.rs/
 brew "lychee"
 
+# https://github.com/okooo5km/ogvs
+brew "ogvs"
+
 # https://nodejs.org/en
 brew "node"
 
@@ -78,10 +88,16 @@ brew "trufflesecurity/trufflehog/trufflehog"
 brew "yamlfmt"
 # @config-manager:end brew
 
+#-------------------------------------------------------------------------------
+# NPM
+
 # @config-manager:start npm
 # https://www.npmjs.com/package/@endevco/aube
 npm "@endevco/aube"
 # @config-manager:end npm
+
+#-------------------------------------------------------------------------------
+# GO PACKAGES
 
 # @config-manager:start go
 go "github.com/antham/gommit"
