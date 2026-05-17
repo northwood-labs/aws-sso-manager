@@ -31,6 +31,11 @@ includes:
     taskfile: ./tools/Taskfile.internal.yml
   # @config-manager:end standard
 
+  # @config-manager:start aws-user
+  aws:
+    taskfile: ./tools/Taskfile.aws.yml
+  # @config-manager:end aws-user
+
   # @config-manager:start golang
   go:
     taskfile: ./tools/Taskfile.golang.yml

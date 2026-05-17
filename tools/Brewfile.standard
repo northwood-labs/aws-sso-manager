@@ -3,6 +3,7 @@
 ##
 
 # @config-manager:start taps
+tap "go-task/tap"
 tap "trufflesecurity/trufflehog"
 # @config-manager:end taps
 
@@ -30,6 +31,9 @@ brew "git"
 
 # https://go.dev/
 brew "go"
+
+# https://taskfile.dev
+brew "go-task"
 
 # https://github.com/charmbracelet/gum
 brew "gum"

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+##
+# https://taskfile.dev/docs/guide
+##
+
+# @config-manager:start aws-user
+version: "3"
+
+tasks:
+  auth:*:
+    desc: Authenticate with the given AWS profile.
+    summary: |
+      Authenticates with the given AWS profile.
+
+      This accepts a wildcard for the last parameter. Your browser will open so
+      that you can authencate. Useful for authenticating the AWS Agent Toolkit.
+
+      Example: task aws:auth:prod-ro
+    vars:
+      PROFILE: "{{ index .MATCH 0 }}"
+    cmds:
+      - aws sso login --profile {{ .PROFILE }}
+# @config-manager:end aws-user

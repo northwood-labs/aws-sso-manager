@@ -11,6 +11,11 @@ last_sync_time = '2026-05-10T17:16:53Z'
 source_hash = ''
 dest_hash = 'sha256:9025be58801b28d69359bd1acf2622c6fac82e9e1fbc150d57ee95177ae58395'
 
+[files.'.git-blame-ignore-revs']
+last_sync_time = '2026-05-17T00:29:47Z'
+source_hash = ''
+dest_hash = 'sha256:3bec63195a5ab3ff6069b0b8f34fd3570238693d1f9f433f10fb87d7ce8d503d'
+
 [files.'.githooks/commit-msg.sh']
 last_sync_time = '2026-05-03T01:39:29Z'
 source_hash = ''
@@ -32,9 +37,9 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-15T22:43:19Z'
+last_sync_time = '2026-05-17T00:29:47Z'
 source_hash = ''
-dest_hash = 'sha256:5fa520cedd6483b2cfd55dd91bcaa4803560d97f57010b0b6c39f9b30e80f555'
+dest_hash = 'sha256:615b8b3caad55c5ebd4da808f4f47f8b65494b1263b51e8a25864d8f80c7cbca'
 
 [files.'.rumdl.toml']
 last_sync_time = '2026-05-15T22:43:19Z'
@@ -105,6 +110,16 @@ dest_hash = 'sha256:280af3293caf54f6c15e7ac6eee7f813b80fa88d4a3b7fe518f334b38e1e
 last_sync_time = '2026-05-04T19:51:03Z'
 source_hash = ''
 dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
+
+[files.'tools/Brewfile.standard']
+last_sync_time = '2026-05-17T00:29:54Z'
+source_hash = ''
+dest_hash = 'sha256:490a1eddadab7e204292cbd886a9045cd4e28b8ddc290a82a209b81e1a144fbf'
+
+[files.'tools/Taskfile.gitconfig.yml']
+last_sync_time = '2026-05-17T00:29:47Z'
+source_hash = ''
+dest_hash = 'sha256:bdf91528e554b19156cf6c8c2ce5bb1804c6d42a2be1d23a6d69b794dfc6c979'
 
 [files.'tools/go-tool-golang.sh']
 last_sync_time = '2026-05-10T17:16:53Z'

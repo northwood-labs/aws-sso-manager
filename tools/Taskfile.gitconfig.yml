@@ -20,7 +20,7 @@ tasks:
       includes settings for commit signing, safe directories, and various other
       configurations that help keep things consistent across all projects.
     cmds:
-      - task: internal:header
+      - task: header
         vars: { TEXT: "Configuring global Git configuration..." }
       - git config --global alias.aa 'add -A'
       - git config --global alias.st 'status'
@@ -85,12 +85,8 @@ tasks:
       - git config --global merge.verbosity 1
       - git config --global mergetool.keepBackup true
       - git config --global mergetool.prompt false
-      - >
-        git config --global pretty.lol 'format:%C(red)%H%C(reset) %C(yellow)%d%C(reset) %s
-        [%C(green)%an, %C(bold black)%cr%C(reset)]'
-      - >
-        git config --global pretty.lola 'format:%C(red)%H%C(reset) %C(yellow)%d%C(reset) %s
-        [%C(green)%an <%aE>, %C(bold black)%ai%C(reset)]'
+      - git config --global pretty.lol 'format:%C(red)%H%C(reset) %C(yellow)%d%C(reset) %s [%C(green)%an, %C(bold black)%cr%C(reset)]'
+      - git config --global pretty.lola 'format:%C(red)%H%C(reset) %C(yellow)%d%C(reset) %s [%C(green)%an <%aE>, %C(bold black)%ai%C(reset)]'
       - git config --global pull.ff 'only'
       - git config --global pull.rebase true
       - git config --global pull.twohead 'ort'
