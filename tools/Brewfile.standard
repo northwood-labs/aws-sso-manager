@@ -42,6 +42,9 @@ brew "go"
 # https://taskfile.dev
 brew "go-task"
 
+# https://graphviz.org
+brew "graphviz"
+
 # https://github.com/charmbracelet/gum
 brew "gum"
 
