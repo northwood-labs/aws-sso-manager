@@ -1,0 +1,153 @@
+# https://lychee.cli.rs/guides/config/
+
+#-------------------------------------------------------------------------------
+# DISPLAY
+
+# Verbose program output
+# Accepts log level: "error", "warn", "info", "debug", "trace"
+verbose = "error"
+
+# Output format
+format = "markdown"
+
+# Path to summary output file.
+output = "lychee.md"
+
+# Show host statistics
+host_stats = true
+
+#-------------------------------------------------------------------------------
+# CACHE
+
+# Enable link caching. This can be helpful to avoid checking the same links on
+# multiple runs.
+cache = true
+
+# Discard all cached requests older than this duration.
+max_cache_age = "2d"
+
+# A list of status codes that will be ignored from the cache
+cache_exclude_status = "500.."
+
+#-------------------------------------------------------------------------------
+# RUNTIME
+
+# File to read and write cookies
+cookie_jar = ".lychee-cookie-jar"
+
+# Number of threads to utilize.
+# Defaults to number of cores available to the system if omitted.
+# threads = 2
+
+# Maximum number of allowed redirects.
+max_redirects = 3
+
+# Maximum number of allowed retries before a link is declared dead.
+max_retries = 3
+
+# Include hidden files/directories which begin with `.`.
+hidden = true
+
+# Maximum number of concurrent link checks.
+# max_concurrency = 14
+
+# extension applied to files without extension
+# default_extension = "md"
+
+#-------------------------------------------------------------------------------
+# REQUESTS
+
+# User agent to send with each request.
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36"
+
+# Website timeout from connect to response finished.
+timeout = 20
+
+# Minimum wait time in seconds between retries of failed requests.
+retry_wait_time = 2
+
+# Comma-separated list of accepted status codes for valid links.
+# Supported values are:
+#
+# accept = ["200..=204", "429"]
+# accept = "200..=204, 429"
+# accept = ["200", "429"]
+# accept = "200, 429"
+# accept = [ "200", "429" ]
+
+# Proceed for server connections considered insecure (invalid TLS).
+insecure = false
+
+# Only test links with the given schemes (e.g. https).
+# Omit to check links with any other scheme.
+# At the moment, we support http, https, file, and mailto.
+# scheme = [ "https" ]
+
+# When links are available using HTTPS, treat HTTP links as errors.
+require_https = true
+
+# Request method
+method = "get"
+
+# Minimum accepted TLS Version
+min_tls = "TLSv1_0"
+
+accept_timeouts = true
+
+#-------------------------------------------------------------------------------
+# EXCLUSIONS
+
+# Skip missing input files (default is to error if they don't exist).
+skip_missing = false
+
+# Do not skip files that are ignored
+no_ignore = false
+
+# Check links inside `<code>` and `<pre>` blocks as well as Markdown code
+# blocks.
+include_verbatim = true
+
+# Ignore case of paths when matching glob patterns.
+glob_ignore_case = true
+
+# Exclude loopback IP address range and localhost from checking.
+exclude_loopback = true
+
+# Check mail addresses
+include_mail = true
+
+# Only check local files
+# offline = true
+
+#-------------------------------------------------------------------------------
+# OTHER
+
+# Use the Wayback Machine as web archive
+archive = "wayback"
+
+# Search and suggest link replacements for all broken links
+suggest = true
+
+#-------------------------------------------------------------------------------
+# HOSTS
+
+# Maximum simultaneous requests to the same host
+host_concurrency = 5
+
+# Minimum interval between requests to the same host
+host_request_interval = "500ms"
+
+exclude = [
+  #
+  '@github.com',
+  'https://(([^\.]+)\.)?(([^\.]+)\.)?console\.aws\.amazon\.com',
+  'https://([^\.]+)\.awsapps\.com',
+  'https://(www\.)?example\.(com|net|org)',
+  'https://(www\.)?npmjs\.com/package/',
+  'https://aws-mcp(\.([^\.]+)\.api\.aws)?',
+  'https://region-code(\.signin\.aws\.amazon\.com)?',
+  'file://\.\.',
+  'package://',
+  'taplo://',
+  #
+]

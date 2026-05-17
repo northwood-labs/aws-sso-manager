@@ -320,6 +320,6 @@ Different organizations have wildly different AWS account naming conventions. So
 
 Profile names may be round-tripped through the lookup index (written to cache, read back, used as lookup keys). If `toProfileToken` weren't idempotent (`toProfileToken(toProfileToken(x)) == toProfileToken(x)`), a profile name could drift on each round-trip, causing lookup misses. The idempotence property is verified by a property-based test.
 
-### Why implement property-based testing with [pgregory.net/rapid](https://pgregory.net/rapid)?
+### Why implement property-based testing with [pgregory.net/rapid/](https://pgregory.net/rapid/)?
 
 Traditional example-based tests verify specific cases but can miss edge cases in string manipulation, sorting, and filtering logic. Property-based tests generate hundreds of random inputs and verify that universal properties hold (e.g., "sorted output is always sorted", "filtered results are always a subset", "cache paths are deterministic"). The `rapid` library was chosen over `testing/quick` because it provides better shrinking (finding minimal failing examples) and more expressive generators.

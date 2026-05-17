@@ -134,7 +134,7 @@
         ".prettierrc",
         "prettier.config.js"
       ],
-      "url": "http://json.schemastore.org/prettierrc"
+      "url": "https://www.schemastore.org/prettierrc"
     }
   ],
   "kiroAgent.agentAutonomy": "Autopilot",

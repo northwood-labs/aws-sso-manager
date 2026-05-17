@@ -20,7 +20,7 @@ It is also designed to help you manage configs across multiple AWS Organizations
 
 The configuration file lives at `~/.config/aws-sso-manager/config.toml` for macOS and Linux, and `%USERPROFILE%\.config\aws-sso-manager\config.toml` for Windows.
 
-This is the organization of the [TOML](https://toml.io) keys in the config file.
+This is the organization of the [TOML](https://toml.io/en/) keys in the config file.
 
 ```text
 ├── profile-name (string)

@@ -38,5 +38,5 @@ dasel_command="dasel query --in toml --out json ${vars[*]} '${merge}'"
 # Execute the command we constructed as a string. Pass through jq for
 # formatting, and write output to sibling file.
 eval "${dasel_command}" | jq -Mr '. | sort_by(. | ascii_downcase) | { recommendations: . }' \
-    > "${SCRIPT_DIR}/extensions.json"
+    >"${SCRIPT_DIR}/extensions.json"
 # @config-manager:end extensions-merge

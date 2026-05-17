@@ -41,13 +41,13 @@ brew "gum"
 # https://hk.jdx.dev
 brew "hk"
 
-# https://jqlang.github.io/jq/
+# https://jqlang.org/
 brew "jq"
 
 # https://lychee.cli.rs/
 brew "lychee"
 
-# https://nodejs.org/
+# https://nodejs.org/en
 brew "node"
 
 # https://pandoc.org/

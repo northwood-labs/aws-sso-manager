@@ -100,7 +100,7 @@ tasks:
     cmds:
       - task: internal:header
         vars: {TEXT: "Cleaning artifacts from benchmarks..."}
-      - '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% rm -fv "%"'
-      - '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% rm -fv "%"'
+      - '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
+      - '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
 
 # @config-manager:end golang

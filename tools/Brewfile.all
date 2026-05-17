@@ -63,7 +63,7 @@ brew "htop"
 # https://imagemagick.org/index.php
 brew "imagemagick-full"
 
-# https://jqlang.github.io/jq/
+# https://jqlang.org/
 brew "jq"
 
 # https://wiki.gnome.org/Projects/LibRsvg
@@ -110,7 +110,7 @@ brew "zstd"
 # https://1password.com/
 cask "1password"
 
-# https://developer.1password.com/docs/cli
+# https://www.1password.dev/cli
 cask "1password-cli"
 
 # https://www.mothersruin.com/software/Apparency/
@@ -119,10 +119,10 @@ cask "apparency"
 # https://github.com/insidegui/AssetCatalogTinkerer
 cask "asset-catalog-tinkerer"
 
-# https://getcleanshot.com/
+# https://cleanshot.com/
 cask "cleanshot"
 
-# https://corretto.aws/
+# https://docs.aws.amazon.com/corretto/
 cask "corretto@25"
 
 # https://flexibits.com/fantastical

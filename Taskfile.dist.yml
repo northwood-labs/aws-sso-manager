@@ -21,6 +21,7 @@ vars:
   # Explicitly define these paths to point to Homebrew-installed GNU versions.
   BASH: /opt/homebrew/opt/bash/bin/bash
   FIND: /opt/homebrew/opt/findutils/bin/gfind
+  RM: /opt/homebrew/opt/coreutils/libexec/gnubin/rm
   XARGS: /opt/homebrew/opt/findutils/bin/gxargs
 
 includes:
@@ -123,6 +124,34 @@ tasks:
       - task: internal:header
         vars: {TEXT: "Linting ALL files..."}
       - hk fix --all --no-fail-fast
+
+  lint:deep:*:
+    desc: Run a specific linter on ALL files.
+    summary: |
+      Runs a specific linter on ALL files.
+    vars:
+      STEP: "{{ index .MATCH 0 }}"
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting ALL files with {{ .STEP }}..."}
+      - hk fix --all --no-fail-fast --step {{ .STEP }}
+
+  lint:list:
+    desc: Get a list of available linters.
+    summary: |
+      Gets a list of available linters.
+
+      Values are read from the hk.pkl file.
+    vars:
+      TASKS:
+        sh: hk check --json --plan 2>/dev/null | jq -Mr '.groups[0].stepIds | sort | .[]'
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Listing available linters..."}
+      - for:
+          var: TASKS
+        cmd: "echo task lint:deep:{{ .ITEM }}"
+        silent: true
   # @config-manager:end linting-standard
   #-----------------------------------------------------------------------------
   # Building
@@ -183,5 +212,16 @@ tasks:
     cmds:
       - task: internal:header
         vars: {TEXT: "Cleaning .DS_Store files..."}
-      - '{{ .FIND }} . -type f -name ".DS_Store" | {{ .XARGS }} -I% rm -fv "%"'
+      - '{{ .FIND }} . -type f -name ".DS_Store" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
+
+  clean-lychee:
+    desc: Clean Lychee artifacts.
+    summary: |
+      Clean Lychee artifacts.
+
+      Cleans the Lychee report and cache files from disk.
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Cleaning Lychee artifacts..."}
+      - "{{ .RM }} -vf .lychee* lychee.md"
   # @config-manager:end cleaning-standard

@@ -37,5 +37,5 @@ dasel_command="dasel query --in toml --out json ${vars[*]} '${merge}'"
 
 # Execute the command we constructed as a string. Pass through jq for
 # formatting, and write output to sibling file.
-eval "${dasel_command}" | jq -Mr --sort-keys '.' > "${SCRIPT_DIR}/settings.json"
+eval "${dasel_command}" | jq -Mr --sort-keys '.' >"${SCRIPT_DIR}/settings.json"
 # @config-manager:end settings-merge

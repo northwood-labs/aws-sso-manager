@@ -124,7 +124,7 @@ aws s3 ls --profile {PROFILE}
 AWS_PROFILE={PROFILE} aws s3 ls
 ```
 
-### With [AWS vault](https://github.com/ByteNess/aws-vault/blob/master/USAGE.md) (via `exec` or `login`)
+### With [AWS vault](https://github.com/ByteNess/aws-vault/blob/main/USAGE.md) (via `exec` or `login`)
 
 ```bash
 aws-vault exec {PROFILE} -- aws s3 ls
@@ -134,7 +134,7 @@ aws-vault exec {PROFILE} -- aws s3 ls
 aws-vault login {PROFILE}
 ```
 
-### With [AWS SDKs](https://aws.amazon.com/developer/tools/)
+### With [AWS SDKs](https://builder.aws.com/build/tools)
 
 See the documentation for your specific SDK, but everything supported in the AWS CLI is also supported in the AWS SDKs.
 
