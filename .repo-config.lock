@@ -37,7 +37,7 @@ source_hash = ''
 dest_hash = 'sha256:8b99cde1f1b1b81c0e067c5d6953dd5c7e850e7978c6a3fcfc3af62574c5463e'
 
 [files.'.kiro/steering/markdown-style.md']
-last_sync_time = '2026-05-17T00:29:47Z'
+last_sync_time = '2026-05-17T00:59:18Z'
 source_hash = ''
 dest_hash = 'sha256:615b8b3caad55c5ebd4da808f4f47f8b65494b1263b51e8a25864d8f80c7cbca'
 
@@ -117,9 +117,9 @@ source_hash = ''
 dest_hash = 'sha256:490a1eddadab7e204292cbd886a9045cd4e28b8ddc290a82a209b81e1a144fbf'
 
 [files.'tools/Taskfile.gitconfig.yml']
-last_sync_time = '2026-05-17T00:29:47Z'
+last_sync_time = '2026-05-17T00:59:18Z'
 source_hash = ''
-dest_hash = 'sha256:bdf91528e554b19156cf6c8c2ce5bb1804c6d42a2be1d23a6d69b794dfc6c979'
+dest_hash = 'sha256:1a3b2024efee6b1dadb90bbd9787f617212ae8b17ad1e60f936bda20b4058207'
 
 [files.'tools/go-tool-golang.sh']
 last_sync_time = '2026-05-10T17:16:53Z'
