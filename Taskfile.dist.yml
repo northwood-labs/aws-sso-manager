@@ -180,6 +180,37 @@ tasks:
         task: "{{ .ITEM }}"
   # @config-manager:end docs-standard
 
+  #-------------------------------------------------------------------------------
+  # Compliance
+
+  # @config-manager:start compliance-standard
+  license:
+    desc: "Get list of software licenses in-use."
+    summary: |
+      Gets list of software licenses in-use.
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Detecting software licenses..."}
+      - trivy fs --config trivy-license.yaml --format json . 2>/dev/null > .licenses.cache.json
+      - silent: true
+        cmd: |
+          cat .licenses.cache.json | jq -Mr '
+            [
+              .Results[]
+              | select(.Packages)
+              | .Packages[]
+              | select(.Licenses)
+              | .Licenses[]
+            ]
+            | to_entries
+            | group_by(.value)[]
+            | {
+              Name: .[0].value,
+              Count: length
+            }
+            | "\(.Name): \(.Count)"
+          '
+  # @config-manager:end compliance-standard
   #-----------------------------------------------------------------------------
   # Cleanup
 

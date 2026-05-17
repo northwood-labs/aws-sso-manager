@@ -77,6 +77,9 @@ local linters = new Mapping<String, Step> {
   }
   ["hadolint"] = Builtins.hadolint
   ["hcl-fmt"] = Builtins.hclfmt
+  ["licensei"] {
+    check = "licensei header"
+  }
   ["lychee"] = Builtins.lychee
   ["markdown-lint"] = Builtins.rumdl
   // ["mdschema"] = Builtins.mdschema // Needs more tuning.
@@ -102,6 +105,12 @@ local linters = new Mapping<String, Step> {
     fix = "uvx sqlfluff fix {{ files }}"
   }
   ["tflint"] = Builtins.tf_lint
+  ["trivy-licenses"] {
+    check = "trivy fs --config trivy-license.yaml --ignorefile .trivyignore ."
+  }
+  ["trivy-vulns"] {
+    check = "trivy fs --config trivy-vuln.yaml --ignorefile .trivyignore ."
+  }
   // https://vale.sh/docs
   // @config-manager:end standard
 
@@ -135,16 +144,6 @@ local linters = new Mapping<String, Step> {
   // Glob: **/*.rs
   // Check: rustfmt --check --edition 2024 {{ files }}
   // Fix: rustfmt --edition 2024 {{ files }}
-
-  // 	@ $(HEADER) "=====> Checking license usage..."
-  // @ - trivy fs --config trivy-license.yaml --format json . 2>/dev/null > .licenses.cache.json
-  // @ cat .licenses.cache.json | jq -Mr '[.Results[] | select(.Packages) | .Packages[] | select(.Licenses)
-  // | .Licenses[]] | to_entries | group_by(.value)[] | {Name: .[0].value, Count: length} | "\(.Name): \(.Count)"'
-
-  // @ $(HEADER) "=====> Checking license headers..."
-  // @ echo "Missing/outdated:"
-  // @ - licensei header
-
 }
 
 hooks {
