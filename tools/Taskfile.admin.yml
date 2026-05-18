@@ -17,6 +17,7 @@ tasks:
     cmds:
       - task: internal:header
         vars: {TEXT: "Updating all dev dependencies..."}
+      - cmd: config-manager sync
       - for:
           var: BREW
         cmd: brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file="{{ .ITEM }}"

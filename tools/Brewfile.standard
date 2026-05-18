@@ -8,6 +8,7 @@
 # @config-manager:start taps
 tap "go-task/tap"
 tap "okooo5km/tap"
+tap "oven-sh/bun"
 tap "trufflesecurity/trufflehog"
 # @config-manager:end taps
 
@@ -15,6 +16,9 @@ tap "trufflesecurity/trufflehog"
 # FORMULAE
 
 # @config-manager:start brew
+# https://bun.sh/
+brew "bun"
+
 # https://github.com/editorconfig-checker/editorconfig-checker
 brew "editorconfig-checker"
 

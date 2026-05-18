@@ -40,7 +40,7 @@
 # https://hk.jdx.dev
 [[files]]
   stub = 'configs/stubs/hk.pkl'
-  source = 'configs/stubs/hk.pkl'
+  source = 'configs/templates/hk.pkl'
   destination = 'hk.pkl'
 
 # Detect broken links.
