@@ -18,11 +18,13 @@ set: [pipefail]
 shopt: [globstar]
 
 vars:
+  # @config-manager:start standard-vars
   # Explicitly define these paths to point to Homebrew-installed GNU versions.
   BASH: /opt/homebrew/opt/bash/bin/bash
   FIND: /opt/homebrew/opt/findutils/bin/gfind
   RM: /opt/homebrew/opt/coreutils/libexec/gnubin/rm
   XARGS: /opt/homebrew/opt/findutils/bin/gxargs
+  # @config-manager:end standard-vars
 
 includes:
   # @config-manager:start standard

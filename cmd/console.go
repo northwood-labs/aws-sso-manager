@@ -250,7 +250,8 @@ var (
 				log.Fatal(err)
 			}
 
-			logger.DebugContext(ctx, "Values have been collected",
+			logger.DebugContext(
+				ctx, "Values have been collected",
 				logKeyProfileName, profileName,
 				logKeyStartHost, startHost,
 				logKeyConsoleURL, consoleURL,

@@ -13,10 +13,12 @@
       }
     },
     "kirograph": {
+      "command": "kirograph",
       "args": [
         "serve",
         "--mcp"
       ],
+      "disabled": false,
       "autoApprove": [
         "kirograph_search",
         "kirograph_context",
@@ -30,9 +32,7 @@
         "kirograph_circular_deps",
         "kirograph_path",
         "kirograph_type_hierarchy"
-      ],
-      "command": "kirograph",
-      "disabled": false
+      ]
     }
   }
 }

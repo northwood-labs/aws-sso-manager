@@ -85,7 +85,7 @@ tasks:
   #-----------------------------------------------------------------------------
   # Cleanup
 
-  clean-go:
+  clean:go:
     desc: Clean Go's module and test cache.
     summary: Cleans Go's module and test cache.
     prompt: Are you certain that you want to remove Go's module and test cache?
@@ -94,7 +94,7 @@ tasks:
         vars: {TEXT: "Cleaning Go cache..."}
       - go clean -i -r -x -testcache -modcache -cache || true
 
-  clean-bench:
+  clean:bench:
     desc: Clean benchmarking-related files.
     summary: Cleans all benchmarking-related files.
     cmds:

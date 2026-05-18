@@ -36,6 +36,20 @@
   source = 'configs/templates/gommit.toml'
   destination = '.gommit.toml'
 
+# Precommit hooks
+# https://hk.jdx.dev
+[[files]]
+  stub = 'configs/stubs/hk.pkl'
+  source = 'configs/stubs/hk.pkl'
+  destination = 'hk.pkl'
+
+# Detect broken links.
+# https://lychee.cli.rs
+[[files]]
+  stub = 'configs/stubs/lychee.toml'
+  source = 'configs/templates/lychee.toml'
+  destination = 'lychee.toml'
+
 # OSV Scanner
 # https://osv.dev
 [[files]]

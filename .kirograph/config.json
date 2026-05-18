@@ -5,12 +5,12 @@
   "enableArchitecture": true,
   "enableEmbeddings": true,
   "exclude": [
-    "node_modules/**",
-    "dist/**",
-    "build/**",
-    ".git/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
     "*.min.js",
-    ".kirograph/**"
+    "**/.kirograph/**"
   ],
   "extractDocstrings": true,
   "frameworkHints": [
@@ -23,8 +23,9 @@
   "minLogLevel": "warn",
   "qdrantDashboard": false,
   "semanticEngine": "cosine",
+  "syncWarningThreshold": 10,
   "trackCallSites": true,
   "typesenseDashboard": false,
   "useVecIndex": false,
-  "version": 1
+  "version": 2
 }
