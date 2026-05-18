@@ -32,7 +32,7 @@ source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-05-18T05:19:23Z'
+last_sync_time = '2026-05-18T22:43:29Z'
 source_hash = ''
 dest_hash = 'sha256:cdb7fb343b14466bf5552d83406a937da0285d6e38bcaee17651120d35b978f4'
 
@@ -127,7 +127,7 @@ source_hash = ''
 dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
 
 [files.'tools/Brewfile.golang']
-last_sync_time = '2026-05-17T22:08:34Z'
+last_sync_time = '2026-05-18T22:43:48Z'
 source_hash = ''
 dest_hash = 'sha256:d3118074d0c2920bc9ebd384cdb9559af4cc9c32a90efd4868943b98a305ca9c'
 
@@ -137,17 +137,17 @@ source_hash = ''
 dest_hash = 'sha256:2e350c33491f8f7d0e5aff174a1aadc07bd61172bd621a8a254fdfb28625a3ad'
 
 [files.'tools/Taskfile.admin.yml']
-last_sync_time = '2026-05-18T05:19:23Z'
+last_sync_time = '2026-05-18T22:43:48Z'
 source_hash = ''
-dest_hash = 'sha256:9c35386f50be0f0fa225047b6b5759361886b776e7bfd101a319133e73eb3d27'
+dest_hash = 'sha256:2db29b2da2561ee9fa728c1be5eb317ddb1df526eec9aa32c54da05ad17fbe86'
 
 [files.'tools/Taskfile.gitconfig.yml']
-last_sync_time = '2026-05-18T05:19:23Z'
+last_sync_time = '2026-05-18T22:43:48Z'
 source_hash = ''
 dest_hash = 'sha256:88272d6113557cf4c0dd946a94938388df42473d2f9c019e4f700abca028207c'
 
 [files.'tools/Taskfile.golang.yml']
-last_sync_time = '2026-05-18T05:19:23Z'
+last_sync_time = '2026-05-18T22:43:29Z'
 source_hash = ''
 dest_hash = 'sha256:e779bab1aac9b293c5fed0fda947f87761a9a58cd52f5f73707a8d49ba519716'
 
