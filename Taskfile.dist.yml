@@ -26,6 +26,9 @@ vars:
 
 includes:
   # @config-manager:start standard
+  admin:
+    taskfile: ./tools/Taskfile.admin.yml
+    flatten: true
   gitconfig:
     taskfile: ./tools/Taskfile.gitconfig.yml
     flatten: true
@@ -225,13 +228,13 @@ tasks:
       jq, then using a for-loop to call the matches.
     vars:
       TASKS:
-        sh: task --list --json | jq -Mr '.tasks[] | select(.name | startswith("clean-") and . != "clean-go") | .name'
+        sh: task --list --json | jq -Mr '.tasks[] | select(.name | startswith("clean:") and . != "clean:go") | .name'
     cmds:
       - for:
           var: TASKS
         task: "{{ .ITEM }}"
 
-  clean-ds:
+  clean:ds:
     desc: Clean .DS_Store files.
     summary: |
       Clean .DS_Store files.
@@ -245,7 +248,7 @@ tasks:
         vars: {TEXT: "Cleaning .DS_Store files..."}
       - '{{ .FIND }} . -type f -name ".DS_Store" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
 
-  clean-lychee:
+  clean:lychee:
     desc: Clean Lychee artifacts.
     summary: |
       Clean Lychee artifacts.

@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+##
+# https://taskfile.dev/docs/guide
+##
+
+# @config-manager:start standard
+version: "3"
+
+tasks:
+  deps:update:
+    desc: Update all dev dependencies.
+    vars:
+      BREW:
+        sh: '{{ .FIND }} tools/ -type f -name "Brewfile.*"'
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Updating all dev dependencies..."}
+      - for:
+          var: BREW
+        cmd: brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file="{{ .ITEM }}"
+      - cmd: go run github.com/Gelio/go-global-update@latest || true
+# @config-manager:end standard
