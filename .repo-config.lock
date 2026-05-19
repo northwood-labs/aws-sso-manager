@@ -32,7 +32,7 @@ source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-05-19T02:28:05Z'
+last_sync_time = '2026-05-19T03:40:09Z'
 source_hash = ''
 dest_hash = 'sha256:cdb7fb343b14466bf5552d83406a937da0285d6e38bcaee17651120d35b978f4'
 
@@ -117,9 +117,9 @@ source_hash = ''
 dest_hash = 'sha256:280af3293caf54f6c15e7ac6eee7f813b80fa88d4a3b7fe518f334b38e1e4fdd'
 
 [files.'hk.pkl']
-last_sync_time = '2026-05-18T05:30:41Z'
+last_sync_time = '2026-05-19T03:40:53Z'
 source_hash = ''
-dest_hash = 'sha256:28637ed1e7369341bb605bcfd2e5fd7761f315868750fab4c03366455acee2fa'
+dest_hash = 'sha256:cf584e9f767a10ce07cbf5565a0162dedc84de99838f46407403702712605a6d'
 
 [files.'osv-scanner.toml']
 last_sync_time = '2026-05-04T19:51:03Z'
@@ -167,9 +167,9 @@ source_hash = ''
 dest_hash = 'sha256:8c045609e4efc0c1b40428c39714af7e829949cbeab468063594f764bec0d851'
 
 [files.'trivy-license.yaml']
-last_sync_time = '2026-05-04T05:00:35Z'
+last_sync_time = '2026-05-19T03:48:51Z'
 source_hash = ''
-dest_hash = 'sha256:6cbd995d6cef5371d37176a5c912d867044eaa48881bcd728b1a74c2911964b5'
+dest_hash = 'sha256:474ffe4049c40354708e12c51d87ef3b1692de5aa26351c9fd9956a431b7390e'
 
 [files.'trivy-vuln.yaml']
 last_sync_time = '2026-05-04T05:00:35Z'
