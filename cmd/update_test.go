@@ -25,9 +25,10 @@ import (
 	"testing"
 
 	"charm.land/log/v2"
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
+
+	configFile "github.com/northwood-labs/aws-config-parser/ini"
 )
 
 func mustSetStringValue(

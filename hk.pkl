@@ -56,6 +56,14 @@ local linters = new Mapping<String, Group> {
         glob = "**/*.go"
         fix = "gofmt -s -w {{ files }} && gofumpt -w {{ files }}"
       }
+      ["goimports"] {
+        workspace_indicator = "go.mod"
+        glob = "**/*.go"
+        check =
+          "cd {{ workspace }} && goimports -d -e -local github.com/northwood-labs,go.nwlabs.dev ."
+        fix =
+          "cd {{ workspace }} && goimports -w -e -local github.com/northwood-labs,go.nwlabs.dev ."
+      }
       ["golangci-lint"] {
         workspace_indicator = "go.mod"
         glob = "**/*.go"

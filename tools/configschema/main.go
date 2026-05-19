@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/invopop/jsonschema"
+
 	"github.com/northwood-labs/aws-sso-manager/cmd"
 )
 
