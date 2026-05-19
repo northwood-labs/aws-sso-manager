@@ -34,8 +34,9 @@ tasks:
       GOEXPERIMENT: jsonv2
     cmds:
       - task: internal:header
-        vars: {TEXT: "Building and installing..."}
-      - go install -a -ldflags="-s -w" -trimpath .
+        vars:
+          TEXT: "Building and installing..."
+      - cmd: go install -a -ldflags="-s -w" -trimpath .
 
   tidy:
     desc: Run 'go mod tidy' for all go.mod files in the project.
@@ -43,11 +44,12 @@ tasks:
       Runs 'go mod tidy' for all go.mod files in the project.
     cmds:
       - task: internal:header
-        vars: {TEXT: "Tidy and download the Go dependencies..."}
-      - |
-        {{ .FIND }} . -type f -name "go.mod" \
-          | {{ .XARGS }} -I% dirname "%" \
-          | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }}'
+        vars:
+          TEXT: "Tidy and download the Go dependencies..."
+      - cmd: |
+          {{ .FIND }} . -type f -name "go.mod" \
+            | {{ .XARGS }} -I% dirname "%" \
+            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }}'
 
   godeps:
     desc: Update packages to their latest semver minor versions.
@@ -57,11 +59,12 @@ tasks:
       This is useful for keeping the dependencies up to date with little effort.
     cmds:
       - task: internal:header
-        vars: {TEXT: "Upgrade the minor versions of Go dependencies..."}
-      - |
-        {{ .FIND }} . -type f -name "go.mod" \
-          | {{ .XARGS }} -I% dirname "%" \
-          | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }} && go get -u -t -v ./...'
+        vars:
+          TEXT: "Upgrade the minor versions of Go dependencies..."
+      - cmd: |
+          {{ .FIND }} . -type f -name "go.mod" \
+            | {{ .XARGS }} -I% dirname "%" \
+            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }} && go get -u -t -v ./...'
       - task: tidy
 
   #-----------------------------------------------------------------------------
@@ -70,17 +73,19 @@ tasks:
   #-------------------------------------------------------------------------------
   # Documentation
 
-  docs-serve:
+  docs:serve:
     desc: Preview the Go library documentation.
     summary: |
       Previews the Go library documentation. This helps us easily view the
       documentation for the project and identify where the gaps are.
     cmds:
       - task: internal:header
-        vars: {TEXT: "Displaying Go documentation..."}
+        vars:
+          TEXT: "Displaying Go documentation..."
       - task: internal:error
-        vars: {TEXT: "Type Ctrl-C to quit."}
-      - go doc -http
+        vars:
+          TEXT: "Type Ctrl-C to quit."
+      - cmd: go doc -http
 
   #-----------------------------------------------------------------------------
   # Cleanup
@@ -91,16 +96,18 @@ tasks:
     prompt: Are you certain that you want to remove Go's module and test cache?
     cmds:
       - task: internal:header
-        vars: {TEXT: "Cleaning Go cache..."}
-      - go clean -i -r -x -testcache -modcache -cache || true
+        vars:
+          TEXT: "Cleaning Go cache..."
+      - cmd: go clean -i -r -x -testcache -modcache -cache || true
 
   clean:bench:
     desc: Clean benchmarking-related files.
     summary: Cleans all benchmarking-related files.
     cmds:
       - task: internal:header
-        vars: {TEXT: "Cleaning artifacts from benchmarks..."}
-      - '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
-      - '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
+        vars:
+          TEXT: "Cleaning artifacts from benchmarks..."
+      - cmd: '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
+      - cmd: '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
 
 # @config-manager:end golang

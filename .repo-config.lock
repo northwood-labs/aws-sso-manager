@@ -32,7 +32,7 @@ source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-05-18T22:43:29Z'
+last_sync_time = '2026-05-19T02:28:05Z'
 source_hash = ''
 dest_hash = 'sha256:cdb7fb343b14466bf5552d83406a937da0285d6e38bcaee17651120d35b978f4'
 
@@ -127,9 +127,9 @@ source_hash = ''
 dest_hash = 'sha256:6dde1b2be039f8f81a099414f8e03802d5c55713cabac8bddba091892a9afd46'
 
 [files.'tools/Brewfile.golang']
-last_sync_time = '2026-05-18T22:43:48Z'
+last_sync_time = '2026-05-19T01:30:17Z'
 source_hash = ''
-dest_hash = 'sha256:d3118074d0c2920bc9ebd384cdb9559af4cc9c32a90efd4868943b98a305ca9c'
+dest_hash = 'sha256:a62e3351eedfbbc596ac16cfebfd50368067e9e0dc00ce9f58d74e66f6155dd1'
 
 [files.'tools/Brewfile.standard']
 last_sync_time = '2026-05-17T22:28:34Z'
@@ -137,24 +137,24 @@ source_hash = ''
 dest_hash = 'sha256:2e350c33491f8f7d0e5aff174a1aadc07bd61172bd621a8a254fdfb28625a3ad'
 
 [files.'tools/Taskfile.admin.yml']
-last_sync_time = '2026-05-18T22:43:48Z'
+last_sync_time = '2026-05-19T02:06:47Z'
 source_hash = ''
-dest_hash = 'sha256:2db29b2da2561ee9fa728c1be5eb317ddb1df526eec9aa32c54da05ad17fbe86'
+dest_hash = 'sha256:a051208ee7a4fb678bd6087bb457a6db2c032dded0d42dcc5711d5958c14fe42'
 
 [files.'tools/Taskfile.gitconfig.yml']
-last_sync_time = '2026-05-18T22:43:48Z'
+last_sync_time = '2026-05-19T01:49:51Z'
 source_hash = ''
-dest_hash = 'sha256:88272d6113557cf4c0dd946a94938388df42473d2f9c019e4f700abca028207c'
+dest_hash = 'sha256:9cec8f98d69082fe0ee64561040aac7d45fc2ddd9c9a32935d4f230cd0770bb5'
 
 [files.'tools/Taskfile.golang.yml']
-last_sync_time = '2026-05-18T22:43:29Z'
+last_sync_time = '2026-05-19T02:28:05Z'
 source_hash = ''
-dest_hash = 'sha256:e779bab1aac9b293c5fed0fda947f87761a9a58cd52f5f73707a8d49ba519716'
+dest_hash = 'sha256:ca610137685f5e2656816f5258af2a6dcd6440ad918bce4f4c05c473df86b001'
 
 [files.'tools/Taskfile.internal.yml']
-last_sync_time = '2026-05-18T03:24:01Z'
+last_sync_time = '2026-05-19T02:28:38Z'
 source_hash = ''
-dest_hash = 'sha256:ae20095ae7d54d6f9daec5577aad3ede5a7c6d1de9816bdc717062ebf3e343b6'
+dest_hash = 'sha256:68308208fc2469cf31af812a1bb854fa6a1c5d9ccd9fb86f02bbce76b9252847'
 
 [files.'tools/go-tool-golang.sh']
 last_sync_time = '2026-05-10T17:16:53Z'
