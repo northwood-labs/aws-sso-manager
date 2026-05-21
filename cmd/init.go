@@ -112,7 +112,7 @@ var initCmd = &cobra.Command{
 
 		_, ok := sections.GetSection(sessionName)
 		if ok {
-			return fmt.Errorf("%w: [%s]; delete it and re-run init", ErrConfigSectionExists, sessionName)
+			return fmt.Errorf("%w: [%s]; delete it and re-run init", errConfigSectionExists, sessionName)
 		}
 
 		// Guard against orphaned markers: the section header may have been manually
@@ -123,7 +123,7 @@ var initCmd = &cobra.Command{
 		} else if exists {
 			return fmt.Errorf(
 				"%w: profile %q; remove the markers and re-run init",
-				ErrConfigMarkersExist,
+				errConfigMarkersExist,
 				profileName,
 			)
 		}
@@ -299,7 +299,7 @@ func init() { // lint:allow_init
 func normalizeSSOStartURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return "", ErrValueEmpty
+		return "", errValueEmpty
 	}
 
 	if strings.Contains(trimmed, "://") {
@@ -309,7 +309,7 @@ func normalizeSSOStartURL(raw string) (string, error) {
 		}
 
 		if parsed.Scheme == "" || parsed.Host == "" {
-			return "", fmt.Errorf("%w: got %q", ErrStartURLInvalid, raw)
+			return "", fmt.Errorf("%w: got %q", errStartURLInvalid, raw)
 		}
 
 		return trimmed, nil
@@ -324,7 +324,7 @@ func normalizeSSOStartURL(raw string) (string, error) {
 		}
 
 		if parsed.Host == "" {
-			return "", fmt.Errorf("%w: got %q", ErrStartURLHostInvalid, raw)
+			return "", fmt.Errorf("%w: got %q", errStartURLHostInvalid, raw)
 		}
 
 		return candidate, nil

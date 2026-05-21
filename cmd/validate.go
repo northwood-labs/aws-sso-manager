@@ -183,7 +183,7 @@ var (
 			}
 
 			if foundProblems {
-				return ErrValidationFailed
+				return errValidationFailed
 			}
 
 			lipgloss.Printf( // lint:allow_unhandled

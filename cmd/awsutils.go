@@ -106,10 +106,10 @@ type (
 	// so that "get" and "lookup" commands can resolve identifiers without
 	// re-fetching from AWS.
 	listAWSAccountsLookupIndex struct {
-		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`            // lint:allow_format
-		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`    // lint:allow_format
-		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"` // lint:allow_format
-		ProfileName           string                                  `json:"profile_name"`              // lint:allow_format
+		AccountsByID          map[string]listAWSAccountsLookupAccount `json:"accounts_by_id"`            // lint:allow_format lint:ignore_length
+		AccountIDsByNameCI    map[string][]string                     `json:"account_ids_by_name_ci"`    // lint:allow_format lint:ignore_length
+		AccountIDsByProfileCI map[string][]string                     `json:"account_ids_by_profile_ci"` // lint:allow_format lint:ignore_length
+		ProfileName           string                                  `json:"profile_name"`              // lint:allow_format lint:ignore_length
 	}
 
 	listAWSAccountsLookupCacheData struct {
@@ -154,7 +154,7 @@ func (*cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 	}
 
 	if time.Now().After(cache.ExpiresAt) {
-		return nil, ErrSSOTokenExpired
+		return nil, errSSOTokenExpired
 	}
 
 	return &cache, nil
@@ -404,7 +404,7 @@ func loadOrBuildListAWSAccountsLookupIndex(
 ) (listAWSAccountsLookupIndex, error) {
 	lookupCachePath := input.lookupCacheFilePath()
 	if lookupCachePath == "" {
-		return listAWSAccountsLookupIndex{}, ErrCachePathLookup
+		return listAWSAccountsLookupIndex{}, errCachePathLookup
 	}
 
 	index, ok, err := readListAWSAccountsLookupCache(lookupCachePath)
@@ -418,7 +418,7 @@ func loadOrBuildListAWSAccountsLookupIndex(
 
 	accountsCachePath := input.cacheFilePath()
 	if accountsCachePath == "" {
-		return listAWSAccountsLookupIndex{}, ErrCachePathAccounts
+		return listAWSAccountsLookupIndex{}, errCachePathAccounts
 	}
 
 	accounts, ok, err := readListAWSAccountsCache(accountsCachePath)
@@ -429,7 +429,7 @@ func loadOrBuildListAWSAccountsLookupIndex(
 	if !ok {
 		return listAWSAccountsLookupIndex{}, fmt.Errorf(
 			"%w: profile %q",
-			ErrCacheMissing,
+			errCacheMissing,
 			input.ProfileName,
 		)
 	}
@@ -452,7 +452,7 @@ func loadOrBuildListAWSAccountsLookupIndex(
 func deleteListAWSAccountsCache(input *listAWSAccountsInput) error {
 	cacheFilePath := input.cacheFilePath()
 	if cacheFilePath == "" {
-		return ErrCachePathGeneral
+		return errCachePathGeneral
 	}
 
 	lookupCachePath := input.lookupCacheFilePath()
@@ -601,7 +601,8 @@ func createAWSConfigFile(ctx context.Context) string {
 	return awsConfigFilePath
 }
 
-// generateSingleAWSConfig generates the AWS config file content from the given sections.
+// generateSingleAWSConfig generates the AWS config file content from the given
+// sections.
 func generateSingleAWSConfig(section *ini.Section) string {
 	var out strings.Builder
 
@@ -616,7 +617,8 @@ func generateSingleAWSConfig(section *ini.Section) string {
 	return out.String()
 }
 
-// generateAWSConfig generates the AWS config file content from the given sections.
+// generateAWSConfig generates the AWS config file content from the given
+// sections.
 func generateAWSConfig(sections ini.Sections) string {
 	var out strings.Builder
 
@@ -682,7 +684,7 @@ func getSsoSession(ctx context.Context, profileName string) (ssoProfile, error) 
 	if !ok {
 		return ssoProfile{}, fmt.Errorf(
 			"%w: [%s]",
-			ErrProfileNotExist,
+			errProfileNotExist,
 			sessionName,
 		)
 	}
@@ -721,7 +723,8 @@ func getCacheFilePath(ctx context.Context, sessionProfile *ssoProfile) (string, 
 	return cacheFilePath, nil
 }
 
-// authenticateSSOProfile performs the SSO authentication flow for the given SSO session profile.
+// authenticateSSOProfile performs the SSO authentication flow for the given SSO
+// session profile.
 func authenticateSSOProfile(
 	ctx context.Context,
 	sdkConfig *aws.Config,
@@ -773,7 +776,8 @@ func authenticateSSOProfile(
 	return authURL, registerClient, deviceAuth, nil
 }
 
-// waitForCustomerToAuthenticate waits for the customer to complete the SSO authentication flow.
+// waitForCustomerToAuthenticate waits for the customer to complete the SSO
+// authentication flow.
 func waitForCustomerToAuthenticate(
 	ctx context.Context,
 	input *customerAuthInput,
@@ -874,7 +878,8 @@ func waitForCustomerToAuthenticate(
 // listAWSAccounts is the main entry point for fetching account/role data. It
 // implements a cache-aside pattern: check cache first, fall back to the AWS API
 // on miss, then write the result back to cache. This keeps repeated commands
-// fast (sub-second) while ensuring fresh data is fetched when the cache expires.
+// fast (sub-second) while ensuring fresh data is fetched when the cache
+// expires.
 func listAWSAccounts( // lint:allow_complexity
 	input *listAWSAccountsInput,
 ) (listAccounts, error) {
@@ -965,22 +970,23 @@ func listAWSAccounts( // lint:allow_complexity
 // ListAccountRoles APIs, applying any active filters and sorting the results.
 // This is the only function that makes real AWS API calls for account data —
 // everything else reads from cache. Filters are applied during pagination
-// rather than after to avoid fetching roles for accounts that will be discarded.
+// rather than after to avoid fetching roles for accounts that will be
+// discarded.
 func fetchListAWSAccountsFromSSO( // lint:allow_complexity
 	input *listAWSAccountsInput,
 ) (listAccounts, error) {
 	var accts listAccounts
 
 	if input.Cmd == nil {
-		return accts, ErrCommandRequired
+		return accts, errCommandRequired
 	}
 
 	if input.SDKConfig == nil {
-		return accts, ErrSDKConfigRequired
+		return accts, errSDKConfigRequired
 	}
 
 	if input.Cache == nil {
-		return accts, ErrSSOCacheRequired
+		return accts, errSSOCacheRequired
 	}
 
 	ssoClient := sso.NewFromConfig(*input.SDKConfig)

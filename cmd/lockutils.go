@@ -106,9 +106,9 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 }
 
 // Release drops the advisory lock and closes the file. It is safe to call on a
-// nil receiver so callers can unconditionally defer it. We unlock before closing
-// because closing the fd implicitly drops the lock on some platforms, and we
-// want the unlock error (if any) to be reported separately.
+// nil receiver so callers can unconditionally defer it. We unlock before
+// closing because closing the fd implicitly drops the lock on some platforms,
+// and we want the unlock error (if any) to be reported separately.
 func (l *awsConfigLock) Release() error {
 	if l == nil || l.file == nil {
 		return nil

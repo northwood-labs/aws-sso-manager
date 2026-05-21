@@ -27,10 +27,11 @@ import (
 )
 
 const (
-	// ManagedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
-	// ~/.aws/config that this tool owns. Content between a matching start/end
-	// pair is regenerated on every "update" — anything outside is left untouched.
-	// This marker-based approach lets the tool coexist with hand-edited sections.
+	// ManagedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions
+	// of ~/.aws/config that this tool owns. Content between a matching
+	// start/end pair is regenerated on every "update" — anything outside is
+	// left untouched. This marker-based approach lets the tool coexist with
+	// hand-edited sections.
 	managedStartMarkerPrefix = "aws-sso-manager: start "
 	managedEndMarkerPrefix   = "aws-sso-manager: end "
 
@@ -337,6 +338,7 @@ func buildDefaultProfileName(account, role string) string {
 // toProfileToken normalizes a string into a valid, lowercase profile name
 // component by replacing non-alphanumeric characters with hyphens and
 // collapsing consecutive hyphens. This is idempotent:
+//
 // toProfileToken(toProfileToken(x)) == toProfileToken(x), which is important
 // because profile names may be round-tripped through the lookup index.
 func toProfileToken(input string) string {
@@ -390,7 +392,7 @@ func validateMarkers(profileName string) error {
 
 	var errs []error
 	for _, issue := range report.issues[profileName] {
-		errs = append(errs, fmt.Errorf("%w: %s", ErrManagedMarkerIssue, issue))
+		errs = append(errs, fmt.Errorf("%w: %s", errManagedMarkerIssue, issue))
 	}
 
 	if len(errs) > 0 {
@@ -401,7 +403,8 @@ func validateMarkers(profileName string) error {
 }
 
 // validateManagedMarkers checks all profiles at once, used by the validate
-// command to give a comprehensive report rather than stopping at the first error.
+// command to give a comprehensive report rather than stopping at the first
+// error.
 func validateManagedMarkers() error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
@@ -412,7 +415,7 @@ func validateManagedMarkers() error {
 
 	for _, profile := range report.profiles {
 		for _, issue := range report.issues[profile] {
-			errs = append(errs, fmt.Errorf("%w: %s", ErrManagedMarkerIssue, issue))
+			errs = append(errs, fmt.Errorf("%w: %s", errManagedMarkerIssue, issue))
 		}
 	}
 
@@ -490,7 +493,7 @@ func getManagedSection(profileName string) (string, error) {
 
 // setManagedSection replaces the content between a profile's managed block
 // markers with new content from tmpFile. It writes to a backup file in the same
-// directory as the config so that the final os.Rename is an atomic
+// directory as the config so that the final [os.Rename] is an atomic
 // same-filesystem operation — this prevents a half-written config if the
 // process is interrupted.
 func setManagedSection(tmpFile, profileName string) (string, error) { // lint:allow_complexity
@@ -614,6 +617,10 @@ func getAllManagedSections() ([]string, error) {
 		if strings.HasPrefix(confLine, prefix) {
 			ssoProfiles = append(ssoProfiles, confLine[len(prefix):len(confLine)-1])
 		}
+	}
+
+	if confScanner.Err() != nil {
+		return ssoProfiles, fmt.Errorf("scanning AWS config: %w", confScanner.Err())
 	}
 
 	slices.Sort(ssoProfiles)

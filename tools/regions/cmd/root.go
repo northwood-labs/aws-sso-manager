@@ -39,7 +39,8 @@ const (
 	// AWSMaxResults refers to how many results to retrieve per page.
 	AWSMaxResults = 10
 
-	// ExpectedRegionParts refers to the expected number of parts when splitting a region string.
+	// ExpectedRegionParts refers to the expected number of parts when splitting
+	// a region string.
 	ExpectedRegionParts = 2
 
 	errGeneral = 1
@@ -59,7 +60,8 @@ var (
 	osExit  = os.Exit
 	results []string
 
-	// ErrInvalidResultFormat is returned when a region result string does not match the expected format.
+	// ErrInvalidResultFormat is returned when a region result string does not
+	// match the expected format.
 	ErrInvalidResultFormat = errors.New("invalid result format")
 
 	// rootCmd represents the base command when called without any subcommands.
@@ -176,7 +178,8 @@ func init() { // lint:allow_init
 	)
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
+// Execute adds all child commands to the root command and sets flags
+// appropriately.
 func Execute() {
 	err := runRootCommand(
 		context.Background(),

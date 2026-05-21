@@ -122,6 +122,25 @@ Maximum line length is 120 characters. Common sources and fixes:
 
 **Interaction with tagliatelle:** When adding `// lint:ignore_length` to struct fields with non-camelCase JSON tags (e.g., `json:"snake_case_name"`), also add `// lint:allow_format` on the same line to suppress the `tagliatelle` linter. These tag names are intentional (matching TOML config format).
 
+### Comment line length
+
+Comments, including any whitespace (where tabs count as 4 spaces), must not have individual lines longer than 80 characters. Wrap to the next line instead of continuing on the same line.
+
+Wrong:
+
+```go
+// validateManagedMarkers checks all profiles at once, used by the validate
+// command to give a comprehensive report rather than stopping at the first error.
+```
+
+Right:
+
+```go
+// validateManagedMarkers checks all profiles at once, used by the validate
+// command to give a comprehensive report rather than stopping at the first
+// error.
+```
+
 ### Cognitive complexity (gocognit)
 
 Functions with complexity > 20 trigger a warning. Reduce complexity by extracting helper functions for distinct logical branches (e.g., "handle existing destination", "initialize from stub"). Each helper should have a single responsibility and a clear doc comment.

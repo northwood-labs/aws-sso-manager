@@ -27,7 +27,7 @@ import (
 	"github.com/northwood-labs/aws-sso-manager/cmd"
 )
 
-const ErrGeneral = 1
+const errGeneral = 1
 
 func main() {
 	r := &jsonschema.Reflector{
@@ -55,7 +55,7 @@ func main() {
 	out, err := json.MarshalIndent(schema, "", "  ")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error marshaling schema: %v\n", err)
-		os.Exit(ErrGeneral)
+		os.Exit(errGeneral)
 	}
 
 	fmt.Println(string(out))

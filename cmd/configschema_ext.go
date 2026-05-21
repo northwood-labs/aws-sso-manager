@@ -75,7 +75,7 @@ func (ConfigFile) JSONSchemaExtend(schema *jsonschema.Schema) {
 func validateConfigKey(key string) error {
 	parts := strings.Split(key, ".")
 	if len(parts) == 0 {
-		return ErrConfigKeyEmpty
+		return errConfigKeyEmpty
 	}
 
 	// "profile-name" is the only fixed top-level key.
@@ -84,14 +84,14 @@ func validateConfigKey(key string) error {
 			return nil
 		}
 
-		return fmt.Errorf("%w: %q is a string, not a table", ErrConfigKeyInvalid, "profile-name")
+		return fmt.Errorf("%w: %q is a string, not a table", errConfigKeyInvalid, "profile-name")
 	}
 
 	// Everything else is <sso-profile>.rename.* — the first segment is the
 	// dynamic profile name, so we skip it and validate the rest against
 	// SSOProfileConfig.
 	if len(parts) < 2 {
-		return fmt.Errorf("%w: expected <profile>.<path> for %q", ErrConfigKeyInvalid, key)
+		return fmt.Errorf("%w: expected <profile>.<path> for %q", errConfigKeyInvalid, key)
 	}
 
 	err := walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key)
@@ -119,7 +119,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 	if t.Kind() != reflect.Struct {
 		return fmt.Errorf(
 			"%w: unexpected non-struct type at segment %q in %q",
-			ErrConfigKeyInvalid,
+			errConfigKeyInvalid,
 			parts[0],
 			fullKey,
 		)
@@ -150,7 +150,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 
 			return fmt.Errorf(
 				"%w: %q is a map, keys cannot be nested further in %q",
-				ErrConfigKeyInvalid,
+				errConfigKeyInvalid,
 				segment,
 				fullKey,
 			)
@@ -174,14 +174,14 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 				return nil
 			}
 
-			return fmt.Errorf("%w: %q is a leaf value, not a table in %q", ErrConfigKeyInvalid, segment, fullKey)
+			return fmt.Errorf("%w: %q is a leaf value, not a table in %q", errConfigKeyInvalid, segment, fullKey)
 
 		default:
 			if len(remaining) == 0 {
 				return nil
 			}
 
-			return fmt.Errorf("%w: cannot descend into %q in %q", ErrConfigKeyInvalid, segment, fullKey)
+			return fmt.Errorf("%w: cannot descend into %q in %q", errConfigKeyInvalid, segment, fullKey)
 		}
 	}
 
@@ -202,5 +202,5 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 		return nil
 	}
 
-	return fmt.Errorf("%w: unknown config key %q in %q", ErrConfigKeyInvalid, segment, fullKey)
+	return fmt.Errorf("%w: unknown config key %q in %q", errConfigKeyInvalid, segment, fullKey)
 }

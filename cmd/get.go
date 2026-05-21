@@ -27,9 +27,9 @@ import (
 )
 
 var (
-	// getAccountIDPattern enforces the AWS account ID format (exactly 12 digits)
-	// so that callers get a clear validation error rather than a confusing
-	// "not found" when they pass a malformed ID.
+	// getAccountIDPattern enforces the AWS account ID format (exactly 12
+	// digits) so that callers get a clear validation error rather than a
+	// confusing "not found" when they pass a malformed ID.
 	getAccountIDPattern = regexp.MustCompile(`^\d{12}$`)
 
 	fGetFor     string
@@ -37,8 +37,9 @@ var (
 	fGetName    bool
 
 	// getCmd is the parent for "get accounts" and "get roles". It exists purely
-	// as a namespace — the actual work happens in the subcommands. All output is
-	// one-value-per-line so it composes well with Unix pipes and tools like fzf.
+	// as a namespace — the actual work happens in the subcommands. All output
+	// is one-value-per-line so it composes well with Unix pipes and tools like
+	// fzf.
 	getCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Returns line-delimited values from local cache for shell piping.",
@@ -108,7 +109,7 @@ var (
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if strings.TrimSpace(fGetFor) == "" {
-				return ErrFlagForRequired
+				return errFlagForRequired
 			}
 
 			profileName, err := resolveGetProfileName()
@@ -168,14 +169,14 @@ func resolveGetProfileName() (string, error) {
 
 	profileName = strings.TrimSpace(asmConfig.GetString("profile-name"))
 	if profileName == "" {
-		return "", ErrNoProfileConfigured
+		return "", errNoProfileConfigured
 	}
 
 	return profileName, nil
 }
 
 // getAccountIDsFromLookupIndex extracts all account IDs and returns them in
-// sorted order. Sorting numerically (which sort.Strings achieves for
+// sorted order. Sorting numerically (which [sort.Strings] achieves for
 // fixed-width digit strings) gives stable, predictable output for scripts.
 func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 	accountIDs := make([]string, 0, len(index.AccountsByID))
@@ -213,12 +214,12 @@ func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string) ([]string, error) {
 	trimmedID := strings.TrimSpace(accountID)
 	if !getAccountIDPattern.MatchString(trimmedID) {
-		return nil, fmt.Errorf("%w: got %q", ErrAccountIDInvalid, accountID)
+		return nil, fmt.Errorf("%w: got %q", errAccountIDInvalid, accountID)
 	}
 
 	account, ok := index.AccountsByID[trimmedID]
 	if !ok {
-		return nil, fmt.Errorf("%w: %q", ErrAccountIDNotFound, trimmedID)
+		return nil, fmt.Errorf("%w: %q", errAccountIDNotFound, trimmedID)
 	}
 
 	// Copy before sorting so we don't mutate the cached slice.

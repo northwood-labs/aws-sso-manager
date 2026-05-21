@@ -112,7 +112,7 @@ var (
 			value := asmConfig.Get(key)
 
 			if value == nil {
-				return fmt.Errorf("%w: %q", ErrConfigKeyNotSet, key)
+				return fmt.Errorf("%w: %q", errConfigKeyNotSet, key)
 			}
 
 			fmt.Fprintln(cmd.OutOrStdout(), value)
@@ -137,7 +137,7 @@ var (
 			value := asmConfig.Get(key)
 
 			if value == nil {
-				return fmt.Errorf("%w: %q", ErrConfigKeyNotSet, key)
+				return fmt.Errorf("%w: %q", errConfigKeyNotSet, key)
 			}
 
 			if !fForce {
@@ -476,7 +476,7 @@ func deleteConfigKey(configPath, key string) error {
 	}
 
 	if !deleteNestedKey(tree, strings.Split(key, ".")) {
-		return fmt.Errorf("%w: %q", ErrConfigKeyNotFound, key)
+		return fmt.Errorf("%w: %q", errConfigKeyNotFound, key)
 	}
 
 	tree = filterConfigTree(tree)

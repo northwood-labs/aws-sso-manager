@@ -370,7 +370,7 @@ func getStartURL(profileName string) (string, error) {
 		return u.Hostname(), nil
 	}
 
-	return "", fmt.Errorf("%w: %q", ErrStartURLNotFound, profileName)
+	return "", fmt.Errorf("%w: %q", errStartURLNotFound, profileName)
 }
 
 // stripAccountFromURL removes the account-specific subdomain from an AWS

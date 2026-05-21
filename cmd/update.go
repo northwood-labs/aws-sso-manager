@@ -217,7 +217,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 	if !ok {
 		return configfile.NewSections(), 0, fmt.Errorf(
 			"%w: [%s]; need to run init",
-			ErrConfigSectionMissing,
+			errConfigSectionMissing,
 			ssoProfile,
 		)
 	}
@@ -346,7 +346,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
 				return configfile.NewSections(), 0, fmt.Errorf(
 					"%w: [%s]",
-					ErrConfigSectionCreate,
+					errConfigSectionCreate,
 					profileHeaderName,
 				)
 			}

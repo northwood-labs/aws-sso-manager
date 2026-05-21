@@ -47,7 +47,8 @@ func unlockFile(fd uintptr) error {
 
 // isLockBusy reports whether err indicates the lock is held by another process.
 // On Unix, EWOULDBLOCK and EAGAIN both mean "lock is busy" (they're often the
-// same errno). EINTR means a signal interrupted the call and it's safe to retry.
+// same errno). EINTR means a signal interrupted the call and it's safe to
+// retry.
 func isLockBusy(err error) bool {
 	return errors.Is(err, unix.EWOULDBLOCK) ||
 		errors.Is(err, unix.EAGAIN) ||

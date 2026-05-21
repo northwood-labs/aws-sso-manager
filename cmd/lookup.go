@@ -126,7 +126,7 @@ var (
 		`)),
 		RunE: func(_ *cobra.Command, args []string) error {
 			if strings.TrimSpace(fLookupFor) == "" {
-				return ErrFlagForRequired
+				return errFlagForRequired
 			}
 
 			profileName, err := resolveLookupProfileName()
@@ -149,7 +149,7 @@ var (
 
 			needle := strings.ToLower(strings.TrimSpace(args[0]))
 			if needle == "" {
-				return ErrRoleSubstringEmpty
+				return errRoleSubstringEmpty
 			}
 
 			matches := []string(nil)
@@ -165,7 +165,7 @@ var (
 			})
 
 			if len(matches) == 0 {
-				return fmt.Errorf("%w: %q for account %s (%s)", ErrNoRolesMatched, args[0], account.Name, accountID)
+				return fmt.Errorf("%w: %q for account %s (%s)", errNoRolesMatched, args[0], account.Name, accountID)
 			}
 
 			if fJSON {
@@ -250,7 +250,7 @@ func resolveLookupProfileName() (string, error) {
 
 	profileName = strings.TrimSpace(asmConfig.GetString("profile-name"))
 	if profileName == "" {
-		return "", ErrNoProfileConfigured
+		return "", errNoProfileConfigured
 	}
 
 	return profileName, nil
@@ -273,7 +273,7 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 ) ([]string, error) {
 	trimmed := strings.TrimSpace(identifier)
 	if trimmed == "" {
-		return nil, ErrAccountIdentEmpty
+		return nil, errAccountIdentEmpty
 	}
 
 	// Exact match by 12-digit account ID.
@@ -334,7 +334,7 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 		return matched, nil
 	}
 
-	return nil, fmt.Errorf("%w: %q", ErrAccountIdentNotFound, identifier)
+	return nil, fmt.Errorf("%w: %q", errAccountIdentNotFound, identifier)
 }
 
 // resolveLookupAccount narrows the identifier down to exactly one account.
@@ -358,7 +358,7 @@ func resolveLookupAccount(
 
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf(
 			"%w: %q%s; matches account IDs: %s",
-			ErrAccountIdentAmbiguous,
+			errAccountIdentAmbiguous,
 			identifier,
 			profileNote,
 			strings.Join(accountIDs, ", "),
@@ -371,7 +371,7 @@ func resolveLookupAccount(
 	if !ok {
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf(
 			"%w: ID %s",
-			ErrAccountDataMissing,
+			errAccountDataMissing,
 			accountID,
 		)
 	}

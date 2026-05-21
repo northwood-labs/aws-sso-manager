@@ -29,7 +29,7 @@ var promptProfileSelect = func(target *string) error {
 	}
 
 	if len(sections) == 0 {
-		return ErrNoSSOProfiles
+		return errNoSSOProfiles
 	}
 
 	return huh.NewSelect[string]().

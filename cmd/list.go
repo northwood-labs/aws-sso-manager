@@ -101,7 +101,7 @@ var (
 			}
 
 			if selectedOutputs > 1 {
-				return ErrOutputFormatConflict
+				return errOutputFormatConflict
 			}
 
 			logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))

@@ -178,14 +178,14 @@ func init() { // lint:allow_init
 	)
 }
 
-// parseCacheDurationFlag extends Go's time.ParseDuration with a "d" (day) suffix
-// because cache lifetimes are commonly expressed in days (e.g., "1d", "2d12h")
-// and Go's stdlib doesn't support that. Day tokens are converted to hours before
-// parsing so the rest of the duration string is handled normally.
+// parseCacheDurationFlag extends Go's [time.ParseDuration] with a "d" (day)
+// suffix because cache lifetimes are commonly expressed in days (e.g., "1d",
+// "2d12h") and Go's stdlib doesn't support that. Day tokens are converted to
+// hours before parsing so the rest of the duration string is handled normally.
 func parseCacheDurationFlag(raw string) (time.Duration, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return 0, ErrCacheDurationEmpty
+		return 0, errCacheDurationEmpty
 	}
 
 	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
@@ -212,7 +212,7 @@ func parseCacheDurationFlag(raw string) (time.Duration, error) {
 	}
 
 	if parsed <= 0 {
-		return 0, fmt.Errorf("%w: %q", ErrCacheDurationInvalid, raw)
+		return 0, fmt.Errorf("%w: %q", errCacheDurationInvalid, raw)
 	}
 
 	return parsed, nil
@@ -260,7 +260,7 @@ func initializeConfig(cmd *cobra.Command) error {
 		if os.IsNotExist(err) {
 			logger.InfoContext(ctx, "Config file does not exist", logKeyFile, fConfigFile)
 
-			return fmt.Errorf("%w: %s", ErrConfigFileNotExist, fConfigFile)
+			return fmt.Errorf("%w: %s", errConfigFileNotExist, fConfigFile)
 		}
 
 		asmConfig.SetConfigFile(fConfigFile)
