@@ -114,48 +114,6 @@ local linters = new Mapping<String, Group> {
         glob = "**/*.go"
         check = "cd {{ workspace }} && go vet ./..."
       }
-      ["go-unconvert-darwin-amd64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=darwin GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
-      ["go-unconvert-darwin-arm64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=darwin GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
-      ["go-unconvert-linux-amd64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=linux GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
-      ["go-unconvert-linux-arm64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=linux GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
-      ["go-unconvert-windows-amd64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=windows GOARCH=amd64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
-      ["go-unconvert-windows-arm64"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix =
-          "cd {{ workspace }} && GOOS=windows GOARCH=arm64 unconvert -fastmath -tests -apply -v ./..."
-        depends = List("golangci-lint")
-      }
     }
   }
   ["containers"] = new Group {
