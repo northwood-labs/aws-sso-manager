@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	// RemoveFile is a test seam for os.Remove so tests can intercept file
+	// removeFile is a test seam for os.Remove so tests can intercept file
 	// deletion without touching the real filesystem.
 	removeFile = os.Remove
 
