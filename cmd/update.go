@@ -42,7 +42,7 @@ var updateCmd = &cobra.Command{
 	and roles in their AWS SSO Manager configuration, ensuring that their setup
 	remains current and accurate.
 	`),
-	Args:    cobra.RangeArgs(0, 1), // lint:allow_raw_number
+	Args:    cobra.RangeArgs(0, 1),
 	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
 	# Update profiles in the default SSO profile.
@@ -58,8 +58,8 @@ var updateCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
-		if len(args) == 1 { // lint:allow_raw_number
-			profileName = args[0] // lint:allow_raw_number
+		if len(args) == 1 {
+			profileName = args[0]
 		} else {
 			profileName = asmConfig.GetString("profile-name")
 		}
@@ -150,7 +150,7 @@ var updateCmd = &cobra.Command{
 		f, err := os.OpenFile( // lint:allow_dynamic_filename
 			tmpFilename,
 			os.O_TRUNC|os.O_WRONLY,
-			0o0644, // lint:allow_raw_number
+			0o0644,
 		)
 		cobra.CheckErr(err)
 
@@ -170,7 +170,7 @@ var updateCmd = &cobra.Command{
 		logger.DebugContext(ctx, "Backup file", logKeyBackupFile, backupFilename)
 
 		// Set permissions to match the expected config file mode before rename.
-		err = os.Chmod(backupFilename, 0o0644) // lint:allow_raw_number
+		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
 		logger.DebugContext(ctx, "Deleted file", logKeyFile, tmpFilename)
@@ -215,7 +215,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 
 	ssoSection, ok := sections.GetSection(ssoProfile)
 	if !ok {
-		return configfile.NewSections(), 0, fmt.Errorf( // lint:allow_raw_number
+		return configfile.NewSections(), 0, fmt.Errorf(
 			"%w: [%s]; need to run init",
 			ErrConfigSectionMissing,
 			ssoProfile,
@@ -249,7 +249,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 	resolvedUseFIPS := asmConfig.GetString(globalPrefix + "use_fips_endpoint")
 	resolvedTCPKeepAlive := asmConfig.GetString(globalPrefix + "tcp_keepalive")
 
-	counter := 0 // lint:allow_raw_number
+	counter := 0
 
 	for _, account := range accounts.Accounts {
 		for _, role := range account.Roles {
@@ -322,7 +322,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 						"failed to create '%s' value: %w",
 						iniKey,
 						err,
-					) // lint:allow_raw_number
+					)
 				}
 
 				err = section.UpdateValue(iniKey, v)
@@ -331,7 +331,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 						"failed to update '%s' value: %w",
 						iniKey,
 						err,
-					) // lint:allow_raw_number
+					)
 				}
 			}
 
@@ -344,7 +344,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 
 			nextSections = nextSections.SetSection(profileHeaderName, section)
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
-				return configfile.NewSections(), 0, fmt.Errorf( // lint:allow_raw_number
+				return configfile.NewSections(), 0, fmt.Errorf(
 					"%w: [%s]",
 					ErrConfigSectionCreate,
 					profileHeaderName,

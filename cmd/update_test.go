@@ -53,11 +53,11 @@ func mustSetStringValue(
 func assertHeadersInOrder(t *testing.T, content string, headers ...string) {
 	t.Helper()
 
-	lastIdx := -1 // lint:allow_raw_number
+	lastIdx := -1
 
 	for _, header := range headers {
 		idx := strings.Index(content, header)
-		if idx < 0 { // lint:allow_raw_number
+		if idx < 0 {
 			t.Fatalf("expected header %q to exist:\n%s", header, content)
 		}
 
@@ -105,7 +105,7 @@ func TestBuildUpdatedManagedSectionsDropsStaleProfiles(t *testing.T) {
 		t.Fatalf("buildUpdatedManagedSections: %v", err)
 	}
 
-	if count != 1 { // lint:allow_raw_number
+	if count != 1 {
 		t.Fatalf("expected 1 updated profile, got %d", count)
 	}
 
@@ -214,7 +214,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		"; -------- aws-sso-manager: end nwl2 --------",
 	}, "\n") + "\n"
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(initialConfig), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(initialConfig), 0o0644); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
 
@@ -240,7 +240,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("buildUpdatedManagedSections: %v", err)
 	}
 
-	if count != 2 { // lint:allow_raw_number
+	if count != 2 {
 		t.Fatalf("expected 2 generated profiles, got %d", count)
 	}
 
@@ -249,7 +249,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 	writeErr := os.WriteFile(
 		tmpManaged,
 		[]byte(strings.TrimSpace(generateAWSConfig(nextSections))+"\n"),
-		0o0644, // lint:allow_raw_number
+		0o0644,
 	)
 	if writeErr != nil {
 		t.Fatalf("write managed tmp: %v", writeErr)
@@ -280,8 +280,8 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("expected generated role profiles in managed block:\n%s", got)
 	}
 
-	if strings.Count(got, "[profile sandbox-poweruseraccess]") != 1 || // lint:allow_raw_number
-		strings.Count(got, "[profile sandbox-readonlyaccess]") != 1 { // lint:allow_raw_number
+	if strings.Count(got, "[profile sandbox-poweruseraccess]") != 1 ||
+		strings.Count(got, "[profile sandbox-readonlyaccess]") != 1 {
 		t.Fatalf("expected each generated profile exactly once:\n%s", got)
 	}
 

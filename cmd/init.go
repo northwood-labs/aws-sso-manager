@@ -252,7 +252,7 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("write managed AWS config block: %w", err)
 		}
 
-		if err = tmpConfig.Chmod(0o0644); err != nil { // lint:allow_raw_number
+		if err = tmpConfig.Chmod(0o0644); err != nil {
 			return fmt.Errorf("set permissions on temporary AWS config file: %w", err)
 		}
 

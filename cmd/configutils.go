@@ -114,7 +114,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_compl
 	}
 
 	scanner := bufio.NewScanner(f)
-	for lineNo := 1; scanner.Scan(); lineNo++ { // lint:allow_raw_number
+	for lineNo := 1; scanner.Scan(); lineNo++ {
 		line := scanner.Text()
 
 		if profile, ok := parseManagedMarkerProfile(line, managedStartMarkerPrefix); ok {
@@ -206,7 +206,7 @@ func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_compl
 			)
 		}
 
-		if starts > 1 { // lint:allow_raw_number
+		if starts > 1 {
 			appendManagedMarkerIssue(
 				report.issues,
 				profile,
@@ -239,7 +239,7 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 		roleSubstr    = asmConfig.GetStringMapString(profileName + ".rename.roles.substr_match_replace")
 	)
 
-	if len(order) == 0 { // lint:allow_raw_number
+	if len(order) == 0 {
 		return buildDefaultProfileName(account, role)
 	}
 
@@ -350,7 +350,7 @@ func toProfileToken(input string) string {
 
 	for _, r := range input {
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			_, _ = b.WriteRune(r)
+			b.WriteRune(r)
 
 			lastDash = false
 
@@ -358,7 +358,7 @@ func toProfileToken(input string) string {
 		}
 
 		if !lastDash {
-			_, _ = b.WriteRune('-')
+			b.WriteRune('-')
 
 			lastDash = true
 		}
@@ -377,7 +377,7 @@ func markersExist(profileName string) (bool, error) {
 		return false, fmt.Errorf(fmtInspectingManagedMarkers, err)
 	}
 
-	return report.startCounts[profileName] > 0, nil // lint:allow_raw_number
+	return report.startCounts[profileName] > 0, nil
 }
 
 // validateMarkers checks that the managed block for profileName is well-formed:
@@ -393,7 +393,7 @@ func validateMarkers(profileName string) error {
 		errs = append(errs, fmt.Errorf("%w: %s", ErrManagedMarkerIssue, issue))
 	}
 
-	if len(errs) > 0 { // lint:allow_raw_number
+	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
 
@@ -416,7 +416,7 @@ func validateManagedMarkers() error {
 		}
 	}
 
-	if len(errs) > 0 { // lint:allow_raw_number
+	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
 

@@ -114,19 +114,19 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 
 		// Optional preamble content.
 		if rapid.Bool().Draw(t, "hasPreamble") {
-			_, _ = sb.WriteString("[default]\n")
-			_, _ = sb.WriteString("region = us-east-1\n")
-			_, _ = sb.WriteString("\n")
+			sb.WriteString("[default]\n")
+			sb.WriteString("region = us-east-1\n")
+			sb.WriteString("\n")
 		}
 
 		for _, profile := range profiles {
 			fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 			fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 
-			_, _ = sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
-			_, _ = sb.WriteString("sso_region = us-east-1\n")
-			_, _ = sb.WriteString("sso_registration_scopes = sso:account:access\n")
-			_, _ = sb.WriteString("\n")
+			sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
+			sb.WriteString("sso_region = us-east-1\n")
+			sb.WriteString("sso_registration_scopes = sso:account:access\n")
+			sb.WriteString("\n")
 
 			// Generate 1-3 profile sections inside the managed block.
 			numProfiles := rapid.IntRange(1, 3).Draw(t, "numProfiles_"+profile)
@@ -155,8 +155,8 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 					),
 				)
 
-				_, _ = sb.WriteString("region = us-east-1\n")
-				_, _ = sb.WriteString("output = json\n")
+				sb.WriteString("region = us-east-1\n")
+				sb.WriteString("output = json\n")
 			}
 
 			fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)

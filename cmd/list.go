@@ -249,12 +249,12 @@ var (
 			rows := buildListOutputRows(profileName, accounts)
 
 			if fCSV {
-				_, _ = fmt.Print(renderCSVTable(listOutputHeaders, rows))
+				fmt.Print(renderCSVTable(listOutputHeaders, rows))
 				return nil
 			}
 
 			if fMarkdown {
-				_, _ = fmt.Print(renderMarkdownTable(listOutputHeaders, rows))
+				fmt.Print(renderMarkdownTable(listOutputHeaders, rows))
 				return nil
 			}
 
@@ -360,7 +360,8 @@ func renderCSVTable(headers []string, rows [][]string) string {
 			quoted[i] = quoteCSVCell(row[i])
 		}
 
-		_, _ = buffer.WriteString(strings.Join(quoted, ","))
+		buffer.WriteString(strings.Join(quoted, ","))
+
 		_ = buffer.WriteByte('\n')
 	}
 
@@ -393,34 +394,34 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 
 	var buffer bytes.Buffer
 
-	_, _ = buffer.WriteString("|")
+	buffer.WriteString("|")
 
 	for i, header := range headers {
-		_, _ = buffer.WriteString(singleSpace)
-		_, _ = buffer.WriteString(padRight(header, widths[i]))
-		_, _ = buffer.WriteString(" |")
+		buffer.WriteString(singleSpace)
+		buffer.WriteString(padRight(header, widths[i]))
+		buffer.WriteString(" |")
 	}
 
 	_ = buffer.WriteByte('\n')
-	_, _ = buffer.WriteString("|")
+	buffer.WriteString("|")
 
 	for i := range headers {
 		separatorWidth := max(widths[i], separatorWidthMax)
 
-		_, _ = buffer.WriteString(singleSpace)
-		_, _ = buffer.WriteString(strings.Repeat("-", separatorWidth))
-		_, _ = buffer.WriteString(" |")
+		buffer.WriteString(singleSpace)
+		buffer.WriteString(strings.Repeat("-", separatorWidth))
+		buffer.WriteString(" |")
 	}
 
 	_ = buffer.WriteByte('\n')
 
 	for _, row := range rows {
-		_, _ = buffer.WriteString("|")
+		buffer.WriteString("|")
 
 		for i, cell := range row {
-			_, _ = buffer.WriteString(singleSpace)
-			_, _ = buffer.WriteString(padRight(cell, widths[i]))
-			_, _ = buffer.WriteString(" |")
+			buffer.WriteString(singleSpace)
+			buffer.WriteString(padRight(cell, widths[i]))
+			buffer.WriteString(" |")
 		}
 
 		_ = buffer.WriteByte('\n')

@@ -75,22 +75,22 @@ func TestMinMaxRows(t *testing.T) {
 		{
 			name:     "empty slice returns 5",
 			items:    nil,
-			expected: 5, // lint:allow_raw_number
+			expected: 5,
 		},
 		{
 			name:     "3 items returns 5 (min is 5)",
-			items:    make([]int, 3), // lint:allow_raw_number
-			expected: 5,              // lint:allow_raw_number
+			items:    make([]int, 3),
+			expected: 5,
 		},
 		{
 			name:     "7 items returns 7",
-			items:    make([]int, 7), // lint:allow_raw_number
-			expected: 7,              // lint:allow_raw_number
+			items:    make([]int, 7),
+			expected: 7,
 		},
 		{
 			name:     "15 items returns 10 (max is 10)",
-			items:    make([]int, 15), // lint:allow_raw_number
-			expected: 10,              // lint:allow_raw_number
+			items:    make([]int, 15),
+			expected: 10,
 		},
 	}
 
@@ -131,12 +131,12 @@ func TestGetRolesForAccount(t *testing.T) {
 		{
 			name:      "matching account returns roles",
 			accountID: testAccountID,
-			wantCount: 2, // lint:allow_raw_number
+			wantCount: 2,
 		},
 		{
 			name:      "missing account returns empty slice",
 			accountID: "999999999999",
-			wantCount: 0, // lint:allow_raw_number
+			wantCount: 0,
 		},
 	}
 

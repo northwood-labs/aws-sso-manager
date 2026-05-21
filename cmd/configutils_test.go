@@ -65,14 +65,14 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 		"value = keep",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	tmpFile := filepath.Join(dir, "managed.ini")
 	replacement := testProfileNewOne + testNewline + "sso_account_id = 333333333333" + testNewline
 
-	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil {
 		t.Fatalf("write tmp file: %v", err)
 	}
 
@@ -88,7 +88,7 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 
 	got := string(content)
 
-	if strings.Count(got, testProfileNewOne) != 1 { // lint:allow_raw_number
+	if strings.Count(got, testProfileNewOne) != 1 {
 		t.Fatalf(
 			"expected replacement to be injected once, got %d occurrences\n%s",
 			strings.Count(got, testProfileNewOne),
@@ -132,7 +132,7 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 		"; -------- aws-sso-manager: end beta --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -141,11 +141,11 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 		t.Fatalf("getAllMarkedProfiles: %v", err)
 	}
 
-	if len(profiles) != 2 { // lint:allow_raw_number
+	if len(profiles) != 2 {
 		t.Fatalf("expected 2 profiles, got %d: %v", len(profiles), profiles)
 	}
 
-	if profiles[0] != "alpha" || profiles[1] != "beta" { // lint:allow_raw_number
+	if profiles[0] != "alpha" || profiles[1] != "beta" {
 		t.Fatalf("expected [alpha beta], got %v", profiles)
 	}
 }
@@ -169,7 +169,7 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 		"; -------- aws-sso-manager: end alpha --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -178,7 +178,7 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 		t.Fatalf("getAllMarkedProfiles: %v", err)
 	}
 
-	if len(profiles) != 1 || profiles[0] != "alpha" { // lint:allow_raw_number
+	if len(profiles) != 1 || profiles[0] != "alpha" {
 		t.Fatalf("expected deduplication to produce [alpha], got %v", profiles)
 	}
 }
@@ -200,7 +200,7 @@ func TestValidateMarkersOK(t *testing.T) {
 		"; -------- aws-sso-manager: end myprofile --------",
 	}, testNewline) + testNewline
 
-	err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644) // lint:allow_raw_number
+	err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644)
 	if err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
@@ -225,7 +225,7 @@ func TestValidateMarkersMismatched(t *testing.T) {
 	// Missing end marker.
 	config := "; -------- aws-sso-manager: start myprofile --------\n"
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -253,7 +253,7 @@ func TestValidateMarkersDuplicate(t *testing.T) {
 		"; -------- aws-sso-manager: end myprofile --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -281,7 +281,7 @@ func TestValidateMarkersOverlappingProfiles(t *testing.T) {
 		"; -------- aws-sso-manager: end beta --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -312,7 +312,7 @@ func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
 
 	config := "; -------- aws-sso-manager: end orphan --------\n"
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -343,7 +343,7 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 		"; -------- aws-sso-manager: end alpha --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -352,11 +352,11 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 		t.Fatalf("getAllMarkedProfiles: %v", err)
 	}
 
-	if len(profiles) != 2 { // lint:allow_raw_number
+	if len(profiles) != 2 {
 		t.Fatalf("expected 2 profiles, got %d: %v", len(profiles), profiles)
 	}
 
-	if profiles[0] != "alpha" || profiles[1] != "orphan" { // lint:allow_raw_number
+	if profiles[0] != "alpha" || profiles[1] != "orphan" {
 		t.Fatalf("expected [alpha orphan], got %v", profiles)
 	}
 }
@@ -387,14 +387,14 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 		"; -------- aws-sso-manager: end abc --------",
 	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	tmpFile := filepath.Join(dir, "managed.ini")
 	replacement := testProfileNewOne + testNewline
 
-	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil {
 		t.Fatalf("write tmp file: %v", err)
 	}
 
@@ -410,7 +410,7 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 
 	got := string(content)
 
-	if strings.Count(got, testProfileNewOne) != 2 { // lint:allow_raw_number
+	if strings.Count(got, testProfileNewOne) != 2 {
 		t.Fatalf(
 			"expected replacement to be applied once per matching managed block, got %d occurrences\n%s",
 			strings.Count(got, testProfileNewOne),
@@ -456,7 +456,7 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	}
 
 	// Verify lock file permissions are 0600.
-	if perm := lockInfo.Mode().Perm(); perm != 0o0600 { // lint:allow_raw_number
+	if perm := lockInfo.Mode().Perm(); perm != 0o0600 {
 		t.Fatalf("expected lock file permissions 0600, got %04o", perm)
 	}
 
@@ -466,7 +466,7 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 		t.Fatalf("expected lock directory at %s: %v", lockDir, err)
 	}
 
-	if perm := dirInfo.Mode().Perm(); perm != 0o0755 { // lint:allow_raw_number
+	if perm := dirInfo.Mode().Perm(); perm != 0o0755 {
 		t.Fatalf("expected lock directory permissions 0755, got %04o", perm)
 	}
 }
@@ -482,12 +482,12 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 
 	awsConfigFilePath = filepath.Join(dir, ".aws", testConfigFile)
 
-	if err := os.MkdirAll(filepath.Dir(awsConfigFilePath), 0o0755); err != nil { // lint:allow_raw_number
+	if err := os.MkdirAll(filepath.Dir(awsConfigFilePath), 0o0755); err != nil {
 		t.Fatalf("mkdir config dir: %v", err)
 	}
 
 	original := []byte("[default]\nregion = us-east-1\n")
-	if err := os.WriteFile(awsConfigFilePath, original, 0o0644); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(awsConfigFilePath, original, 0o0644); err != nil {
 		t.Fatalf(testWriteConfigErr, err)
 	}
 
@@ -669,7 +669,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 			dir := t.TempDir()
 
 			tmpFile := filepath.Join(dir, testConfigFile)
-			if err := os.WriteFile(tmpFile, []byte(content), 0o0644); err != nil { // lint:allow_raw_number
+			if err := os.WriteFile(tmpFile, []byte(content), 0o0644); err != nil {
 				rt.Fatalf(testWriteConfigErr, err)
 			}
 
@@ -721,7 +721,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 			dir := t.TempDir()
 
 			tmpFile := filepath.Join(dir, testConfigFile)
-			if err := os.WriteFile(tmpFile, []byte(sb.String()), 0o0644); err != nil { // lint:allow_raw_number
+			if err := os.WriteFile(tmpFile, []byte(sb.String()), 0o0644); err != nil {
 				rt.Fatalf(testWriteConfigErr, err)
 			}
 

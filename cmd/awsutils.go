@@ -127,12 +127,12 @@ func (c *cacheFileData) save(cacheFilePath string) error {
 
 	dir, _ := path.Split(cacheFilePath)
 
-	err = os.MkdirAll(dir, 0o755) // lint:allow_raw_number
+	err = os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return fmt.Errorf("could not create a cache directory at %s: %w ", dir, err)
 	}
 
-	err = os.WriteFile(cacheFilePath, marshaledJSON, 0o666) // lint:allow_raw_number
+	err = os.WriteFile(cacheFilePath, marshaledJSON, 0o666)
 	if err != nil {
 		return fmt.Errorf("could not create a cache file at %s: %w ", cacheFilePath, err)
 	}
@@ -178,7 +178,7 @@ func ensureAWSManagerCacheDir() (string, error) {
 		cacheDir = filepath.Join(homeDir, ".config", "aws-sso-manager", "cache")
 	}
 
-	err := os.MkdirAll(cacheDir, 0o0755) // lint:allow_raw_number
+	err := os.MkdirAll(cacheDir, 0o0755)
 	if err != nil {
 		return "", fmt.Errorf("could not create AWS manager cache directory: %w", err)
 	}
@@ -382,12 +382,12 @@ func writeListAWSAccountsLookupCache(cacheFilePath string, index listAWSAccounts
 		return fmt.Errorf("could not marshal accounts lookup cache file: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil { // lint:allow_raw_number
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
 		return fmt.Errorf("could not create accounts lookup cache directory: %w", err)
 	}
 
 	tmpPath := cacheFilePath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
 		return fmt.Errorf("could not write temporary accounts lookup cache file: %w", err)
 	}
 
@@ -538,12 +538,12 @@ func writeListAWSAccountsCache(cacheFilePath string, accounts listAccounts) erro
 		return fmt.Errorf("could not marshal accounts cache file: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil { // lint:allow_raw_number
+	if err := os.MkdirAll(filepath.Dir(cacheFilePath), 0o0755); err != nil {
 		return fmt.Errorf("could not create accounts cache directory: %w", err)
 	}
 
 	tmpPath := cacheFilePath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(tmpPath, data, 0o0600); err != nil {
 		return fmt.Errorf("could not write temporary accounts cache file: %w", err)
 	}
 
@@ -581,13 +581,13 @@ func createAWSConfigFile(ctx context.Context) string {
 
 	logger.DebugContext(ctx, "User home directory", logKeyHome, homeDir)
 
-	err = os.MkdirAll(path.Join(homeDir, ".aws"), 0o0755) // lint:allow_raw_number
+	err = os.MkdirAll(path.Join(homeDir, ".aws"), 0o0755)
 	cobra.CheckErr(err)
 
 	awsConfigFile, err := os.OpenFile(
 		awsConfigFilePath,
 		os.O_CREATE|os.O_EXCL|os.O_WRONLY,
-		0o0644, // lint:allow_raw_number
+		0o0644,
 	)
 	if err == nil {
 		defer func() {
@@ -781,7 +781,7 @@ func waitForCustomerToAuthenticate(
 	var err error
 
 	token := new(ssooidc.CreateTokenOutput)
-	sleepPerCycle := 2 * time.Second // lint:allow_raw_number
+	sleepPerCycle := 2 * time.Second
 	startTime := time.Now()
 	delta := time.Since(startTime)
 	oidcClient := ssooidc.NewFromConfig(*input.sdkConfig)

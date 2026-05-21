@@ -800,7 +800,7 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 		t.Fatalf("glob: %v", err)
 	}
 
-	if len(matches) != 0 { // lint:allow_raw_number
+	if len(matches) != 0 {
 		t.Fatalf("expected 0 backup files on first write, got %d", len(matches))
 	}
 }
@@ -817,7 +817,7 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 	configPath := filepath.Join(dir, testConfigFileName)
 
 	// Write an initial config file so backupConfigFile attempts a backup.
-	err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644) // lint:allow_raw_number
+	err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644)
 	if err != nil {
 		t.Fatalf("write initial config: %v", err)
 	}
@@ -841,7 +841,7 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 
 	// Verify no backup was created.
 	matches, _ := filepath.Glob(filepath.Join(dir, "config-*.toml.bak")) // lint:allow_unhandled
-	if len(matches) != 0 {                                               // lint:allow_raw_number
+	if len(matches) != 0 {
 		t.Fatalf("expected 0 backup files when dir is read-only, got %d", len(matches))
 	}
 }

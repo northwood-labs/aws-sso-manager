@@ -125,7 +125,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 		tmpFile := tmpDir + "/config"
 
 		content := "[sso-session myprofile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
+		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 			t.Fatalf("write temp config: %v", err)
 		}
 
@@ -174,7 +174,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 
 		content := "[sso-session configured-profile]\n" +
 			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
+		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 			t.Fatalf("write temp config: %v", err)
 		}
 
@@ -248,7 +248,7 @@ func TestLogoutPermissionErrorWrapping(t *testing.T) {
 	tmpFile := tmpDir + "/config"
 
 	content := "[sso-session testprofile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 		t.Fatalf("write temp config: %v", err)
 	}
 
@@ -281,7 +281,7 @@ func writeTestAWSConfig(dir, profileName string) (string, error) {
 		profileName,
 	)
 
-	err := os.WriteFile(configPath, []byte(content), 0o600) // lint:allow_raw_number
+	err := os.WriteFile(configPath, []byte(content), 0o600)
 	if err != nil {
 		return "", fmt.Errorf("write temp config: %w", err)
 	}
@@ -336,7 +336,7 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 			t.Fatalf("create cache dir: %v", mkdirErr)
 		}
 
-		writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600) // lint:allow_raw_number
+		writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600)
 		if writeErr != nil {
 			t.Fatalf("write cache file: %v", writeErr)
 		}
@@ -481,7 +481,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 
 		content := "[sso-session zzz-never-match-this-profile]\n" +
 			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil { // lint:allow_raw_number
+		if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
 			t.Fatalf("write temp config: %v", err)
 		}
 

@@ -158,7 +158,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 		t.Fatalf("seed cache file: %v", writeErr)
 	}
 
-	writeErr = os.WriteFile(cachePath, data, 0o0600) // lint:allow_raw_number
+	writeErr = os.WriteFile(cachePath, data, 0o0600)
 	if writeErr != nil {
 		t.Fatalf("write expired cache: %v", writeErr)
 	}
@@ -176,7 +176,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 		}},
 	}
 
-	fetchCount := 0 // lint:allow_raw_number
+	fetchCount := 0
 	oldFetcher := listAWSAccountsFetcher
 
 	t.Cleanup(func() { listAWSAccountsFetcher = oldFetcher })
@@ -191,7 +191,7 @@ func TestListAWSAccountsRefreshesExpiredCache(t *testing.T) {
 		t.Fatalf("listAWSAccounts: %v", err)
 	}
 
-	if fetchCount != 1 { // lint:allow_raw_number
+	if fetchCount != 1 {
 		t.Fatalf("expected fetcher to run once after cache expiry, got %d", fetchCount)
 	}
 
@@ -267,7 +267,7 @@ func TestListAWSAccountsWritesLookupCacheForUnfilteredResults(t *testing.T) {
 		t.Fatal("expected lookup cache to be present")
 	}
 
-	if len(lookupIndex.AccountsByID) != 1 { // lint:allow_raw_number
+	if len(lookupIndex.AccountsByID) != 1 {
 		t.Fatalf("expected one account in lookup index, got %d", len(lookupIndex.AccountsByID))
 	}
 

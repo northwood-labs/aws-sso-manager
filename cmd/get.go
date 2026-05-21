@@ -178,7 +178,7 @@ func resolveGetProfileName() (string, error) {
 // sorted order. Sorting numerically (which sort.Strings achieves for
 // fixed-width digit strings) gives stable, predictable output for scripts.
 func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
-	accountIDs := make([]string, 0, len(index.AccountsByID)) // lint:allow_raw_number
+	accountIDs := make([]string, 0, len(index.AccountsByID))
 	for accountID := range index.AccountsByID {
 		accountIDs = append(accountIDs, accountID)
 	}
@@ -192,7 +192,7 @@ func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 // --name flag. Names are sorted case-insensitively so the output is stable
 // regardless of how AWS returns the casing.
 func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
-	names := make([]string, 0, len(index.AccountsByID)) // lint:allow_raw_number
+	names := make([]string, 0, len(index.AccountsByID))
 	for _, account := range index.AccountsByID {
 		if account.Name != "" {
 			names = append(names, account.Name)

@@ -74,13 +74,13 @@ func (ConfigFile) JSONSchemaExtend(schema *jsonschema.Schema) {
 // with the schema automatically.
 func validateConfigKey(key string) error {
 	parts := strings.Split(key, ".")
-	if len(parts) == 0 { // lint:allow_raw_number
+	if len(parts) == 0 {
 		return ErrConfigKeyEmpty
 	}
 
 	// "profile-name" is the only fixed top-level key.
-	if parts[0] == "profile-name" { // lint:allow_raw_number
-		if len(parts) == 1 { // lint:allow_raw_number
+	if parts[0] == "profile-name" {
+		if len(parts) == 1 {
 			return nil
 		}
 
@@ -90,7 +90,7 @@ func validateConfigKey(key string) error {
 	// Everything else is <sso-profile>.rename.* — the first segment is the
 	// dynamic profile name, so we skip it and validate the rest against
 	// SSOProfileConfig.
-	if len(parts) < 2 { // lint:allow_raw_number
+	if len(parts) < 2 {
 		return fmt.Errorf("%w: expected <profile>.<path> for %q", ErrConfigKeyInvalid, key)
 	}
 
@@ -108,7 +108,7 @@ func validateConfigKey(key string) error {
 // Struct types registered in additionalPropertiesTypes accept unknown keys
 // and validate remaining segments against the registered value type.
 func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // lint:allow_complexity
-	if len(parts) == 0 { // lint:allow_raw_number
+	if len(parts) == 0 {
 		return nil
 	}
 
@@ -122,10 +122,10 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 			ErrConfigKeyInvalid,
 			parts[0],
 			fullKey,
-		) // lint:allow_raw_number
+		)
 	}
 
-	segment := parts[0] // lint:allow_raw_number
+	segment := parts[0]
 
 	for field := range t.Fields() {
 		jsonTag := field.Tag.Get("json")
@@ -144,7 +144,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 
 		switch ft.Kind() {
 		case reflect.Map:
-			if len(remaining) <= 1 { // lint:allow_raw_number
+			if len(remaining) <= 1 {
 				return nil
 			}
 
@@ -156,7 +156,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 			)
 
 		case reflect.Struct:
-			if len(remaining) == 0 { // lint:allow_raw_number
+			if len(remaining) == 0 {
 				return nil
 			}
 
@@ -170,14 +170,14 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 		case reflect.Slice, reflect.String, reflect.Bool,
 			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Float32, reflect.Float64:
-			if len(remaining) == 0 { // lint:allow_raw_number
+			if len(remaining) == 0 {
 				return nil
 			}
 
 			return fmt.Errorf("%w: %q is a leaf value, not a table in %q", ErrConfigKeyInvalid, segment, fullKey)
 
 		default:
-			if len(remaining) == 0 { // lint:allow_raw_number
+			if len(remaining) == 0 {
 				return nil
 			}
 
@@ -190,7 +190,7 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 	// validate the remaining path against the registered value type.
 	if valueType, ok := additionalPropertiesTypes[t]; ok {
 		remaining := parts[1:]
-		if len(remaining) == 0 { // lint:allow_raw_number
+		if len(remaining) == 0 {
 			return nil
 		}
 

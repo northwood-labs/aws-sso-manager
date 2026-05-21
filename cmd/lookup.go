@@ -286,12 +286,12 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 	lookupKey := strings.ToLower(trimmed)
 
 	// Exact match by profile name.
-	if accountIDs := index.AccountIDsByProfileCI[lookupKey]; len(accountIDs) > 0 { // lint:allow_raw_number
+	if accountIDs := index.AccountIDsByProfileCI[lookupKey]; len(accountIDs) > 0 {
 		return accountIDs, nil
 	}
 
 	// Exact match by account name.
-	if accountIDs := index.AccountIDsByNameCI[lookupKey]; len(accountIDs) > 0 { // lint:allow_raw_number
+	if accountIDs := index.AccountIDsByNameCI[lookupKey]; len(accountIDs) > 0 {
 		return accountIDs, nil
 	}
 
@@ -329,7 +329,7 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 		}
 	}
 
-	if len(matched) > 0 { // lint:allow_raw_number
+	if len(matched) > 0 {
 		slices.Sort(matched)
 		return matched, nil
 	}
@@ -350,7 +350,7 @@ func resolveLookupAccount(
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf("could not lookup account: %w", err)
 	}
 
-	if len(accountIDs) > 1 { // lint:allow_raw_number
+	if len(accountIDs) > 1 {
 		profileNote := ""
 		if strings.TrimSpace(index.ProfileName) != "" {
 			profileNote = fmt.Sprintf(" under SSO profile %q", index.ProfileName)
@@ -365,7 +365,7 @@ func resolveLookupAccount(
 		)
 	}
 
-	accountID := accountIDs[0] // lint:allow_raw_number
+	accountID := accountIDs[0]
 
 	account, ok := index.AccountsByID[accountID]
 	if !ok {

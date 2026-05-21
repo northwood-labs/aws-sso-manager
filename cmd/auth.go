@@ -169,9 +169,9 @@ func authenticateAndCacheSSOSession(
 
 	codeWrapper := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		Padding(1, 2, 0, 2) // lint:allow_raw_number
+		Padding(1, 2, 0, 2)
 
-	_, _ = lipgloss.Println( // lint:allow_unhandled
+	lipgloss.Println( // lint:allow_unhandled
 		codeWrapper.Render(
 			lipgloss.Sprintf(
 				"Ensure the code matches: %s\n",

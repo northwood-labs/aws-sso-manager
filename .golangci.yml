@@ -1333,12 +1333,29 @@ linters:
       # Values always ignored: "1", "1.0", "0" and "0.0".
       # Default: []
       ignored-numbers:
+        - "0"
+        - "1"
+        - "2"
         - "0544"
-        - "0o0544"
+        - "0600"
+        - "0644"
         - "0666"
-        - "0o0666"
         - "0755"
+        - "0o0544"
+        - "0o0600"
+        - "0o0644"
+        - "0o0666"
         - "0o0755"
+        - "0o544"
+        - "0o600"
+        - "0o644"
+        - "0o666"
+        - "0o755"
+        - "544"
+        - "600"
+        - "644"
+        - "666"
+        - "755"
         # List of file patterns to exclude from analysis.
         # Values always ignored: `.+_test.go`.
         # Default: []
@@ -1626,14 +1643,14 @@ linters:
       rules:
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#add-constant
         - name: add-constant
-          severity: warning
-          disabled: false
-          exclude: [""]
-          arguments:
-            - max-lit-count: "3"
-              allow-strs: '""'
-              allow-ints: "0,1,2"
-              # allow-floats: "0.0,0.,1.0,1.,2.0,2."
+          # severity: warning
+          disabled: true
+          # exclude: [""]
+          # arguments:
+          #   - max-lit-count: "3"
+          #     allow-strs: '""'
+          #     allow-ints: "0,1,2,0544,0600,0644,0666,0755,0o0544,0o0600,0o0644,0o0666,0o0755,0o544,0o600,0o644,0o666,0o755,544,600,644,666,755"
+          #     # allow-floats: "0.0,0.,1.0,1.,2.0,2."
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#argument-limit
         - name: argument-limit
@@ -2222,8 +2239,11 @@ linters:
           disabled: false
           exclude: [""]
           arguments:
-            - "^(fmt|lipgloss)\\.(Fprint|Print|Sprint)(f|ln)$"
-            - "Close$"
+            - "^(fmt|lipgloss)\\.(Fprint|Print|Sprint)(f|ln)?$"
+            - "(.*)\\.Close$"
+            - "(.*)\\.Write$"
+            - "(.*)\\.WriteRune$"
+            - "(.*)\\.WriteString$"
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#unnecessary-format
         - name: unnecessary-format

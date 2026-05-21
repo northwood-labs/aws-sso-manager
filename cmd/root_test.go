@@ -41,25 +41,25 @@ func TestParseCacheDurationFlag(t *testing.T) {
 		{
 			name:     "go duration",
 			input:    "24h",
-			expected: 24 * time.Hour, // lint:allow_raw_number
+			expected: 24 * time.Hour,
 		},
 		{
 			name:     "days only",
 			input:    "1d",
-			expected: 24 * time.Hour, // lint:allow_raw_number
+			expected: 24 * time.Hour,
 		},
 		{
 			name:     "days and hours and minutes",
 			input:    "1d6h30m",
-			expected: 30*time.Hour + 30*time.Minute, // lint:allow_raw_number
+			expected: 30*time.Hour + 30*time.Minute,
 		},
 		{name: "invalid", input: "abc", wantErr: true},
 		{name: "zero", input: "0h", wantErr: true},
 		{name: "empty string", input: "", wantErr: true},
 		{name: "negative duration", input: "-1h", wantErr: true},
-		{name: "multi-day token", input: "2d12h", expected: 60 * time.Hour}, // lint:allow_raw_number
+		{name: "multi-day token", input: "2d12h", expected: 60 * time.Hour},
 		{name: "whitespace only", input: "   ", wantErr: true},
-		{name: "uppercase D suffix", input: "1D", expected: 24 * time.Hour}, // lint:allow_raw_number
+		{name: "uppercase D suffix", input: "1D", expected: 24 * time.Hour},
 	}
 
 	for _, tc := range tests {
@@ -106,11 +106,11 @@ func TestExecutePassesFangNotifyOption(t *testing.T) {
 			t.Fatal("expected rootCmd to be passed to runRootCommand")
 		}
 
-		if len(signals) != 2 { // lint:allow_raw_number
+		if len(signals) != 2 {
 			t.Fatalf("expected exactly 2 notify signals, got %d", len(signals))
 		}
 
-		if signals[0] != syscall.SIGINT || signals[1] != syscall.SIGTERM { // lint:allow_raw_number
+		if signals[0] != syscall.SIGINT || signals[1] != syscall.SIGTERM {
 			t.Fatalf("expected notify signals [SIGINT SIGTERM], got %v", signals)
 		}
 
@@ -149,7 +149,7 @@ func TestExecuteExitsOnFangError(t *testing.T) {
 		return errors.New("boom") // lint:allow_errorf
 	}
 
-	exitCode := -1 // lint:allow_raw_number
+	exitCode := -1
 
 	osExit = func(code int) {
 		exitCode = code
@@ -157,7 +157,7 @@ func TestExecuteExitsOnFangError(t *testing.T) {
 
 	Execute()
 
-	if exitCode != 1 { // lint:allow_raw_number
+	if exitCode != 1 {
 		t.Fatalf("expected osExit to be called with code 1, got %d", exitCode)
 	}
 }
@@ -182,7 +182,7 @@ func TestRunRootCommandUsesFangExecute(t *testing.T) {
 			t.Fatal("expected rootCmd to be passed to fangExecute")
 		}
 
-		if len(options) != 1 { // lint:allow_raw_number
+		if len(options) != 1 {
 			t.Fatalf("expected exactly one Fang option, got %d", len(options))
 		}
 
@@ -218,7 +218,7 @@ func TestVerboseLevels(t *testing.T) {
 
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
 
-	err := os.WriteFile(tmpConfig, []byte(""), 0o600) // lint:allow_raw_number
+	err := os.WriteFile(tmpConfig, []byte(""), 0o600)
 	if err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
@@ -242,7 +242,7 @@ func TestEnvPrefixASM(t *testing.T) {
 
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
 
-	err := os.WriteFile(tmpConfig, []byte(""), 0o600) // lint:allow_raw_number
+	err := os.WriteFile(tmpConfig, []byte(""), 0o600)
 	if err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}

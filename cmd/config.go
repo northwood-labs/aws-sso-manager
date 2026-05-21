@@ -54,7 +54,7 @@ var (
 	configSetCmd = &cobra.Command{
 		Use:   "set <key> <value>",
 		Short: "Set a configuration value.",
-		Args:  cobra.ExactArgs(2), // lint:allow_raw_number
+		Args:  cobra.ExactArgs(2),
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Add a new config entry.
 		aws-sso-manager config set <key> <value>
@@ -70,7 +70,7 @@ var (
 
 			configPath := asmConfig.ConfigFileUsed()
 
-			err = os.MkdirAll(filepath.Dir(configPath), 0o0755) // lint:allow_raw_number
+			err = os.MkdirAll(filepath.Dir(configPath), 0o0755)
 			if err != nil {
 				return fmt.Errorf("could not create config directory: %w", err)
 			}
@@ -217,7 +217,7 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 	}
 
 	pairs := flattenConfig(tree, "")
-	if len(pairs) == 0 { // lint:allow_raw_number
+	if len(pairs) == 0 {
 		fmt.Fprintln(cmd.OutOrStdout(), "No configuration values set.")
 
 		return nil
@@ -252,8 +252,8 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 // (e.g., {"a": {"b": "c"}} → [["a.b", "c"]]). This gives the user a flat
 // view of the entire config regardless of nesting depth. String values are
 // quoted to distinguish them from other types.
-func flattenConfig(tree map[string]any, prefix string) [][2]string { // lint:allow_raw_number
-	var pairs [][2]string // lint:allow_raw_number
+func flattenConfig(tree map[string]any, prefix string) [][2]string {
+	var pairs [][2]string
 
 	for k, v := range tree {
 		fullKey := prefix + "." + k
@@ -304,7 +304,7 @@ func backupConfigFile(configPath string) {
 	if err := os.WriteFile( // lint:allow_possible_insecure
 		backupPath,
 		data,
-		0o0644, // lint:allow_raw_number
+		0o0644,
 	); err != nil {
 		logger.WarnContext(ctx, "Could not write config backup", logKeyErr, err)
 
@@ -385,16 +385,16 @@ func setConfigKey(configPath, key, value string) error {
 // setNestedKey walks a dot-split key path through a map tree, creating
 // intermediate tables as needed, and sets the leaf value.
 func setNestedKey(tree map[string]any, parts []string, value string) {
-	if len(parts) == 1 { // lint:allow_raw_number
-		tree[parts[0]] = value // lint:allow_raw_number
+	if len(parts) == 1 {
+		tree[parts[0]] = value
 
 		return
 	}
 
-	child, ok := tree[parts[0]].(map[string]any) // lint:allow_raw_number
+	child, ok := tree[parts[0]].(map[string]any)
 	if !ok {
 		child = make(map[string]any)
-		tree[parts[0]] = child // lint:allow_raw_number
+		tree[parts[0]] = child
 	}
 
 	setNestedKey(child, parts[1:], value)
@@ -497,21 +497,21 @@ func deleteConfigKey(configPath, key string) error {
 // the leaf entry. Empty parent tables are pruned after deletion so the file
 // stays clean.
 func deleteNestedKey(tree map[string]any, parts []string) bool {
-	if len(parts) == 0 { // lint:allow_raw_number
+	if len(parts) == 0 {
 		return false
 	}
 
-	if len(parts) == 1 { // lint:allow_raw_number
-		if _, ok := tree[parts[0]]; !ok { // lint:allow_raw_number
+	if len(parts) == 1 {
+		if _, ok := tree[parts[0]]; !ok {
 			return false
 		}
 
-		delete(tree, parts[0]) // lint:allow_raw_number
+		delete(tree, parts[0])
 
 		return true
 	}
 
-	child, ok := tree[parts[0]].(map[string]any) // lint:allow_raw_number
+	child, ok := tree[parts[0]].(map[string]any)
 	if !ok {
 		return false
 	}
@@ -521,8 +521,8 @@ func deleteNestedKey(tree map[string]any, parts []string) bool {
 	}
 
 	// Prune empty parent tables after deletion.
-	if len(child) == 0 { // lint:allow_raw_number
-		delete(tree, parts[0]) // lint:allow_raw_number
+	if len(child) == 0 {
+		delete(tree, parts[0])
 	}
 
 	return true

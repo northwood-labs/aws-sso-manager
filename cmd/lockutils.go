@@ -49,7 +49,7 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	defer cancel()
 
 	lockDir := filepath.Join(userHomeDir, ".config", ".aws-sso-manager")
-	if err := os.MkdirAll(lockDir, 0o0755); err != nil { // lint:allow_raw_number
+	if err := os.MkdirAll(lockDir, 0o0755); err != nil {
 		return nil, fmt.Errorf("create AWS config directory %q for locking: %w", lockDir, err)
 	}
 
@@ -58,7 +58,7 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 	lockFile, err := os.OpenFile( // lint:allow_dynamic_filename
 		lockPath,
 		os.O_CREATE|os.O_RDWR,
-		0o0600, // lint:allow_raw_number
+		0o0600,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("open AWS config lock file %q: %w", lockPath, err)
@@ -70,13 +70,13 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			// We hold the lock. Write our PID so that a human investigating a
 			// stale lock file can identify which process held it. Truncate first
 			// to clear any leftover PID from a previous holder.
-			truncateErr := lockFile.Truncate(0) // lint:allow_raw_number
+			truncateErr := lockFile.Truncate(0)
 			if truncateErr != nil {
 				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("truncate AWS config lock file %q: %w", lockPath, truncateErr)
 			}
 
-			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil { // lint:allow_raw_number
+			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil {
 				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("seek AWS config lock file %q: %w", lockPath, seekErr)
 			}

@@ -52,7 +52,7 @@ var (
 		If you do not specify the profile, account ID, or role, you will be
 		interactively prompted to select them from your AWS access.
 		`),
-		Args: cobra.RangeArgs(0, 2), // lint:allow_raw_number
+		Args: cobra.RangeArgs(0, 2),
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Prompt for both the AWS console URL and the SSO profile.
 		aws-sso-manager console
@@ -86,7 +86,7 @@ var (
 				default:
 					profileName = args[0]
 				}
-			} else if len(args) == 2 { // lint:allow_raw_number
+			} else if len(args) == 2 {
 				profileName = args[0]
 				consoleURL = args[1]
 			} else {
