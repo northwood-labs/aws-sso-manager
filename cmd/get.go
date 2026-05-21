@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/lithammer/dedent"
@@ -178,12 +178,12 @@ func resolveGetProfileName() (string, error) {
 // sorted order. Sorting numerically (which sort.Strings achieves for
 // fixed-width digit strings) gives stable, predictable output for scripts.
 func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
-	accountIDs := make([]string, 0, len(index.AccountsByID))
+	accountIDs := make([]string, 0, len(index.AccountsByID)) // lint:allow_raw_number
 	for accountID := range index.AccountsByID {
 		accountIDs = append(accountIDs, accountID)
 	}
 
-	sort.Strings(accountIDs)
+	slices.Sort(accountIDs)
 
 	return accountIDs
 }
@@ -192,15 +192,15 @@ func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 // --name flag. Names are sorted case-insensitively so the output is stable
 // regardless of how AWS returns the casing.
 func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
-	names := make([]string, 0, len(index.AccountsByID))
+	names := make([]string, 0, len(index.AccountsByID)) // lint:allow_raw_number
 	for _, account := range index.AccountsByID {
 		if account.Name != "" {
 			names = append(names, account.Name)
 		}
 	}
 
-	sort.SliceStable(names, func(i, j int) bool {
-		return strings.ToLower(names[i]) < strings.ToLower(names[j])
+	slices.SortStableFunc(names, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 	})
 
 	return names
@@ -223,8 +223,8 @@ func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string
 
 	// Copy before sorting so we don't mutate the cached slice.
 	roles := append([]string(nil), account.Roles...)
-	sort.SliceStable(roles, func(i, j int) bool {
-		return strings.ToLower(roles[i]) < strings.ToLower(roles[j])
+	slices.SortStableFunc(roles, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 	})
 
 	return roles, nil

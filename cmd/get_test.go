@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 	"reflect"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -28,12 +28,12 @@ func TestGetAccountIDsFromLookupIndexSorted(t *testing.T) {
 	index := listAWSAccountsLookupIndex{
 		AccountsByID: map[string]listAWSAccountsLookupAccount{
 			"222222222222": {Name: "Production"},
-			"111111111111": {Name: "Sandbox"},
+			testAccountID:  {Name: "Sandbox"},
 		},
 	}
 
 	got := getAccountIDsFromLookupIndex(index)
-	want := []string{"111111111111", "222222222222"}
+	want := []string{testAccountID, "222222222222"}
 
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("expected %#v, got %#v", want, got)
@@ -43,7 +43,7 @@ func TestGetAccountIDsFromLookupIndexSorted(t *testing.T) {
 func TestGetRoleNamesForAccountID(t *testing.T) {
 	index := listAWSAccountsLookupIndex{
 		AccountsByID: map[string]listAWSAccountsLookupAccount{
-			"111111111111": {
+			testAccountID: {
 				Name:  "Production",
 				Roles: []string{"Viewer", "Admin", "billing"},
 			},
@@ -58,7 +58,7 @@ func TestGetRoleNamesForAccountID(t *testing.T) {
 	}{
 		{
 			name:      "valid account id returns sorted roles",
-			accountID: "111111111111",
+			accountID: testAccountID,
 			want:      []string{"Admin", "billing", "Viewer"},
 		},
 		{
@@ -78,7 +78,7 @@ func TestGetRoleNamesForAccountID(t *testing.T) {
 			got, err := getRoleNamesForAccountID(index, tc.accountID)
 			if tc.wantErr {
 				if err == nil {
-					t.Fatalf("expected error")
+					t.Fatal("expected error")
 				}
 
 				return
@@ -128,6 +128,7 @@ func TestPropertyAccountIDValidation(t *testing.T) {
 		case 4:
 			// Has whitespace or special characters.
 			invalidID = rapid.StringMatching(`[!@#$%^& ]{1,12}`).Draw(t, "specialID")
+		default:
 		}
 
 		_, err := getRoleNamesForAccountID(index, invalidID)
@@ -143,16 +144,16 @@ func TestPropertyAccountIDValidation(t *testing.T) {
 			}
 
 			// Roles should be sorted case-insensitively.
-			if !sort.SliceIsSorted(roles, func(i, j int) bool {
-				return strings.ToLower(roles[i]) < strings.ToLower(roles[j])
+			if !slices.IsSortedFunc(roles, func(a, b string) int {
+				return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 			}) {
 				t.Fatalf("roles for account %q are not sorted: %v", accountID, roles)
 			}
 
 			// Roles should match the account's roles (sorted).
 			expectedRoles := append([]string(nil), account.Roles...)
-			sort.SliceStable(expectedRoles, func(i, j int) bool {
-				return strings.ToLower(expectedRoles[i]) < strings.ToLower(expectedRoles[j])
+			slices.SortStableFunc(expectedRoles, func(a, b string) int {
+				return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 			})
 
 			if !reflect.DeepEqual(roles, expectedRoles) {

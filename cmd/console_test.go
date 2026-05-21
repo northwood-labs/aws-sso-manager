@@ -21,6 +21,8 @@ import (
 	"pgregory.net/rapid"
 )
 
+const testAccountID = "111111111111"
+
 func TestStripAccountFromURL(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -72,23 +74,23 @@ func TestMinMaxRows(t *testing.T) {
 	}{
 		{
 			name:     "empty slice returns 5",
-			items:    []int{},
-			expected: 5,
+			items:    nil,
+			expected: 5, // lint:allow_raw_number
 		},
 		{
 			name:     "3 items returns 5 (min is 5)",
-			items:    make([]int, 3),
-			expected: 5,
+			items:    make([]int, 3), // lint:allow_raw_number
+			expected: 5,              // lint:allow_raw_number
 		},
 		{
 			name:     "7 items returns 7",
-			items:    make([]int, 7),
-			expected: 7,
+			items:    make([]int, 7), // lint:allow_raw_number
+			expected: 7,              // lint:allow_raw_number
 		},
 		{
 			name:     "15 items returns 10 (max is 10)",
-			items:    make([]int, 15),
-			expected: 10,
+			items:    make([]int, 15), // lint:allow_raw_number
+			expected: 10,              // lint:allow_raw_number
 		},
 	}
 
@@ -105,11 +107,11 @@ func TestMinMaxRows(t *testing.T) {
 func TestGetRolesForAccount(t *testing.T) {
 	accounts := []listAccount{
 		{
-			ID:   "111111111111",
+			ID:   testAccountID,
 			Name: "Dev",
 			Roles: []listRole{
-				{AccountID: "111111111111", Name: "Admin", Profile: "dev-admin"},
-				{AccountID: "111111111111", Name: "ReadOnly", Profile: "dev-readonly"},
+				{AccountID: testAccountID, Name: "Admin", Profile: "dev-admin"},
+				{AccountID: testAccountID, Name: "ReadOnly", Profile: "dev-readonly"},
 			},
 		},
 		{
@@ -128,13 +130,13 @@ func TestGetRolesForAccount(t *testing.T) {
 	}{
 		{
 			name:      "matching account returns roles",
-			accountID: "111111111111",
-			wantCount: 2,
+			accountID: testAccountID,
+			wantCount: 2, // lint:allow_raw_number
 		},
 		{
 			name:      "missing account returns empty slice",
 			accountID: "999999999999",
-			wantCount: 0,
+			wantCount: 0, // lint:allow_raw_number
 		},
 	}
 

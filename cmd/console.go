@@ -17,7 +17,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"math"
 	"net/url"
 	"os"
@@ -30,7 +29,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	configfile "github.com/northwood-labs/aws-config-parser/ini"
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
@@ -94,7 +93,7 @@ var (
 				profileName = asmConfig.GetString("profile-name")
 			}
 
-			groups := []*huh.Group{}
+			groups := []*huh.Group(nil)
 
 			if consoleURL == "" {
 				logger.DebugContext(ctx, "AWS Console URL is undefined. Collect it from user.")
@@ -201,7 +200,7 @@ var (
 						Value(&accountID).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							accts := []huh.Option[string]{}
+							accts := []huh.Option[string](nil)
 
 							for _, acct := range accounts.Accounts {
 								accts = append(accts, huh.NewOption(
@@ -228,7 +227,7 @@ var (
 						Value(&roleName).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							roles := []huh.Option[string]{}
+							roles := []huh.Option[string](nil)
 
 							roleList := getRolesForAccount(accounts.Accounts, accountID)
 
@@ -248,7 +247,7 @@ var (
 
 			err = form.Run()
 			if err != nil {
-				log.Fatal(err)
+				return fmt.Errorf("running console form: %w", err)
 			}
 
 			logger.DebugContext(
@@ -350,14 +349,14 @@ func getRolesForAccount(accounts []listAccount, accountID string) []listRole {
 		}
 	}
 
-	return []listRole{}
+	return nil
 }
 
 // getStartURL extracts the SSO portal hostname from the config. The console
 // command needs this to construct the final redirect URL — the hostname is the
 // SSO portal that handles the account/role selection.
 func getStartURL(profileName string) (string, error) {
-	sections, err := configFile.OpenFile(awsConfigFilePath)
+	sections, err := configfile.OpenFile(awsConfigFilePath)
 	if err != nil {
 		return "", fmt.Errorf("could not open AWS config file: %w", err)
 	}

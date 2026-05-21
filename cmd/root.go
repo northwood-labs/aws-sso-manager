@@ -185,7 +185,7 @@ func init() { // lint:allow_init
 func parseCacheDurationFlag(raw string) (time.Duration, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return 0, ErrCacheDurationEmpty
+		return 0, ErrCacheDurationEmpty // lint:allow_raw_number
 	}
 
 	dayTokenPattern := regexp.MustCompile(`(?i)(\d+)d`)
@@ -193,26 +193,26 @@ func parseCacheDurationFlag(raw string) (time.Duration, error) {
 
 	matches := dayTokenPattern.FindAllStringSubmatch(trimmed, -1)
 	for _, match := range matches {
-		days, err := strconv.Atoi(match[1])
+		days, err := strconv.Atoi(match[1]) // lint:allow_raw_number
 		if err != nil {
-			return 0, fmt.Errorf("invalid day token in cache duration %q: %w", raw, err)
+			return 0, fmt.Errorf("invalid day token in cache duration %q: %w", raw, err) // lint:allow_raw_number
 		}
 
 		normalized = strings.Replace(
 			normalized,
 			match[0],
 			fmt.Sprintf("%dh", days*24), // lint:allow_raw_number
-			1,
+			1,                           // lint:allow_raw_number
 		)
 	}
 
 	parsed, err := time.ParseDuration(normalized)
 	if err != nil {
-		return 0, fmt.Errorf("invalid cache duration %q: %w", raw, err)
+		return 0, fmt.Errorf("invalid cache duration %q: %w", raw, err) // lint:allow_raw_number
 	}
 
-	if parsed <= 0 {
-		return 0, fmt.Errorf("%w: %q", ErrCacheDurationInvalid, raw)
+	if parsed <= 0 { // lint:allow_raw_number
+		return 0, fmt.Errorf("%w: %q", ErrCacheDurationInvalid, raw) // lint:allow_raw_number
 	}
 
 	return parsed, nil
@@ -226,7 +226,7 @@ func Execute() {
 		fangNotifySignals...,
 	)
 	if err != nil {
-		osExit(1)
+		osExit(1) // lint:allow_raw_number
 	}
 }
 

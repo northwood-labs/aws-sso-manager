@@ -27,7 +27,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -141,7 +140,7 @@ func (c *cacheFileData) save(cacheFilePath string) error {
 	return nil
 }
 
-func (c *cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
+func (*cacheFileData) read(cacheFilePath string) (*cacheFileData, error) {
 	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		return nil, fmt.Errorf("could not read cache file at %s: %w ", cacheFilePath, err)
@@ -259,9 +258,9 @@ func appendUnique(values []string, value string) []string {
 func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) listAWSAccountsLookupIndex {
 	index := listAWSAccountsLookupIndex{
 		ProfileName:           profileName,
-		AccountsByID:          map[string]listAWSAccountsLookupAccount{},
-		AccountIDsByNameCI:    map[string][]string{},
-		AccountIDsByProfileCI: map[string][]string{},
+		AccountsByID:          make(map[string]listAWSAccountsLookupAccount),
+		AccountIDsByNameCI:    make(map[string][]string),
+		AccountIDsByProfileCI: make(map[string][]string),
 	}
 
 	for _, account := range accounts.Accounts {
@@ -293,25 +292,31 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 			}
 		}
 
-		sort.SliceStable(entry.Roles, func(i, j int) bool {
-			return strings.ToLower(entry.Roles[i]) < strings.ToLower(entry.Roles[j])
+		slices.SortStableFunc(entry.Roles, func(a, b string) int {
+			return strings.Compare(
+				strings.ToLower(a),
+				strings.ToLower(b),
+			)
 		})
 
-		sort.SliceStable(entry.Profiles, func(i, j int) bool {
-			return strings.ToLower(entry.Profiles[i]) < strings.ToLower(entry.Profiles[j])
+		slices.SortStableFunc(entry.Profiles, func(a, b string) int {
+			return strings.Compare(
+				strings.ToLower(a),
+				strings.ToLower(b),
+			)
 		})
 
 		index.AccountsByID[account.ID] = entry
 	}
 
 	for nameKey, accountIDs := range index.AccountIDsByNameCI {
-		sort.Strings(accountIDs)
+		slices.Sort(accountIDs)
 
 		index.AccountIDsByNameCI[nameKey] = accountIDs
 	}
 
 	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
-		sort.Strings(accountIDs)
+		slices.Sort(accountIDs)
 
 		index.AccountIDsByProfileCI[profileKey] = accountIDs
 	}
@@ -320,6 +325,8 @@ func buildListAWSAccountsLookupIndex(profileName string, accounts listAccounts) 
 }
 
 func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookupIndex, bool, error) { // lint:no_dupe
+	const noTTL = 0
+
 	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -338,7 +345,7 @@ func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookup
 	}
 
 	cacheTTL := cacheDuration
-	if cacheTTL <= 0 {
+	if cacheTTL <= noTTL {
 		cacheTTL = 24 * time.Hour // lint:allow_raw_number
 	}
 
@@ -477,6 +484,8 @@ func deleteListAWSAccountsCache(input *listAWSAccountsInput) error {
 // expired. Expired entries are proactively deleted so stale files don't
 // accumulate. Returns (data, true, nil) on hit, (empty, false, nil) on miss.
 func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) { // lint:no_dupe
+	const noTTL = 0
+
 	data, err := os.ReadFile(cacheFilePath) // lint:allow_dynamic_filename
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -492,7 +501,7 @@ func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) 
 	}
 
 	cacheTTL := cacheDuration
-	if cacheTTL <= 0 {
+	if cacheTTL <= noTTL {
 		cacheTTL = 24 * time.Hour // lint:allow_raw_number
 	}
 
@@ -1038,11 +1047,10 @@ func fetchListAWSAccountsFromSSO( // lint:allow_complexity
 			}
 
 			// Sort roles by name.
-			sort.SliceStable(singleAccount.Roles, func(i, j int) bool {
-				return strings.ToLower(
-					singleAccount.Roles[i].Name,
-				) < strings.ToLower(
-					singleAccount.Roles[j].Name,
+			slices.SortStableFunc(singleAccount.Roles, func(a, b listRole) int {
+				return strings.Compare(
+					strings.ToLower(a.Name),
+					strings.ToLower(b.Name),
 				)
 			})
 
@@ -1051,8 +1059,11 @@ func fetchListAWSAccountsFromSSO( // lint:allow_complexity
 	}
 
 	// Sort accounts by name.
-	sort.SliceStable(accts.Accounts, func(i, j int) bool {
-		return strings.ToLower(accts.Accounts[i].Name) < strings.ToLower(accts.Accounts[j].Name)
+	slices.SortStableFunc(accts.Accounts, func(a, b listAccount) int {
+		return strings.Compare(
+			strings.ToLower(a.Name),
+			strings.ToLower(b.Name),
+		)
 	})
 
 	return accts, nil

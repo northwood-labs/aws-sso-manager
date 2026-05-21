@@ -22,6 +22,8 @@ import (
 	"pgregory.net/rapid"
 )
 
+const testSSOStartURL = "https://northwood-labs.awsapps.com/start"
+
 func TestNormalizeSSOStartURL(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -31,23 +33,23 @@ func TestNormalizeSSOStartURL(t *testing.T) {
 	}{
 		{
 			name:  "full URL unchanged",
-			input: "https://northwood-labs.awsapps.com/start",
-			want:  "https://northwood-labs.awsapps.com/start",
+			input: testSSOStartURL,
+			want:  testSSOStartURL,
 		},
 		{
 			name:  "subdomain becomes full URL",
 			input: "northwood-labs",
-			want:  "https://northwood-labs.awsapps.com/start",
+			want:  testSSOStartURL,
 		},
 		{
 			name:  "awsapps host without scheme gains https and start",
 			input: "northwood-labs.awsapps.com",
-			want:  "https://northwood-labs.awsapps.com/start",
+			want:  testSSOStartURL,
 		},
 		{
 			name:  "host and path without scheme gains https",
 			input: "northwood-labs.awsapps.com/start",
-			want:  "https://northwood-labs.awsapps.com/start",
+			want:  testSSOStartURL,
 		},
 		{
 			name:    "empty rejected",
@@ -66,7 +68,7 @@ func TestNormalizeSSOStartURL(t *testing.T) {
 			got, err := normalizeSSOStartURL(tc.input)
 			if tc.wantErr {
 				if err == nil {
-					t.Fatalf("expected error")
+					t.Fatal("expected error")
 				}
 
 				return

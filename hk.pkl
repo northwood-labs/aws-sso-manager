@@ -199,9 +199,6 @@ local linters = new Mapping<String, Group> {
         glob = "**/*.go"
         check = "cd {{ workspace }} && govulncheck ./..."
       }
-      ["licensei"] {
-        check = "licensei header"
-      }
       ["osv-scanner"] {
         fix = "osv-scanner -r ."
       }

@@ -20,7 +20,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -28,6 +28,17 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
+)
+
+const (
+	testConfigType     = "toml"
+	testPrefixKey      = "testprofile.rename.prefix"
+	testConfigFileName = "config.toml"
+	testDrawValue      = "value"
+	testKeyA           = "a"
+	testKeyB           = "b"
+	testKeyC           = "c"
+	testValValue       = "value"
 )
 
 // Feature: config-commands, Property 1: Set-then-get round trip.
@@ -42,13 +53,13 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 		defer func() { asmConfig = oldConfig }()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		key := genConfigKey().Draw(rt, "key")
-		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
+		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, testDrawValue) // lint:no_const
 
 		// Execute configSetCmd.RunE.
 		var buf bytes.Buffer
@@ -68,7 +79,7 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 
 		// Verify on-disk: read the TOML file back with a fresh Viper instance.
 		freshViper := viper.New()
-		freshViper.SetConfigType("toml")
+		freshViper.SetConfigType(testConfigType)
 		freshViper.SetConfigFile(configPath)
 
 		if err := freshViper.ReadInConfig(); err != nil {
@@ -94,13 +105,13 @@ func TestPropertyConfigSetConfirmation(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		key := genConfigKey().Draw(rt, "key")
-		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
+		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, testDrawValue) // lint:no_const
 
 		var buf bytes.Buffer
 		configSetCmd.SetOut(&buf)
@@ -135,9 +146,9 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		// Generate a random number of mutations between 6 and 15 (N > 5).
@@ -145,7 +156,7 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 
 		for i := range numMutations {
 			key := genConfigKey().Draw(rt, "key")
-			value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
+			value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, testDrawValue) // lint:no_const
 
 			var buf bytes.Buffer
 			configSetCmd.SetOut(&buf)
@@ -173,15 +184,17 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 		// files should be the last `len(matches)` entries of a hypothetical
 		// full sorted list — but since pruning already ran, we just verify
 		// they are sorted (no older file survived while a newer one was pruned).
-		if len(matches) > 1 {
-			sorted := make([]string, len(matches))
-			copy(sorted, matches)
-			sort.Strings(sorted)
+		if len(matches) <= 1 {
+			return
+		}
 
-			for i, m := range matches {
-				if filepath.Base(m) != filepath.Base(sorted[i]) {
-					rt.Fatalf("backups not in expected order: got %v, want %v", matches, sorted)
-				}
+		sorted := make([]string, len(matches))
+		copy(sorted, matches)
+		slices.Sort(sorted)
+
+		for i, m := range matches {
+			if filepath.Base(m) != filepath.Base(sorted[i]) {
+				rt.Fatalf("backups not in expected order: got %v, want %v", matches, sorted)
 			}
 		}
 	})
@@ -199,9 +212,9 @@ func TestPropertyConfigBackupContent(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		// First mutation: creates the config file (no backup expected).
@@ -277,9 +290,9 @@ func TestPropertyConfigNonexistentKey(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		// Generate a random key — but never set it.
@@ -374,14 +387,14 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		// Generate random key and value.
 		key := genConfigKey().Draw(rt, "key")
-		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
+		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, testDrawValue) // lint:no_const
 
 		// Step 1: config set <key> <value>.
 		var buf bytes.Buffer
@@ -409,7 +422,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		// in-memory state reflects the post-delete file. Real CLI runs start
 		// with a fresh Viper that reads the persisted file.
 		asmConfig = viper.New()
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		_ = asmConfig.ReadInConfig() // lint:allow_unhandled
@@ -430,7 +443,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 
 		// Step 4: Verify on-disk — read the TOML file with a fresh Viper and confirm key is gone.
 		freshViper := viper.New()
-		freshViper.SetConfigType("toml")
+		freshViper.SetConfigType(testConfigType)
 		freshViper.SetConfigFile(configPath)
 
 		if err := freshViper.ReadInConfig(); err != nil {
@@ -464,14 +477,14 @@ func TestPropertyConfigDelConfirmation(t *testing.T) {
 		asmConfig = viper.New()
 
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "config.toml")
+		configPath := filepath.Join(dir, testConfigFileName)
 
-		asmConfig.SetConfigType("toml")
+		asmConfig.SetConfigType(testConfigType)
 		asmConfig.SetConfigFile(configPath)
 
 		// Generate random key and value.
 		key := genConfigKey().Draw(rt, "key")
-		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
+		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, testDrawValue) // lint:no_const
 
 		// Set the key first so it exists for deletion.
 		var buf bytes.Buffer
@@ -581,9 +594,9 @@ func TestConfigSetCreatesParentDirectory(t *testing.T) {
 
 	dir := t.TempDir()
 	// Use a nested subdirectory that doesn't exist yet.
-	configPath := filepath.Join(dir, "nested", "subdir", "config.toml")
+	configPath := filepath.Join(dir, "nested", "subdir", testConfigFileName)
 
-	asmConfig.SetConfigType("toml")
+	asmConfig.SetConfigType(testConfigType)
 	asmConfig.SetConfigFile(configPath)
 
 	var buf bytes.Buffer
@@ -649,13 +662,13 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 	asmConfig = viper.New()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "config.toml")
+	configPath := filepath.Join(dir, testConfigFileName)
 
-	asmConfig.SetConfigType("toml")
+	asmConfig.SetConfigType(testConfigType)
 	asmConfig.SetConfigFile(configPath)
 
 	// Set a key first using setConfigKey so it goes through the schema.
-	if err := setConfigKey(configPath, "testprofile.rename.prefix", "testvalue"); err != nil {
+	if err := setConfigKey(configPath, testPrefixKey, "testvalue"); err != nil {
 		t.Fatalf("setConfigKey: %v", err)
 	}
 
@@ -668,20 +681,23 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 	var buf bytes.Buffer
 	configDelCmd.SetOut(&buf)
 
-	err := configDelCmd.RunE(configDelCmd, []string{"testprofile.rename.prefix"})
+	err := configDelCmd.RunE(configDelCmd, []string{testPrefixKey})
 	if err != nil {
 		t.Fatalf("config del --force failed: %v", err)
 	}
 
 	// Verify the key is gone on disk.
 	freshViper := viper.New()
-	freshViper.SetConfigType("toml")
+	freshViper.SetConfigType(testConfigType)
 	freshViper.SetConfigFile(configPath)
 
-	if err := freshViper.ReadInConfig(); err == nil {
-		if freshViper.Get("testprofile.rename.prefix") != nil {
-			t.Fatal("expected key to be deleted from config file")
-		}
+	err = freshViper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	if freshViper.Get(testPrefixKey) != nil {
+		t.Fatal("expected key to be deleted from config file")
 	}
 }
 
@@ -705,13 +721,13 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 	asmConfig = viper.New()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "config.toml")
+	configPath := filepath.Join(dir, testConfigFileName)
 
-	asmConfig.SetConfigType("toml")
+	asmConfig.SetConfigType(testConfigType)
 	asmConfig.SetConfigFile(configPath)
 
 	// Set a key and persist via setConfigKey.
-	if err := setConfigKey(configPath, "testprofile.rename.prefix", "original"); err != nil {
+	if err := setConfigKey(configPath, testPrefixKey, "original"); err != nil {
 		t.Fatalf("setConfigKey: %v", err)
 	}
 
@@ -728,7 +744,7 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 	var buf bytes.Buffer
 	configDelCmd.SetOut(&buf)
 
-	err := configDelCmd.RunE(configDelCmd, []string{"testprofile.rename.prefix"})
+	err := configDelCmd.RunE(configDelCmd, []string{testPrefixKey})
 	if err != nil {
 		t.Fatalf("config del failed: %v", err)
 	}
@@ -740,15 +756,15 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 
 	// Verify the key still exists on disk.
 	freshViper := viper.New()
-	freshViper.SetConfigType("toml")
+	freshViper.SetConfigType(testConfigType)
 	freshViper.SetConfigFile(configPath)
 
 	if err := freshViper.ReadInConfig(); err != nil {
 		t.Fatalf("could not read config: %v", err)
 	}
 
-	if freshViper.GetString("testprofile.rename.prefix") != "original" {
-		t.Fatalf("expected key to remain %q, got %q", "original", freshViper.GetString("testprofile.rename.prefix"))
+	if freshViper.GetString(testPrefixKey) != "original" {
+		t.Fatalf("expected key to remain %q, got %q", "original", freshViper.GetString(testPrefixKey))
 	}
 }
 
@@ -765,9 +781,9 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 	asmConfig = viper.New()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "config.toml")
+	configPath := filepath.Join(dir, testConfigFileName)
 
-	asmConfig.SetConfigType("toml")
+	asmConfig.SetConfigType(testConfigType)
 	asmConfig.SetConfigFile(configPath)
 
 	var buf bytes.Buffer
@@ -784,7 +800,7 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 		t.Fatalf("glob: %v", err)
 	}
 
-	if len(matches) != 0 {
+	if len(matches) != 0 { // lint:allow_raw_number
 		t.Fatalf("expected 0 backup files on first write, got %d", len(matches))
 	}
 }
@@ -798,10 +814,10 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 	// Call backupConfigFile with a path inside a read-only directory.
 	// The backup write should fail silently (logged as warning) and not panic.
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "config.toml")
+	configPath := filepath.Join(dir, testConfigFileName)
 
 	// Write an initial config file so backupConfigFile attempts a backup.
-	err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644)
+	err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644) // lint:allow_raw_number
 	if err != nil {
 		t.Fatalf("write initial config: %v", err)
 	}
@@ -825,7 +841,7 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 
 	// Verify no backup was created.
 	matches, _ := filepath.Glob(filepath.Join(dir, "config-*.toml.bak")) // lint:allow_unhandled
-	if len(matches) != 0 {
+	if len(matches) != 0 {                                               // lint:allow_raw_number
 		t.Fatalf("expected 0 backup files when dir is read-only, got %d", len(matches))
 	}
 }
@@ -842,29 +858,31 @@ func TestDeleteNestedKeyPrunesEmptyParents(t *testing.T) {
 	}{
 		{
 			name:      "deep nested key prunes all parents",
-			tree:      map[string]any{"a": map[string]any{"b": map[string]any{"c": "value"}}},
-			parts:     []string{"a", "b", "c"},
+			tree:      map[string]any{testKeyA: map[string]any{testKeyB: map[string]any{testKeyC: testValValue}}},
+			parts:     []string{testKeyA, testKeyB, testKeyC},
 			wantOK:    true,
 			wantEmpty: true,
 		},
 		{
-			name:      "sibling key prevents parent pruning",
-			tree:      map[string]any{"a": map[string]any{"b": map[string]any{"c": "value"}, "d": "keep"}},
-			parts:     []string{"a", "b", "c"},
+			name: "sibling key prevents parent pruning",
+			tree: map[string]any{
+				testKeyA: map[string]any{testKeyB: map[string]any{testKeyC: testValValue}, "d": "keep"},
+			},
+			parts:     []string{testKeyA, testKeyB, testKeyC},
 			wantOK:    true,
 			wantEmpty: false,
 		},
 		{
 			name:      "nonexistent key returns false",
-			tree:      map[string]any{"a": map[string]any{"b": "value"}},
-			parts:     []string{"a", "x"},
+			tree:      map[string]any{testKeyA: map[string]any{testKeyB: testValValue}},
+			parts:     []string{testKeyA, "x"},
 			wantOK:    false,
 			wantEmpty: false,
 		},
 		{
 			name:      "empty parts returns false",
-			tree:      map[string]any{"a": "value"},
-			parts:     []string{},
+			tree:      map[string]any{testKeyA: testValValue},
+			parts:     nil,
 			wantOK:    false,
 			wantEmpty: false,
 		},

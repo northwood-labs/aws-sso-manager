@@ -30,6 +30,8 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
+const singleSpace = " "
+
 var (
 	fAccounts string
 	fRoles    string
@@ -241,18 +243,18 @@ var (
 			if len(accounts.Accounts) == 0 {
 				fmt.Println("no AWS accounts are assigned to this user.")
 
-				os.Exit(0)
+				return nil
 			}
 
 			rows := buildListOutputRows(profileName, accounts)
 
 			if fCSV {
-				fmt.Print(renderCSVTable(listOutputHeaders, rows))
+				_, _ = fmt.Print(renderCSVTable(listOutputHeaders, rows))
 				return nil
 			}
 
 			if fMarkdown {
-				fmt.Print(renderMarkdownTable(listOutputHeaders, rows))
+				_, _ = fmt.Print(renderMarkdownTable(listOutputHeaders, rows))
 				return nil
 			}
 
@@ -318,7 +320,7 @@ func init() { // lint:allow_init
 // rows. Each row gets a generated profile name so the user can see exactly what
 // will appear in their ~/.aws/config after running "update".
 func buildListOutputRows(profileName string, accounts listAccounts) [][]string {
-	rows := make([][]string, 0)
+	var rows [][]string
 
 	for i := range accounts.Accounts {
 		for j := range accounts.Accounts[i].Roles {
@@ -358,22 +360,22 @@ func renderCSVTable(headers []string, rows [][]string) string {
 			quoted[i] = quoteCSVCell(row[i])
 		}
 
-		buffer.WriteString(strings.Join(quoted, ","))
-		buffer.WriteByte('\n')
+		_, _ = buffer.WriteString(strings.Join(quoted, ","))
+		_ = buffer.WriteByte('\n')
 	}
 
 	return buffer.String()
 }
 
 func padRight(value string, width int) string {
-	return value + strings.Repeat(" ", width-len(value))
+	return value + strings.Repeat(singleSpace, width-len(value))
 }
 
 // renderMarkdownTable produces a GitHub-Flavored Markdown table with
 // column-aligned padding. This format is useful for pasting into PRs, wikis,
 // or documentation where a rendered table is more readable than raw CSV.
 func renderMarkdownTable(headers []string, rows [][]string) string {
-	const SeparatorWidthMax = 3
+	const separatorWidthMax = 3
 
 	widths := make([]int, len(headers))
 
@@ -391,37 +393,37 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 
 	var buffer bytes.Buffer
 
-	buffer.WriteString("|")
+	_, _ = buffer.WriteString("|")
 
 	for i, header := range headers {
-		buffer.WriteString(" ")
-		buffer.WriteString(padRight(header, widths[i]))
-		buffer.WriteString(" |")
+		_, _ = buffer.WriteString(singleSpace)
+		_, _ = buffer.WriteString(padRight(header, widths[i]))
+		_, _ = buffer.WriteString(" |")
 	}
 
-	buffer.WriteByte('\n')
-	buffer.WriteString("|")
+	_ = buffer.WriteByte('\n')
+	_, _ = buffer.WriteString("|")
 
 	for i := range headers {
-		separatorWidth := max(widths[i], SeparatorWidthMax)
+		separatorWidth := max(widths[i], separatorWidthMax)
 
-		buffer.WriteString(" ")
-		buffer.WriteString(strings.Repeat("-", separatorWidth))
-		buffer.WriteString(" |")
+		_, _ = buffer.WriteString(singleSpace)
+		_, _ = buffer.WriteString(strings.Repeat("-", separatorWidth))
+		_, _ = buffer.WriteString(" |")
 	}
 
-	buffer.WriteByte('\n')
+	_ = buffer.WriteByte('\n')
 
 	for _, row := range rows {
-		buffer.WriteString("|")
+		_, _ = buffer.WriteString("|")
 
 		for i, cell := range row {
-			buffer.WriteString(" ")
-			buffer.WriteString(padRight(cell, widths[i]))
-			buffer.WriteString(" |")
+			_, _ = buffer.WriteString(singleSpace)
+			_, _ = buffer.WriteString(padRight(cell, widths[i]))
+			_, _ = buffer.WriteString(" |")
 		}
 
-		buffer.WriteByte('\n')
+		_ = buffer.WriteByte('\n')
 	}
 
 	return buffer.String()

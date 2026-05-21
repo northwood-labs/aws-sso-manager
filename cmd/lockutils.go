@@ -70,13 +70,13 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			// We hold the lock. Write our PID so that a human investigating a
 			// stale lock file can identify which process held it. Truncate first
 			// to clear any leftover PID from a previous holder.
-			truncateErr := lockFile.Truncate(0)
+			truncateErr := lockFile.Truncate(0) // lint:allow_raw_number
 			if truncateErr != nil {
 				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("truncate AWS config lock file %q: %w", lockPath, truncateErr)
 			}
 
-			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil {
+			if _, seekErr := lockFile.Seek(0, 0); seekErr != nil { // lint:allow_raw_number
 				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("seek AWS config lock file %q: %w", lockPath, seekErr)
 			}

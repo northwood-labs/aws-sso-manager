@@ -367,7 +367,7 @@ linters:
 
             - pkg: "go.yaml.in/yaml/v3"
               desc: Use v4 instead.
-          # @config-manager:end linters-settings-depguard
+              # @config-manager:end linters-settings-depguard
 
     dogsled:
       # @config-manager:start linters-settings-dogsled
@@ -396,11 +396,11 @@ linters:
         - or
         - the
         - this
-      # Keywords used to ignore detection.
-      # Default: []
-      # ignore:
-      #   - "0C0C"
-      # @config-manager:end linters-settings-dupword
+        # Keywords used to ignore detection.
+        # Default: []
+        # ignore:
+        #   - "0C0C"
+        # @config-manager:end linters-settings-dupword
 
     embeddedstructfieldcheck:
       # @config-manager:start linters-settings-embeddedstructfieldcheck
@@ -1135,30 +1135,30 @@ linters:
           # Comma-separated list of print function names to check (in addition to default, see `go tool vet help printf`).
           # Default: []
           funcs:
-            # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Infof
-            # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Warnf
-            # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Errorf
-            # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Fatalf
+          # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Infof
+          # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Warnf
+          # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Errorf
+          # - (github.com/golangci/golangci-lint/v2/pkg/logutils.Log).Fatalf
 
         shadow:
           # Whether to be strict about shadowing; can be noisy.
           # Default: false
           strict: false
-        # unusedresult:
-        # Comma-separated list of functions whose results must be used.
-        # (In addition to default:
-        #   context.WithCancel, context.WithDeadline, context.WithTimeout, context.WithValue, errors.New, fmt.Errorf,
-        #   fmt.Sprint, fmt.Sprintf, sort.Reverse
-        # ).
-        # Default: []
-        # funcs:
-        #   - pkg.MyFunc
+          # unusedresult:
+          # Comma-separated list of functions whose results must be used.
+          # (In addition to default:
+          #   context.WithCancel, context.WithDeadline, context.WithTimeout, context.WithValue, errors.New, fmt.Errorf,
+          #   fmt.Sprint, fmt.Sprintf, sort.Reverse
+          # ).
+          # Default: []
+          # funcs:
+          #   - pkg.MyFunc
 
-        # Comma-separated list of names of methods of type func() string whose results must be used.
-        # (In addition to default Error,String).
-        # Default: []
-        # stringmethods:
-        #   - MyMethod
+          # Comma-separated list of names of methods of type func() string whose results must be used.
+          # (In addition to default Error,String).
+          # Default: []
+          # stringmethods:
+          #   - MyMethod
       # @config-manager:end linters-settings-govet
 
     grouper:
@@ -1206,11 +1206,11 @@ linters:
         - opaque # Identifies functions that return interfaces, but the actual returned value is always a single concrete implementation.
         - unexported # Identifies interfaces that are not exported but are used in exported functions or methods.
       settings: {}
-        # unused:
-        #   # List of packages path to exclude from the check.
-        #   # Default: []
-        #   exclude:
-        #     - github.com/example/log
+      # unused:
+      #   # List of packages path to exclude from the check.
+      #   # Default: []
+      #   exclude:
+      #     - github.com/example/log
       # @config-manager:end linters-settings-iface
 
     importas:
@@ -1309,12 +1309,12 @@ linters:
           correction: "if"
         - typo: "cancelation"
           correction: "cancellation"
-      # Mode of the analysis:
-      # - default: checks all the file content.
-      # - restricted: checks only comments.
-      # Default: ""
-      # mode: restricted
-      # @config-manager:end linters-settings-misspell
+          # Mode of the analysis:
+          # - default: checks all the file content.
+          # - restricted: checks only comments.
+          # Default: ""
+          # mode: restricted
+          # @config-manager:end linters-settings-misspell
 
     mnd:
       # @config-manager:start linters-settings-mnd
@@ -1339,21 +1339,21 @@ linters:
         - "0o0666"
         - "0755"
         - "0o0755"
-      # List of file patterns to exclude from analysis.
-      # Values always ignored: `.+_test.go`.
-      # Default: []
-      # ignored-files:
-      #   - 'magic1_.+\.go$'
+        # List of file patterns to exclude from analysis.
+        # Values always ignored: `.+_test.go`.
+        # Default: []
+        # ignored-files:
+        #   - 'magic1_.+\.go$'
 
-      # List of function patterns to exclude from analysis.
-      # Following functions are always ignored: `time.Date`,
-      # `strconv.FormatInt`, `strconv.FormatUint`, `strconv.FormatFloat`,
-      # `strconv.ParseInt`, `strconv.ParseUint`, `strconv.ParseFloat`.
-      # Default: []
-      # ignored-functions:
-      #   - '^math\.'
-      #   - '^http\.StatusText$'
-      # @config-manager:end linters-settings-mnd
+        # List of function patterns to exclude from analysis.
+        # Following functions are always ignored: `time.Date`,
+        # `strconv.FormatInt`, `strconv.FormatUint`, `strconv.FormatFloat`,
+        # `strconv.ParseInt`, `strconv.ParseUint`, `strconv.ParseFloat`.
+        # Default: []
+        # ignored-functions:
+        #   - '^math\.'
+        #   - '^http\.StatusText$'
+        # @config-manager:end linters-settings-mnd
 
     nakedret:
       # @config-manager:start linters-settings-nakedret
@@ -1564,7 +1564,7 @@ linters:
       patterns:
         - "EOF"
         - "Err.*"
-      # @config-manager:end linters-settings-reassign
+        # @config-manager:end linters-settings-reassign
 
     recvcheck:
       # @config-manager:start linters-settings-recvcheck
@@ -1632,7 +1632,7 @@ linters:
           arguments:
             - max-lit-count: "3"
               allow-strs: '""'
-              # allow-ints: "0,1,2"
+              allow-ints: "0,1,2"
               # allow-floats: "0.0,0.,1.0,1.,2.0,2."
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#argument-limit
@@ -1699,7 +1699,7 @@ linters:
           severity: warning
           disabled: false
           exclude: [""]
-          arguments: [15]
+          arguments: [10]
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#confusing-naming
         - name: confusing-naming
@@ -1933,7 +1933,7 @@ linters:
           severity: warning
           disabled: false
           exclude: [""]
-          arguments: [3]
+          arguments: [4]
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#get-return
         - name: get-return
@@ -2335,7 +2335,7 @@ linters:
           severity: warning
           disabled: false
           exclude: [""]
-      # @config-manager:end linters-settings-revive
+          # @config-manager:end linters-settings-revive
 
     rowserrcheck:
       # @config-manager:start linters-settings-rowserrcheck
@@ -2438,14 +2438,14 @@ linters:
       # Default: []
       ignore-check-signatures:
         - "telemetry.RecordError"
-      # A list of regexes for additional function signatures that create spans.
-      # This is useful if you have a utility method to create spans.
-      # Each entry should be of the form `<regex>:<telemetry-type>`, where `telemetry-type` can be `opentelemetry` or `opencensus`.
-      # https://github.com/jjti/go-spancheck#extra-start-span-signatures
-      # Default: []
-      # extra-start-span-signatures:
-      #   - "github.com/user/repo/telemetry/trace.Start:opentelemetry"
-      # @config-manager:end linters-settings-spancheck
+        # A list of regexes for additional function signatures that create spans.
+        # This is useful if you have a utility method to create spans.
+        # Each entry should be of the form `<regex>:<telemetry-type>`, where `telemetry-type` can be `opentelemetry` or `opencensus`.
+        # https://github.com/jjti/go-spancheck#extra-start-span-signatures
+        # Default: []
+        # extra-start-span-signatures:
+        #   - "github.com/user/repo/telemetry/trace.Start:opentelemetry"
+        # @config-manager:end linters-settings-spancheck
 
     staticcheck:
       # @config-manager:start linters-settings-staticcheck
@@ -3158,62 +3158,62 @@ output:
       # Use colors.
       # Default: true
       colors: true
-    # Prints issues in a JSON representation.
-    # json:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: stdout
+      # Prints issues in a JSON representation.
+      # json:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: stdout
 
-    # Prints issues in columns representation separated by tabulations.
-    # tab:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: stdout
+      # Prints issues in columns representation separated by tabulations.
+      # tab:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: stdout
 
-    #   # Print linter name in the end of issue text.
-    #   # Default: true
-    #   print-linter-name: true
+      #   # Print linter name in the end of issue text.
+      #   # Default: true
+      #   print-linter-name: true
 
-    #   # Use colors.
-    #   # Default: true
-    #   colors: true
+      #   # Use colors.
+      #   # Default: true
+      #   colors: true
 
-    # Prints issues in the Checkstyle format.
-    # checkstyle:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: stdout
+      # Prints issues in the Checkstyle format.
+      # checkstyle:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: stdout
 
-    # Prints issues in the Code Climate format.
-    # code-climate:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: stdout
+      # Prints issues in the Code Climate format.
+      # code-climate:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: stdout
 
-    # Prints issues in the JUnit XML format.
-    # junit-xml:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: stdout
-    #   # Support extra JUnit XML fields.
-    #   # Default: false
-    #   extended: true
+      # Prints issues in the JUnit XML format.
+      # junit-xml:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: stdout
+      #   # Support extra JUnit XML fields.
+      #   # Default: false
+      #   extended: true
 
-    # Prints issues in the TeamCity format.
-    # teamcity:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: ./path/to/output.txt
+      # Prints issues in the TeamCity format.
+      # teamcity:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: ./path/to/output.txt
 
-    # Prints issues in the SARIF format.
-    # sarif:
-    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-    #   # Default: stdout
-    #   path: ./path/to/output.json
+      # Prints issues in the SARIF format.
+      # sarif:
+      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      #   # Default: stdout
+      #   path: ./path/to/output.json
 
-    # Add a prefix to the output file references.
-    # This option is ignored when using `output.path-mode: abs` mode.
-    # Default: ""
+      # Add a prefix to the output file references.
+      # This option is ignored when using `output.path-mode: abs` mode.
+      # Default: ""
   path-prefix: ""
 
   # By default, the report are related to the path obtained by `run.relative-path-mode`.

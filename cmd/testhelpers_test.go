@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 
 	"pgregory.net/rapid"
@@ -77,14 +77,14 @@ func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts
 		}
 
 		// Sort accounts by name (case-insensitive).
-		sort.SliceStable(accounts, func(i, j int) bool {
-			return strings.ToLower(accounts[i].Name) < strings.ToLower(accounts[j].Name)
+		slices.SortStableFunc(accounts, func(a, b listAccount) int {
+			return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 		})
 
 		// Sort roles within each account by name (case-insensitive).
 		for i := range accounts {
-			sort.SliceStable(accounts[i].Roles, func(a, b int) bool {
-				return strings.ToLower(accounts[i].Roles[a].Name) < strings.ToLower(accounts[i].Roles[b].Name)
+			slices.SortStableFunc(accounts[i].Roles, func(a, b listRole) int {
+				return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 			})
 		}
 
@@ -114,18 +114,19 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 
 		// Optional preamble content.
 		if rapid.Bool().Draw(t, "hasPreamble") {
-			sb.WriteString("[default]\n")
-			sb.WriteString("region = us-east-1\n")
-			sb.WriteString("\n")
+			_, _ = sb.WriteString("[default]\n")
+			_, _ = sb.WriteString("region = us-east-1\n")
+			_, _ = sb.WriteString("\n")
 		}
 
 		for _, profile := range profiles {
 			fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 			fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
-			sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
-			sb.WriteString("sso_region = us-east-1\n")
-			sb.WriteString("sso_registration_scopes = sso:account:access\n")
-			sb.WriteString("\n")
+
+			_, _ = sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
+			_, _ = sb.WriteString("sso_region = us-east-1\n")
+			_, _ = sb.WriteString("sso_registration_scopes = sso:account:access\n")
+			_, _ = sb.WriteString("\n")
 
 			// Generate 1-3 profile sections inside the managed block.
 			numProfiles := rapid.IntRange(1, 3).Draw(t, "numProfiles_"+profile)
@@ -153,8 +154,9 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 						fmt.Sprintf("roleName_%s_%d", profile, j),
 					),
 				)
-				sb.WriteString("region = us-east-1\n")
-				sb.WriteString("output = json\n")
+
+				_, _ = sb.WriteString("region = us-east-1\n")
+				_, _ = sb.WriteString("output = json\n")
 			}
 
 			fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)

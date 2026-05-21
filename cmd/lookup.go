@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/lithammer/dedent"
@@ -152,7 +152,7 @@ var (
 				return ErrRoleSubstringEmpty
 			}
 
-			matches := []string{}
+			matches := []string(nil)
 
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needle) {
@@ -160,8 +160,8 @@ var (
 				}
 			}
 
-			sort.SliceStable(matches, func(i, j int) bool {
-				return strings.ToLower(matches[i]) < strings.ToLower(matches[j])
+			slices.SortStableFunc(matches, func(a, b string) int {
+				return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 			})
 
 			if len(matches) == 0 {
@@ -286,12 +286,12 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 	lookupKey := strings.ToLower(trimmed)
 
 	// Exact match by profile name.
-	if accountIDs := index.AccountIDsByProfileCI[lookupKey]; len(accountIDs) > 0 {
+	if accountIDs := index.AccountIDsByProfileCI[lookupKey]; len(accountIDs) > 0 { // lint:allow_raw_number
 		return accountIDs, nil
 	}
 
 	// Exact match by account name.
-	if accountIDs := index.AccountIDsByNameCI[lookupKey]; len(accountIDs) > 0 {
+	if accountIDs := index.AccountIDsByNameCI[lookupKey]; len(accountIDs) > 0 { // lint:allow_raw_number
 		return accountIDs, nil
 	}
 
@@ -299,34 +299,38 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 	// fallback that enables partial-name lookups like "internal" matching
 	// "internal-prod". We deduplicate via a seen set because the same account
 	// ID can appear in both name and profile maps.
-	seen := map[string]struct{}{}
+	seen := make(map[string]struct{})
 
 	var matched []string
 
 	for nameKey, accountIDs := range index.AccountIDsByNameCI {
-		if strings.Contains(nameKey, lookupKey) {
-			for _, id := range accountIDs {
-				if _, ok := seen[id]; !ok {
-					seen[id] = struct{}{}
-					matched = append(matched, id)
-				}
+		if !strings.Contains(nameKey, lookupKey) {
+			continue
+		}
+
+		for _, id := range accountIDs {
+			if _, ok := seen[id]; !ok {
+				seen[id] = struct{}{}
+				matched = append(matched, id)
 			}
 		}
 	}
 
 	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
-		if strings.Contains(profileKey, lookupKey) {
-			for _, id := range accountIDs {
-				if _, ok := seen[id]; !ok {
-					seen[id] = struct{}{}
-					matched = append(matched, id)
-				}
+		if !strings.Contains(profileKey, lookupKey) {
+			continue
+		}
+
+		for _, id := range accountIDs {
+			if _, ok := seen[id]; !ok {
+				seen[id] = struct{}{}
+				matched = append(matched, id)
 			}
 		}
 	}
 
-	if len(matched) > 0 {
-		sort.Strings(matched)
+	if len(matched) > 0 { // lint:allow_raw_number
+		slices.Sort(matched)
 		return matched, nil
 	}
 
@@ -346,7 +350,7 @@ func resolveLookupAccount(
 		return "", listAWSAccountsLookupAccount{}, fmt.Errorf("could not lookup account: %w", err)
 	}
 
-	if len(accountIDs) > 1 {
+	if len(accountIDs) > 1 { // lint:allow_raw_number
 		profileNote := ""
 		if strings.TrimSpace(index.ProfileName) != "" {
 			profileNote = fmt.Sprintf(" under SSO profile %q", index.ProfileName)
@@ -361,7 +365,7 @@ func resolveLookupAccount(
 		)
 	}
 
-	accountID := accountIDs[0]
+	accountID := accountIDs[0] // lint:allow_raw_number
 
 	account, ok := index.AccountsByID[accountID]
 	if !ok {

@@ -24,7 +24,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	configfile "github.com/northwood-labs/aws-config-parser/ini"
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
@@ -42,7 +42,7 @@ var updateCmd = &cobra.Command{
 	and roles in their AWS SSO Manager configuration, ensuring that their setup
 	remains current and accurate.
 	`),
-	Args:    cobra.RangeArgs(0, 1),
+	Args:    cobra.RangeArgs(0, 1), // lint:allow_raw_number
 	Aliases: []string{"upgrade", "sync"},
 	Example: strings.TrimSpace(dedent.Dedent(`
 	# Update profiles in the default SSO profile.
@@ -58,8 +58,8 @@ var updateCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 
-		if len(args) == 1 {
-			profileName = args[0]
+		if len(args) == 1 { // lint:allow_raw_number
+			profileName = args[0] // lint:allow_raw_number
 		} else {
 			profileName = asmConfig.GetString("profile-name")
 		}
@@ -206,16 +206,16 @@ func init() { // lint:allow_init
 // the user no longer has access to are dropped. The returned count lets the
 // caller report how many profiles were written.
 func buildUpdatedManagedSections( // lint:allow_complexity
-	sections configFile.Sections,
+	sections configfile.Sections,
 	ssoProfile,
 	profileName string,
 	accounts listAccounts,
-) (configFile.Sections, int, error) {
+) (configfile.Sections, int, error) {
 	ctx := context.Background()
 
 	ssoSection, ok := sections.GetSection(ssoProfile)
 	if !ok {
-		return configFile.NewSections(), 0, fmt.Errorf(
+		return configfile.NewSections(), 0, fmt.Errorf( // lint:allow_raw_number
 			"%w: [%s]; need to run init",
 			ErrConfigSectionMissing,
 			ssoProfile,
@@ -225,7 +225,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 	// Rebuild the managed block from scratch on each update so that the
 	// output reflects the complete current account/role list (stale profiles
 	// from previous runs are intentionally dropped).
-	nextSections := configFile.NewSections()
+	nextSections := configfile.NewSections()
 
 	nextSections = nextSections.SetSection(ssoProfile, ssoSection)
 
@@ -249,7 +249,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 	resolvedUseFIPS := asmConfig.GetString(globalPrefix + "use_fips_endpoint")
 	resolvedTCPKeepAlive := asmConfig.GetString(globalPrefix + "tcp_keepalive")
 
-	counter := 0
+	counter := 0 // lint:allow_raw_number
 
 	for _, account := range accounts.Accounts {
 		for _, role := range account.Roles {
@@ -268,10 +268,10 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 					profileHeaderName,
 				)
 
-				section = configFile.NewSection(profileHeaderName)
+				section = configfile.NewSection(profileHeaderName)
 			}
 
-			m := map[string]string{}
+			m := make(map[string]string)
 
 			m["sso_session"] = profileName
 			m["sso_account_id"] = role.AccountID
@@ -316,14 +316,22 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 			}
 
 			for iniKey, iniValue := range m {
-				v, err := configFile.NewStringValue(iniValue)
+				v, err := configfile.NewStringValue(iniValue)
 				if err != nil {
-					return configFile.NewSections(), 0, fmt.Errorf("failed to create '%s' value: %w", iniKey, err)
+					return configfile.NewSections(), 0, fmt.Errorf(
+						"failed to create '%s' value: %w",
+						iniKey,
+						err,
+					) // lint:allow_raw_number
 				}
 
 				err = section.UpdateValue(iniKey, v)
 				if err != nil {
-					return configFile.NewSections(), 0, fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
+					return configfile.NewSections(), 0, fmt.Errorf(
+						"failed to update '%s' value: %w",
+						iniKey,
+						err,
+					) // lint:allow_raw_number
 				}
 			}
 
@@ -336,7 +344,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 
 			nextSections = nextSections.SetSection(profileHeaderName, section)
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
-				return configFile.NewSections(), 0, fmt.Errorf(
+				return configfile.NewSections(), 0, fmt.Errorf( // lint:allow_raw_number
 					"%w: [%s]",
 					ErrConfigSectionCreate,
 					profileHeaderName,

@@ -27,8 +27,8 @@ func TestBuildListOutputRows(t *testing.T) {
 	accounts := listAccounts{
 		Accounts: []listAccount{
 			{
-				ID:   "111111111111",
-				Name: "Production",
+				ID:   testAccountID,
+				Name: testAccountNameProd,
 				Roles: []listRole{
 					{Name: "Admin"},
 					{Name: "ReadOnly"},
@@ -39,8 +39,8 @@ func TestBuildListOutputRows(t *testing.T) {
 
 	got := buildListOutputRows("nwl", accounts)
 	want := [][]string{
-		{"111111111111", "Production", "Admin", "production-admin"},
-		{"111111111111", "Production", "ReadOnly", "production-readonly"},
+		{testAccountID, testAccountNameProd, "Admin", "production-admin"},
+		{testAccountID, testAccountNameProd, "ReadOnly", "production-readonly"},
 	}
 
 	if !reflect.DeepEqual(got, want) {
@@ -51,7 +51,7 @@ func TestBuildListOutputRows(t *testing.T) {
 func TestRenderCSVTable(t *testing.T) {
 	headers := []string{"ID", "Account Name", "Role Name", "Profile Name"}
 	rows := [][]string{
-		{"111111111111", "Prod, Main", `Admin "Power"`, "nwl-prod-admin"},
+		{testAccountID, "Prod, Main", `Admin "Power"`, "nwl-prod-admin"},
 	}
 
 	got := renderCSVTable(headers, rows)
@@ -66,7 +66,7 @@ func TestRenderCSVTable(t *testing.T) {
 func TestRenderMarkdownTable(t *testing.T) {
 	headers := []string{"ID", "Account Name", "Role Name", "Profile Name"}
 	rows := [][]string{
-		{"111111111111", "Production", "Admin", "nwl-production-admin"},
+		{testAccountID, testAccountNameProd, "Admin", "nwl-production-admin"},
 		{"222222222222", "Sandbox", "ReadOnly", "nwl-sandbox-readonly"},
 	}
 

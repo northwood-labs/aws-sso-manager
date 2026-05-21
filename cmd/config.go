@@ -15,11 +15,12 @@
 package cmd
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -216,7 +217,7 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 	}
 
 	pairs := flattenConfig(tree, "")
-	if len(pairs) == 0 {
+	if len(pairs) == 0 { // lint:allow_raw_number
 		fmt.Fprintln(cmd.OutOrStdout(), "No configuration values set.")
 
 		return nil
@@ -251,8 +252,8 @@ func printAllConfigKeys(cmd *cobra.Command) error {
 // (e.g., {"a": {"b": "c"}} → [["a.b", "c"]]). This gives the user a flat
 // view of the entire config regardless of nesting depth. String values are
 // quoted to distinguish them from other types.
-func flattenConfig(tree map[string]any, prefix string) [][2]string {
-	var pairs [][2]string
+func flattenConfig(tree map[string]any, prefix string) [][2]string { // lint:allow_raw_number
+	var pairs [][2]string // lint:allow_raw_number
 
 	for k, v := range tree {
 		fullKey := prefix + "." + k
@@ -270,8 +271,8 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 		}
 	}
 
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i][0] < pairs[j][0]
+	slices.SortFunc(pairs, func(a, b [2]string) int {
+		return cmp.Compare(a[0], b[0])
 	})
 
 	return pairs
@@ -281,7 +282,7 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 // a mutation so the user can recover from accidental changes. Failures are
 // logged as warnings because atomic writes already protect against corruption.
 func backupConfigFile(configPath string) {
-	const NumberOfBackups = 5
+	const numberOfBackups = 5
 
 	ctx := context.Background()
 
@@ -310,7 +311,7 @@ func backupConfigFile(configPath string) {
 		return
 	}
 
-	pruneConfigBackups(dir, NumberOfBackups)
+	pruneConfigBackups(dir, numberOfBackups)
 }
 
 // pruneConfigBackups keeps only the most recent `keep` backup files in dir,
@@ -326,7 +327,7 @@ func pruneConfigBackups(dir string, keep int) {
 		return
 	}
 
-	sort.Strings(matches)
+	slices.Sort(matches)
 
 	if len(matches) <= keep {
 		return
@@ -384,16 +385,16 @@ func setConfigKey(configPath, key, value string) error {
 // setNestedKey walks a dot-split key path through a map tree, creating
 // intermediate tables as needed, and sets the leaf value.
 func setNestedKey(tree map[string]any, parts []string, value string) {
-	if len(parts) == 1 {
-		tree[parts[0]] = value
+	if len(parts) == 1 { // lint:allow_raw_number
+		tree[parts[0]] = value // lint:allow_raw_number
 
 		return
 	}
 
-	child, ok := tree[parts[0]].(map[string]any)
+	child, ok := tree[parts[0]].(map[string]any) // lint:allow_raw_number
 	if !ok {
 		child = make(map[string]any)
-		tree[parts[0]] = child
+		tree[parts[0]] = child // lint:allow_raw_number
 	}
 
 	setNestedKey(child, parts[1:], value)
@@ -496,21 +497,21 @@ func deleteConfigKey(configPath, key string) error {
 // the leaf entry. Empty parent tables are pruned after deletion so the file
 // stays clean.
 func deleteNestedKey(tree map[string]any, parts []string) bool {
-	if len(parts) == 0 {
+	if len(parts) == 0 { // lint:allow_raw_number
 		return false
 	}
 
-	if len(parts) == 1 {
-		if _, ok := tree[parts[0]]; !ok {
+	if len(parts) == 1 { // lint:allow_raw_number
+		if _, ok := tree[parts[0]]; !ok { // lint:allow_raw_number
 			return false
 		}
 
-		delete(tree, parts[0])
+		delete(tree, parts[0]) // lint:allow_raw_number
 
 		return true
 	}
 
-	child, ok := tree[parts[0]].(map[string]any)
+	child, ok := tree[parts[0]].(map[string]any) // lint:allow_raw_number
 	if !ok {
 		return false
 	}
@@ -520,8 +521,8 @@ func deleteNestedKey(tree map[string]any, parts []string) bool {
 	}
 
 	// Prune empty parent tables after deletion.
-	if len(child) == 0 {
-		delete(tree, parts[0])
+	if len(child) == 0 { // lint:allow_raw_number
+		delete(tree, parts[0]) // lint:allow_raw_number
 	}
 
 	return true

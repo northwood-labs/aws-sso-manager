@@ -85,7 +85,7 @@ var (
 			markedProfiles := markerReport.profiles
 
 			// Union of both sets.
-			union := map[string]struct{}{}
+			union := make(map[string]struct{})
 			for _, p := range ssoSections {
 				union[p] = struct{}{}
 			}
@@ -102,12 +102,12 @@ var (
 			}
 
 			// Build lookup sets for fast membership tests.
-			hasSSOSection := map[string]bool{}
+			hasSSOSection := make(map[string]bool)
 			for _, p := range ssoSections {
 				hasSSOSection[p] = true
 			}
 
-			hasMarker := map[string]bool{}
+			hasMarker := make(map[string]bool)
 			for _, p := range markedProfiles {
 				hasMarker[p] = true
 			}
@@ -117,7 +117,7 @@ var (
 				errs    []string
 			}
 
-			results := []result{}
+			results := []result(nil)
 
 			foundProblems := false
 
@@ -137,7 +137,7 @@ var (
 			}
 
 			for _, profile := range allProfiles {
-				errs := []string{}
+				errs := []string(nil)
 
 				// Check structural integrity of markers.
 				if hasMarker[profile] {

@@ -66,7 +66,7 @@ func TestLogoutCommandRegistration(t *testing.T) {
 			fn: func(t *testing.T) {
 				t.Helper()
 
-				err := logoutCmd.Args(logoutCmd, []string{})
+				err := logoutCmd.Args(logoutCmd, nil)
 				if err != nil {
 					t.Fatalf("expected 0 args to be valid: %v", err)
 				}
@@ -125,7 +125,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 		tmpFile := tmpDir + "/config"
 
 		content := "[sso-session myprofile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
+		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
 			t.Fatalf("write temp config: %v", err)
 		}
 
@@ -174,7 +174,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 
 		content := "[sso-session configured-profile]\n" +
 			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
+		if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
 			t.Fatalf("write temp config: %v", err)
 		}
 
@@ -189,7 +189,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 			return errors.New("should not be called") // lint:allow_errorf
 		}
 
-		err := logoutCmd.RunE(logoutCmd, []string{})
+		err := logoutCmd.RunE(logoutCmd, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -218,7 +218,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 			return errors.New("spy: prompt called") // lint:allow_errorf
 		}
 
-		_ = logoutCmd.RunE(logoutCmd, []string{}) // lint:allow_unhandled
+		_ = logoutCmd.RunE(logoutCmd, nil) // lint:allow_unhandled
 
 		if !called {
 			t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -248,7 +248,7 @@ func TestLogoutPermissionErrorWrapping(t *testing.T) {
 	tmpFile := tmpDir + "/config"
 
 	content := "[sso-session testprofile]\nsso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil { // lint:allow_raw_number
 		t.Fatalf("write temp config: %v", err)
 	}
 
@@ -281,7 +281,7 @@ func writeTestAWSConfig(dir, profileName string) (string, error) {
 		profileName,
 	)
 
-	err := os.WriteFile(configPath, []byte(content), 0o600)
+	err := os.WriteFile(configPath, []byte(content), 0o600) // lint:allow_raw_number
 	if err != nil {
 		return "", fmt.Errorf("write temp config: %w", err)
 	}
@@ -336,7 +336,7 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 			t.Fatalf("create cache dir: %v", mkdirErr)
 		}
 
-		writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600)
+		writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600) // lint:allow_raw_number
 		if writeErr != nil {
 			t.Fatalf("write cache file: %v", writeErr)
 		}
@@ -351,7 +351,7 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 
 		// Assert the cache file no longer exists.
 		if _, statErr := os.Stat(cacheFilePath); !os.IsNotExist(statErr) {
-			t.Fatalf("expected cache file to be deleted, but it still exists")
+			t.Fatal("expected cache file to be deleted, but it still exists")
 		}
 	})
 }
@@ -481,7 +481,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 
 		content := "[sso-session zzz-never-match-this-profile]\n" +
 			"sso_start_url = https://example.awsapps.com/start\nsso_region = us-east-1\n"
-		if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
+		if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil { // lint:allow_raw_number
 			t.Fatalf("write temp config: %v", err)
 		}
 
@@ -500,7 +500,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 		}
 
 		if removeCalled {
-			t.Fatalf("removeFile should not be called when getSsoSession fails")
+			t.Fatal("removeFile should not be called when getSsoSession fails")
 		}
 	})
 }
