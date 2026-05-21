@@ -35,7 +35,7 @@ var (
 	fLookupProfile string
 	fLookupFor     string
 
-	// LookupCmd is the parent command. It reads exclusively from the local
+	// lookupCmd is the parent command. It reads exclusively from the local
 	// lookup index cache — no AWS API calls — so it's fast and works offline.
 	lookupCmd = &cobra.Command{
 		Use:   "lookup",
