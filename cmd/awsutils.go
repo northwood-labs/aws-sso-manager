@@ -132,7 +132,7 @@ func (c *cacheFileData) save(cacheFilePath string) error {
 		return fmt.Errorf("could not create a cache directory at %s: %w ", dir, err)
 	}
 
-	err = os.WriteFile(cacheFilePath, marshaledJSON, 0o666)
+	err = os.WriteFile(cacheFilePath, marshaledJSON, 0o600)
 	if err != nil {
 		return fmt.Errorf("could not create a cache file at %s: %w ", cacheFilePath, err)
 	}
