@@ -27,8 +27,8 @@ func TestBuildListOutputRows(t *testing.T) {
 	accounts := listAccounts{
 		Accounts: []listAccount{
 			{
-				ID:   "111111111111",
-				Name: "Production",
+				ID:   testAccountID,
+				Name: testAccountNameProd,
 				Roles: []listRole{
 					{Name: "Admin"},
 					{Name: "ReadOnly"},
@@ -39,8 +39,8 @@ func TestBuildListOutputRows(t *testing.T) {
 
 	got := buildListOutputRows("nwl", accounts)
 	want := [][]string{
-		{"111111111111", "Production", "Admin", "production-admin"},
-		{"111111111111", "Production", "ReadOnly", "production-readonly"},
+		{testAccountID, testAccountNameProd, "Admin", "production-admin"},
+		{testAccountID, testAccountNameProd, "ReadOnly", "production-readonly"},
 	}
 
 	if !reflect.DeepEqual(got, want) {
@@ -51,7 +51,7 @@ func TestBuildListOutputRows(t *testing.T) {
 func TestRenderCSVTable(t *testing.T) {
 	headers := []string{"ID", "Account Name", "Role Name", "Profile Name"}
 	rows := [][]string{
-		{"111111111111", "Prod, Main", `Admin "Power"`, "nwl-prod-admin"},
+		{testAccountID, "Prod, Main", `Admin "Power"`, "nwl-prod-admin"},
 	}
 
 	got := renderCSVTable(headers, rows)
@@ -66,7 +66,7 @@ func TestRenderCSVTable(t *testing.T) {
 func TestRenderMarkdownTable(t *testing.T) {
 	headers := []string{"ID", "Account Name", "Role Name", "Profile Name"}
 	rows := [][]string{
-		{"111111111111", "Production", "Admin", "nwl-production-admin"},
+		{testAccountID, testAccountNameProd, "Admin", "nwl-production-admin"},
 		{"222222222222", "Sandbox", "ReadOnly", "nwl-sandbox-readonly"},
 	}
 
@@ -81,9 +81,9 @@ func TestRenderMarkdownTable(t *testing.T) {
 	}
 }
 
-// Feature: aws-sso-manager, Property 3: Output Formats Contain All Data
+// Feature: aws-sso-manager, Property 3: Output Formats Contain All Data.
 func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 3.9, 3.10, 3.11**
+	// **Validates: Requirements 3.9, 3.10, 3.11**.
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")
@@ -100,7 +100,7 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_compl
 
 		jsonOutput := string(jsonBytes)
 
-		// Verify every account ID, account name, and role name appears in all three outputs
+		// Verify every account ID, account name, and role name appears in all three outputs.
 		for _, acct := range accounts.Accounts {
 			if !strings.Contains(csvOutput, acct.ID) {
 				t.Fatalf("CSV output missing account ID %q", acct.ID)
@@ -141,9 +141,9 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_compl
 			}
 		}
 
-		// Verify every profile name from the rows appears in CSV and markdown output
+		// Verify every profile name from the rows appears in CSV and markdown output.
 		for _, row := range rows {
-			profile := row[3] // Profile Name is the 4th column
+			profile := row[3] // Profile Name is the 4th column.
 			if !strings.Contains(csvOutput, profile) {
 				t.Fatalf("CSV output missing profile name %q", profile)
 			}

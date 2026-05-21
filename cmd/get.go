@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/lithammer/dedent"
@@ -60,7 +60,7 @@ var (
 		`)),
 	}
 
-	// getAccountsCmd prints account identifiers from the local lookup cache.
+	// GetAccountsCmd prints account identifiers from the local lookup cache.
 	// By default it prints 12-digit account IDs (sorted numerically) because
 	// that's what other commands (get roles --for, console --account-id) expect
 	// as input. The --name flag switches to human-readable names for display or
@@ -99,7 +99,7 @@ var (
 		},
 	}
 
-	// getRolesCmd prints role names for a single account. It requires --for
+	// GetRolesCmd prints role names for a single account. It requires --for
 	// because roles are scoped to an account — without it we'd have to dump
 	// every role across every account, which is rarely useful for piping.
 	getRolesCmd = &cobra.Command{
@@ -183,7 +183,7 @@ func getAccountIDsFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 		accountIDs = append(accountIDs, accountID)
 	}
 
-	sort.Strings(accountIDs)
+	slices.Sort(accountIDs)
 
 	return accountIDs
 }
@@ -199,8 +199,8 @@ func getAccountNamesFromLookupIndex(index listAWSAccountsLookupIndex) []string {
 		}
 	}
 
-	sort.SliceStable(names, func(i, j int) bool {
-		return strings.ToLower(names[i]) < strings.ToLower(names[j])
+	slices.SortStableFunc(names, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 	})
 
 	return names
@@ -223,8 +223,8 @@ func getRoleNamesForAccountID(index listAWSAccountsLookupIndex, accountID string
 
 	// Copy before sorting so we don't mutate the cached slice.
 	roles := append([]string(nil), account.Roles...)
-	sort.SliceStable(roles, func(i, j int) bool {
-		return strings.ToLower(roles[i]) < strings.ToLower(roles[j])
+	slices.SortStableFunc(roles, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 	})
 
 	return roles, nil

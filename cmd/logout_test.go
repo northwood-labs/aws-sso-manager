@@ -32,7 +32,7 @@ import (
 
 // ---------------------------------------------------------------------------
 // Unit tests: command registration (Task 3.1)
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------.
 
 func TestLogoutCommandRegistration(t *testing.T) {
 	tests := []struct {
@@ -66,15 +66,18 @@ func TestLogoutCommandRegistration(t *testing.T) {
 			fn: func(t *testing.T) {
 				t.Helper()
 
-				if err := logoutCmd.Args(logoutCmd, []string{}); err != nil {
+				err := logoutCmd.Args(logoutCmd, nil)
+				if err != nil {
 					t.Fatalf("expected 0 args to be valid: %v", err)
 				}
 
-				if err := logoutCmd.Args(logoutCmd, []string{"profile"}); err != nil {
+				err = logoutCmd.Args(logoutCmd, []string{"profile"})
+				if err != nil {
 					t.Fatalf("expected 1 arg to be valid: %v", err)
 				}
 
-				if err := logoutCmd.Args(logoutCmd, []string{"a", "b"}); err == nil {
+				err = logoutCmd.Args(logoutCmd, []string{"a", "b"})
+				if err == nil {
 					t.Fatal("expected 2 args to be rejected")
 				}
 			},
@@ -98,7 +101,7 @@ func TestLogoutCommandRegistration(t *testing.T) {
 
 // ---------------------------------------------------------------------------
 // Unit tests: profile resolution (Task 3.2)
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------.
 
 func TestLogoutProfileResolution(t *testing.T) {
 	t.Run("arg provided uses arg", func(t *testing.T) {
@@ -186,7 +189,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 			return errors.New("should not be called") // lint:allow_errorf
 		}
 
-		err := logoutCmd.RunE(logoutCmd, []string{})
+		err := logoutCmd.RunE(logoutCmd, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -215,7 +218,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 			return errors.New("spy: prompt called") // lint:allow_errorf
 		}
 
-		_ = logoutCmd.RunE(logoutCmd, []string{}) // lint:allow_unhandled
+		_ = logoutCmd.RunE(logoutCmd, nil) // lint:allow_unhandled
 
 		if !called {
 			t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -225,7 +228,7 @@ func TestLogoutProfileResolution(t *testing.T) {
 
 // ---------------------------------------------------------------------------
 // Unit test: permission error wrapping (Task 3.3)
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------.
 
 func TestLogoutPermissionErrorWrapping(t *testing.T) {
 	oldRemove := removeFile
@@ -267,7 +270,7 @@ func TestLogoutPermissionErrorWrapping(t *testing.T) {
 
 // ---------------------------------------------------------------------------
 // Property-based tests (Task 4)
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------.
 
 // writeTestAWSConfig creates a temp AWS config file with a single sso-session
 // section and returns the file path. Helper for property tests.
@@ -278,16 +281,17 @@ func writeTestAWSConfig(dir, profileName string) (string, error) {
 		profileName,
 	)
 
-	if err := os.WriteFile(configPath, []byte(content), 0o600); err != nil {
+	err := os.WriteFile(configPath, []byte(content), 0o600)
+	if err != nil {
 		return "", fmt.Errorf("write temp config: %w", err)
 	}
 
 	return configPath, nil
 }
 
-// Feature: logout-command, Property 1: Cache file deletion
+// Feature: logout-command, Property 1: Cache file deletion.
 func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
-	// **Validates: Requirements 4.1**
+	// **Validates: Requirements 4.1**.
 	tmpDir := t.TempDir()
 
 	rapid.Check(t, func(t *rapid.T) {
@@ -326,11 +330,14 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 
 		// Create the cache file so there's something to delete.
 		cacheDir := cacheFilePath[:strings.LastIndex(cacheFilePath, "/")]
-		if mkdirErr := os.MkdirAll(cacheDir, 0o755); mkdirErr != nil {
+
+		mkdirErr := os.MkdirAll(cacheDir, 0o755)
+		if mkdirErr != nil {
 			t.Fatalf("create cache dir: %v", mkdirErr)
 		}
 
-		if writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600); writeErr != nil {
+		writeErr := os.WriteFile(cacheFilePath, []byte(`{"accessToken":"test"}`), 0o600)
+		if writeErr != nil {
 			t.Fatalf("write cache file: %v", writeErr)
 		}
 
@@ -344,14 +351,14 @@ func TestPropertyLogoutDeletesCacheFile(t *testing.T) {
 
 		// Assert the cache file no longer exists.
 		if _, statErr := os.Stat(cacheFilePath); !os.IsNotExist(statErr) {
-			t.Fatalf("expected cache file to be deleted, but it still exists")
+			t.Fatal("expected cache file to be deleted, but it still exists")
 		}
 	})
 }
 
-// Feature: logout-command, Property 2: Missing cache file is not an error
+// Feature: logout-command, Property 2: Missing cache file is not an error.
 func TestPropertyLogoutMissingFileNoError(t *testing.T) {
-	// **Validates: Requirements 4.3**
+	// **Validates: Requirements 4.3**.
 	tmpDir := t.TempDir()
 
 	rapid.Check(t, func(t *rapid.T) {
@@ -387,9 +394,9 @@ func TestPropertyLogoutMissingFileNoError(t *testing.T) {
 	})
 }
 
-// Feature: logout-command, Property 3: Output always contains the profile name
+// Feature: logout-command, Property 3: Output always contains the profile name.
 func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
-	// **Validates: Requirements 4.2, 4.3**
+	// **Validates: Requirements 4.2, 4.3**.
 	tmpDir := t.TempDir()
 
 	rapid.Check(t, func(t *rapid.T) {
@@ -446,9 +453,9 @@ func TestPropertyLogoutOutputContainsProfileName(t *testing.T) {
 	})
 }
 
-// Feature: logout-command, Property 4: getSsoSession error propagation
+// Feature: logout-command, Property 4: getSsoSession error propagation.
 func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
-	// **Validates: Requirements 3.3**
+	// **Validates: Requirements 3.3**.
 	tmpDir := t.TempDir()
 
 	rapid.Check(t, func(t *rapid.T) {
@@ -493,7 +500,7 @@ func TestPropertyLogoutInvalidProfileReturnsError(t *testing.T) {
 		}
 
 		if removeCalled {
-			t.Fatalf("removeFile should not be called when getSsoSession fails")
+			t.Fatal("removeFile should not be called when getSsoSession fails")
 		}
 	})
 }

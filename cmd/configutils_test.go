@@ -30,6 +30,13 @@ import (
 	"pgregory.net/rapid"
 )
 
+const (
+	testConfigFile     = "config"
+	testWriteConfigErr = "write config: %v"
+	testProfileNewOne  = "[profile new-one]"
+	testNewline        = "\n"
+)
+
 func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 	t.Helper()
 
@@ -43,7 +50,7 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	configContent := strings.Join([]string{
 		"[default]",
@@ -56,14 +63,14 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 		"; -------- aws-sso-manager: end abc --------",
 		"[tail]",
 		"value = keep",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	tmpFile := filepath.Join(dir, "managed.ini")
-	replacement := "[profile new-one]" + "\n" + "sso_account_id = 333333333333" + "\n"
+	replacement := testProfileNewOne + testNewline + "sso_account_id = 333333333333" + testNewline
 
 	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil {
 		t.Fatalf("write tmp file: %v", err)
@@ -81,10 +88,10 @@ func TestSetManagedSectionReplacesManagedBlockOnce(t *testing.T) {
 
 	got := string(content)
 
-	if strings.Count(got, "[profile new-one]") != 1 {
+	if strings.Count(got, testProfileNewOne) != 1 {
 		t.Fatalf(
 			"expected replacement to be injected once, got %d occurrences\n%s",
-			strings.Count(got, "[profile new-one]"),
+			strings.Count(got, testProfileNewOne),
 			got,
 		)
 	}
@@ -112,7 +119,7 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := strings.Join([]string{
 		"[default]",
@@ -123,10 +130,10 @@ func TestGetAllMarkedProfiles(t *testing.T) {
 		"; -------- aws-sso-manager: start beta --------",
 		"[profile beta-role]",
 		"; -------- aws-sso-manager: end beta --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	profiles, err := getAllMarkedProfiles()
@@ -152,7 +159,7 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	// Duplicate start markers for the same profile.
 	config := strings.Join([]string{
@@ -160,10 +167,10 @@ func TestGetAllMarkedProfilesDeduplicates(t *testing.T) {
 		"; -------- aws-sso-manager: end alpha --------",
 		"; -------- aws-sso-manager: start alpha --------",
 		"; -------- aws-sso-manager: end alpha --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	profiles, err := getAllMarkedProfiles()
@@ -185,19 +192,21 @@ func TestValidateMarkersOK(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := strings.Join([]string{
 		"; -------- aws-sso-manager: start myprofile --------",
 		"[profile some-role]",
 		"; -------- aws-sso-manager: end myprofile --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+	err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644)
+	if err != nil {
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
-	if err := validateMarkers("myprofile"); err != nil {
+	err = validateMarkers("myprofile")
+	if err != nil {
 		t.Fatalf("expected no error for valid markers, got: %v", err)
 	}
 }
@@ -211,13 +220,13 @@ func TestValidateMarkersMismatched(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	// Missing end marker.
 	config := "; -------- aws-sso-manager: start myprofile --------\n"
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	err := validateMarkers("myprofile")
@@ -235,17 +244,17 @@ func TestValidateMarkersDuplicate(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := strings.Join([]string{
 		"; -------- aws-sso-manager: start myprofile --------",
 		"; -------- aws-sso-manager: end myprofile --------",
 		"; -------- aws-sso-manager: start myprofile --------",
 		"; -------- aws-sso-manager: end myprofile --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	err := validateMarkers("myprofile")
@@ -263,17 +272,17 @@ func TestValidateMarkersOverlappingProfiles(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := strings.Join([]string{
 		"; -------- aws-sso-manager: start alpha --------",
 		"; -------- aws-sso-manager: start beta --------",
 		"; -------- aws-sso-manager: end alpha --------",
 		"; -------- aws-sso-manager: end beta --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	err := validateManagedMarkers()
@@ -299,12 +308,12 @@ func TestValidateManagedMarkersUnmatchedEnd(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := "; -------- aws-sso-manager: end orphan --------\n"
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	err := validateManagedMarkers()
@@ -326,16 +335,16 @@ func TestGetAllMarkedProfilesIncludesEndOnlyProfiles(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	config := strings.Join([]string{
 		"; -------- aws-sso-manager: end orphan --------",
 		"; -------- aws-sso-manager: start alpha --------",
 		"; -------- aws-sso-manager: end alpha --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	profiles, err := getAllMarkedProfiles()
@@ -365,7 +374,7 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, "config")
+	awsConfigFilePath = filepath.Join(dir, testConfigFile)
 
 	configContent := strings.Join([]string{
 		"; -------- aws-sso-manager: start abc --------",
@@ -376,14 +385,14 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 		"; -------- aws-sso-manager: start abc --------",
 		"[profile old-two]",
 		"; -------- aws-sso-manager: end abc --------",
-	}, "\n") + "\n"
+	}, testNewline) + testNewline
 
 	if err := os.WriteFile(awsConfigFilePath, []byte(configContent), 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	tmpFile := filepath.Join(dir, "managed.ini")
-	replacement := "[profile new-one]\n"
+	replacement := testProfileNewOne + testNewline
 
 	if err := os.WriteFile(tmpFile, []byte(replacement), 0o0644); err != nil {
 		t.Fatalf("write tmp file: %v", err)
@@ -401,10 +410,10 @@ func TestSetManagedSectionReplacesEachMatchingBlockDeterministically(t *testing.
 
 	got := string(content)
 
-	if strings.Count(got, "[profile new-one]") != 2 {
+	if strings.Count(got, testProfileNewOne) != 2 {
 		t.Fatalf(
 			"expected replacement to be applied once per matching managed block, got %d occurrences\n%s",
-			strings.Count(got, "[profile new-one]"),
+			strings.Count(got, testProfileNewOne),
 			got,
 		)
 	}
@@ -431,7 +440,8 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		if releaseErr := lock.Release(); releaseErr != nil {
+		releaseErr := lock.Release()
+		if releaseErr != nil {
 			t.Fatalf("release lock: %v", releaseErr)
 		}
 	})
@@ -470,7 +480,7 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 
 	dir := t.TempDir()
 
-	awsConfigFilePath = filepath.Join(dir, ".aws", "config")
+	awsConfigFilePath = filepath.Join(dir, ".aws", testConfigFile)
 
 	if err := os.MkdirAll(filepath.Dir(awsConfigFilePath), 0o0755); err != nil {
 		t.Fatalf("mkdir config dir: %v", err)
@@ -478,7 +488,7 @@ func TestCreateAWSConfigFileDoesNotOverwriteExistingFile(t *testing.T) {
 
 	original := []byte("[default]\nregion = us-east-1\n")
 	if err := os.WriteFile(awsConfigFilePath, original, 0o0644); err != nil {
-		t.Fatalf("write config: %v", err)
+		t.Fatalf(testWriteConfigErr, err)
 	}
 
 	gotPath := createAWSConfigFile(context.Background())
@@ -527,7 +537,7 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 7: Profile Name Generation with Pattern
-// **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
+// **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**.
 func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
@@ -541,14 +551,33 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 
 		config := genProfilePatternConfig().Draw(rt, "patternConfig")
 
-		// Extract pattern config values
-		patternMap, _ := config["pattern"].(map[string]any) // lint:allow_defer_close
-		order, _ := patternMap["order"].([]string)          // lint:allow_defer_close
-		delimiter, _ := patternMap["delimiter"].(string)    // lint:allow_defer_close
-		prefix, _ := config["prefix"].(string)              // lint:allow_defer_close
-		suffix, _ := config["suffix"].(string)              // lint:allow_defer_close
+		// Extract pattern config values.
+		patternMap, ok := config["pattern"].(map[string]any)
+		if !ok {
+			return
+		}
 
-		// Set up asvConfig with the pattern config (skip substr_match_replace for this test)
+		order, ok := patternMap["order"].([]string)
+		if !ok {
+			return
+		}
+
+		delimiter, ok := patternMap["delimiter"].(string)
+		if !ok {
+			delimiter = "-"
+		}
+
+		prefix, ok := config["prefix"].(string)
+		if !ok {
+			prefix = ""
+		}
+
+		suffix, ok := config["suffix"].(string)
+		if !ok {
+			suffix = ""
+		}
+
+		// Set up asvConfig with the pattern config (skip substr_match_replace for this test).
 		asmConfig.Set(profileName+".rename.pattern.order", order)
 		asmConfig.Set(profileName+".rename.pattern.delimiter", delimiter)
 		asmConfig.Set(profileName+".rename.prefix", prefix)
@@ -556,12 +585,12 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 
 		got := getProfileName(profileName, account, role)
 
-		// Property: output should be lowercased
+		// Property: output should be lowercased.
 		if got != strings.ToLower(got) {
 			rt.Fatalf("expected lowercased output, got %q", got)
 		}
 
-		// Property: output should not be empty
+		// Property: output should not be empty.
 		if got == "" {
 			rt.Fatal("expected non-empty output")
 		}
@@ -585,26 +614,29 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 				expectedTokens = append(expectedTokens, strings.ToLower(account))
 			case "role":
 				expectedTokens = append(expectedTokens, strings.ToLower(role))
+			default:
 			}
 		}
 
-		if len(expectedTokens) > 0 {
-			expected := strings.TrimSpace(strings.Join(expectedTokens, delimiter))
-			if expected == "" {
-				// When all tokens produce empty after trim, getProfileName falls back
-				// to buildDefaultProfileName — just verify it's non-empty and lowercased
-				return
-			}
+		if len(expectedTokens) == 0 {
+			return
+		}
 
-			if got != expected {
-				rt.Fatalf("expected %q, got %q (order=%v, delimiter=%q, prefix=%q, suffix=%q, account=%q, role=%q)",
-					expected, got, order, delimiter, prefix, suffix, account, role)
-			}
+		expected := strings.TrimSpace(strings.Join(expectedTokens, delimiter))
+		if expected == "" {
+			// When all tokens produce empty after trim, getProfileName falls back
+			// to buildDefaultProfileName — just verify it's non-empty and lowercased.
+			return
+		}
+
+		if got != expected {
+			rt.Fatalf("expected %q, got %q (order=%v, delimiter=%q, prefix=%q, suffix=%q, account=%q, role=%q)",
+				expected, got, order, delimiter, prefix, suffix, account, role)
 		}
 	})
 }
 
-// Feature: aws-sso-manager, Property 6: Managed Block Marker Validation
+// Feature: aws-sso-manager, Property 6: Managed Block Marker Validation.
 func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_complexity
 	t.Run("well-formed configs produce no issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
@@ -613,20 +645,22 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 			oldConfigPath := awsConfigFilePath
 			defer func() { awsConfigFilePath = oldConfigPath }()
 
-			// Generate 1-3 unique profile names
+			// Generate 1-3 unique profile names.
 			numProfiles := rapid.IntRange(1, 3).Draw(rt, "numProfiles")
 			profiles := make([]string, numProfiles)
-			seen := map[string]bool{}
+			seen := make(map[string]bool)
 
 			for i := range numProfiles {
 				for {
 					p := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, fmt.Sprintf("profile%d", i))
-					if !seen[p] {
-						seen[p] = true
-						profiles[i] = p
-
-						break
+					if seen[p] {
+						continue
 					}
+
+					seen[p] = true
+					profiles[i] = p
+
+					break
 				}
 			}
 
@@ -634,9 +668,9 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 
 			dir := t.TempDir()
 
-			tmpFile := filepath.Join(dir, "config")
+			tmpFile := filepath.Join(dir, testConfigFile)
 			if err := os.WriteFile(tmpFile, []byte(content), 0o0644); err != nil {
-				rt.Fatalf("write config: %v", err)
+				rt.Fatalf(testWriteConfigErr, err)
 			}
 
 			awsConfigFilePath = tmpFile
@@ -652,7 +686,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 		})
 	})
 
-	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
+	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**.
 	t.Run("malformed configs produce issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
 			logger = slog.New(log.New(io.Discard))
@@ -662,32 +696,33 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 
 			profile := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profile")
 
-			// Pick an anomaly type: 0=missing end (unclosed), 1=extra end (unmatched), 2=duplicate start
+			// Pick an anomaly type: 0=missing end (unclosed), 1=extra end (unmatched), 2=duplicate start.
 			anomaly := rapid.IntRange(0, 2).Draw(rt, "anomaly")
 
 			var sb strings.Builder
 
 			switch anomaly {
-			case 0: // Missing end marker (unclosed block)
+			case 0: // Missing end marker (unclosed block).
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
-			case 1: // Extra end marker (unmatched end)
+			case 1: // Extra end marker (unmatched end).
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
-			case 2: // Duplicate start markers
+			case 2: // Duplicate start markers.
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
+			default:
 			}
 
 			dir := t.TempDir()
 
-			tmpFile := filepath.Join(dir, "config")
+			tmpFile := filepath.Join(dir, testConfigFile)
 			if err := os.WriteFile(tmpFile, []byte(sb.String()), 0o0644); err != nil {
-				rt.Fatalf("write config: %v", err)
+				rt.Fatalf(testWriteConfigErr, err)
 			}
 
 			awsConfigFilePath = tmpFile
@@ -701,7 +736,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 				rt.Fatalf("expected issues for malformed config (anomaly=%d), got none", anomaly)
 			}
 
-			// Verify the profile with the anomaly has issues
+			// Verify the profile with the anomaly has issues.
 			if _, ok := report.issues[profile]; !ok {
 				rt.Fatalf("expected issues for profile %q, got issues for: %v", profile, report.issues)
 			}
@@ -710,7 +745,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 }
 
 // Feature: aws-sso-manager, Property 8: Substring Match Replacement in Profile Names
-// **Validates: Requirements 9.6, 9.8**
+// **Validates: Requirements 9.6, 9.8**.
 func TestPropertySubstringMatchReplacement(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
@@ -720,7 +755,7 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
 
-		// Generate a random account name (3-15 alphanumeric chars)
+		// Generate a random account name (3-15 alphanumeric chars).
 		account := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "account")
 
 		// Pick a random substring of the account name as the match key.
@@ -730,13 +765,13 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 		endIdx := rapid.IntRange(startIdx+1, len(accountLower)).Draw(rt, "endIdx")
 		matchKey := accountLower[startIdx:endIdx]
 
-		// Generate a random replacement value (1-6 lowercase chars)
+		// Generate a random replacement value (1-6 lowercase chars).
 		replacement := rapid.StringMatching(`[a-z]{1,6}`).Draw(rt, "replacement")
 
 		role := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "role")
 
 		// Set up asvConfig with pattern order ["ACCOUNT", "ROLE"], delimiter "-",
-		// and the substr_match_replace map
+		// and the substr_match_replace map.
 		asmConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
 		asmConfig.Set(profileName+".rename.pattern.delimiter", "-")
 		asmConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]any{
@@ -757,9 +792,9 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 	})
 }
 
-// Feature: aws-sso-manager, Property 9: Default Profile Name Generation
+// Feature: aws-sso-manager, Property 9: Default Profile Name Generation.
 func TestPropertyDefaultProfileNameGeneration(t *testing.T) {
-	// **Validates: Requirements 9.10**
+	// **Validates: Requirements 9.10**.
 	t.Run("toProfileToken_idempotence", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			input := rapid.String().Draw(t, "input")

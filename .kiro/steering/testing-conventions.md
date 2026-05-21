@@ -15,8 +15,8 @@ All tests live in `package cmd` alongside production code. There are no test sub
 
 * Use table-driven tests with a `tests` slice of structs containing a descriptive `name` field.
 * Iterate with `for _, tc := range tests` and call `t.Run(tc.name, ...)`.
-* Use `t.Fatalf` for fatal assertions that should stop the subtest.
-* Use `t.Errorf` for non-fatal assertions where subsequent checks are still meaningful.
+* Use `t.Fatal` or `t.Fatalf` for fatal assertions that should stop the subtest.
+* Use `t.Error` or `t.Errorf` for non-fatal assertions where subsequent checks are still meaningful.
 * Use `t.Helper()` in any shared assertion or setup helper function.
 * Use `t.TempDir()` for temporary directories (auto-cleaned).
 * Use `t.Setenv()` for environment variable overrides (auto-restored).

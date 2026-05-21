@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -28,6 +29,8 @@ import (
 	"github.com/spf13/viper"
 	"pgregory.net/rapid"
 )
+
+const testSpyPromptCalled = "spy: prompt called"
 
 // TestPromptProfileSelectReturnsErrorWhenNoProfiles verifies that
 // promptProfileSelect returns a descriptive error mentioning "init" when the
@@ -49,7 +52,8 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 		t.Fatalf("write temp file: %v", writeErr)
 	}
 
-	if closeErr := tmpFile.Close(); closeErr != nil {
+	closeErr := tmpFile.Close()
+	if closeErr != nil {
 		t.Fatalf("close temp file: %v", closeErr)
 	}
 
@@ -59,7 +63,7 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 
 	err = promptProfileSelect(&target)
 	if err == nil {
-		t.Fatalf("expected error when no SSO profiles exist, got nil")
+		t.Fatal("expected error when no SSO profiles exist, got nil")
 	}
 
 	if !strings.Contains(err.Error(), "init") {
@@ -87,10 +91,10 @@ func TestAuthCommandUsesSelectPrompt(t *testing.T) {
 
 	promptProfileSelect = func(_ *string) error {
 		called = true
-		return errors.New("spy: prompt called") // lint:allow_errorf
+		return errors.New(testSpyPromptCalled) // lint:allow_errorf
 	}
 
-	_ = authCmd.RunE(authCmd, []string{}) // lint:allow_unhandled
+	_ = authCmd.RunE(authCmd, nil) // lint:allow_unhandled
 
 	if !called {
 		t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -117,10 +121,10 @@ func TestListCommandUsesSelectPrompt(t *testing.T) {
 
 	promptProfileSelect = func(_ *string) error {
 		called = true
-		return errors.New("spy: prompt called") // lint:allow_errorf
+		return errors.New(testSpyPromptCalled) // lint:allow_errorf
 	}
 
-	_ = listCmd.RunE(listCmd, []string{}) // lint:allow_unhandled
+	_ = listCmd.RunE(listCmd, nil) // lint:allow_unhandled
 
 	if !called {
 		t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -147,10 +151,10 @@ func TestUpdateCommandUsesSelectPrompt(t *testing.T) {
 
 	promptProfileSelect = func(_ *string) error {
 		called = true
-		return errors.New("spy: prompt called") // lint:allow_errorf
+		return errors.New(testSpyPromptCalled) // lint:allow_errorf
 	}
 
-	_ = updateCmd.RunE(updateCmd, []string{}) // lint:allow_unhandled
+	_ = updateCmd.RunE(updateCmd, nil) // lint:allow_unhandled
 
 	if !called {
 		t.Fatal("expected promptProfileSelect to be called when no profile is provided")
@@ -158,7 +162,8 @@ func TestUpdateCommandUsesSelectPrompt(t *testing.T) {
 }
 
 // TestInitCommandUsesInputPrompt verifies that the init command does NOT invoke
-// promptProfileSelect when no profile is provided. Init must use huh.NewInput
+// promptProfileSelect when no profile is provided as an argument. Init resolves
+// the profile name from config (or huh.NewInput) — never from promptProfileSelect
 // because the profile being created doesn't exist yet (Requirements 2.1, 2.2).
 func TestInitCommandUsesInputPrompt(t *testing.T) {
 	oldPrompt := promptProfileSelect
@@ -169,7 +174,26 @@ func TestInitCommandUsesInputPrompt(t *testing.T) {
 
 	t.Cleanup(func() { asmConfig = oldConfig })
 
+	oldConfigPath := awsConfigFilePath
+
+	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
+
+	tmpFile, err := os.CreateTemp(t.TempDir(), "aws-config-*.ini")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if closeErr := tmpFile.Close(); closeErr != nil {
+		t.Fatal(closeErr)
+	}
+
+	awsConfigFilePath = tmpFile.Name()
+
 	asmConfig = viper.New()
+	asmConfig.Set("profile-name", "test-profile")
+	asmConfig.Set("sso-start-url", "https://test.awsapps.com/start")
+	asmConfig.Set("sso-region", "us-east-1")
+	asmConfig.Set("sso-scopes", "sso:account:access")
 
 	logger = slog.New(log.New(io.Discard))
 
@@ -177,19 +201,22 @@ func TestInitCommandUsesInputPrompt(t *testing.T) {
 
 	promptProfileSelect = func(_ *string) error {
 		called = true
-		return errors.New("spy: prompt called") // lint:allow_errorf
+		return errors.New(testSpyPromptCalled) // lint:allow_errorf
 	}
 
-	// init will fail on huh.NewInput().Run() (no TTY) — that's expected.
-	// We only care that promptProfileSelect was NOT called.
-	_ = initCmd.RunE(initCmd, []string{}) // lint:allow_unhandled
+	// Provide all config values so the code skips every huh.NewInput() call
+	// (which blocks without a TTY). The assertion validates that
+	// promptProfileSelect is never invoked for init.
+	initCmd.SetContext(context.Background())
+
+	_ = initCmd.RunE(initCmd, nil) // lint:allow_unhandled
 
 	if called {
 		t.Fatal("expected promptProfileSelect NOT to be called for init command")
 	}
 }
 
-// Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names
+// Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names.
 func TestPropertySSOSessionParsing(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 3.1, 3.2**
 	oldConfigPath := awsConfigFilePath
@@ -245,7 +272,8 @@ func TestPropertySSOSessionParsing(t *testing.T) { // lint:allow_complexity
 			t.Fatalf("write temp file: %v", writeErr)
 		}
 
-		if closeErr := tmpFile.Close(); closeErr != nil {
+		closeErr := tmpFile.Close()
+		if closeErr != nil {
 			t.Fatalf("close temp file: %v", closeErr)
 		}
 

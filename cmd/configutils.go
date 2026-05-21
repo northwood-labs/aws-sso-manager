@@ -27,12 +27,15 @@ import (
 )
 
 const (
-	// managedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
+	// ManagedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
 	// ~/.aws/config that this tool owns. Content between a matching start/end
 	// pair is regenerated on every "update" — anything outside is left untouched.
 	// This marker-based approach lets the tool coexist with hand-edited sections.
 	managedStartMarkerPrefix = "aws-sso-manager: start "
 	managedEndMarkerPrefix   = "aws-sso-manager: end "
+
+	fmtInspectingManagedMarkers = "inspecting managed markers: %w"
+	fmtOpeningAWSConfigFile     = "opening AWS config file: %w"
 )
 
 // managedMarkerReport captures the structural health of managed blocks so the
@@ -83,7 +86,7 @@ func parseManagedMarkerProfile(line, prefix string) (string, bool) {
 func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_complexity
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("opening AWS config file: %w", err)
+		return nil, fmt.Errorf(fmtOpeningAWSConfigFile, err)
 	}
 	defer func() {
 		err := f.Close()
@@ -93,12 +96,12 @@ func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_compl
 	}()
 
 	report := &managedMarkerReport{
-		startCounts: map[string]int{},
-		endCounts:   map[string]int{},
-		issues:      map[string][]string{},
+		startCounts: make(map[string]int),
+		endCounts:   make(map[string]int),
+		issues:      make(map[string][]string),
 	}
 
-	seenProfiles := map[string]struct{}{}
+	seenProfiles := make(map[string]struct{})
 	activeProfile := ""
 
 	addProfile := func(profile string) {
@@ -139,38 +142,41 @@ func inspectManagedMarkers() (*managedMarkerReport, error) { // lint:allow_compl
 			continue
 		}
 
-		if profile, ok := parseManagedMarkerProfile(line, managedEndMarkerPrefix); ok {
-			addProfile(profile)
-
-			report.endCounts[profile]++
-
-			if activeProfile == "" {
-				appendManagedMarkerIssue(
-					report.issues,
-					profile,
-					fmt.Sprintf("unmatched managed block end marker at line %d for profile %q", lineNo, profile),
-				)
-
-				continue
-			}
-
-			if activeProfile != profile {
-				issue := fmt.Sprintf(
-					"overlapping managed block markers at line %d: "+
-						"found end marker for profile %q while profile %q block is still open",
-					lineNo,
-					profile,
-					activeProfile,
-				)
-
-				appendManagedMarkerIssue(report.issues, activeProfile, issue)
-				appendManagedMarkerIssue(report.issues, profile, issue)
-
-				continue
-			}
-
-			activeProfile = ""
+		profile, ok := parseManagedMarkerProfile(line, managedEndMarkerPrefix)
+		if !ok {
+			continue
 		}
+
+		addProfile(profile)
+
+		report.endCounts[profile]++
+
+		if activeProfile == "" {
+			appendManagedMarkerIssue(
+				report.issues,
+				profile,
+				fmt.Sprintf("unmatched managed block end marker at line %d for profile %q", lineNo, profile),
+			)
+
+			continue
+		}
+
+		if activeProfile != profile {
+			issue := fmt.Sprintf(
+				"overlapping managed block markers at line %d: "+
+					"found end marker for profile %q while profile %q block is still open",
+				lineNo,
+				profile,
+				activeProfile,
+			)
+
+			appendManagedMarkerIssue(report.issues, activeProfile, issue)
+			appendManagedMarkerIssue(report.issues, profile, issue)
+
+			continue
+		}
+
+		activeProfile = ""
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -241,7 +247,7 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 		delimiter = "-"
 	}
 
-	orderCopy := []string{}
+	var orderCopy []string
 
 	for _, o := range order {
 		switch strings.ToLower(o) {
@@ -249,15 +255,17 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 			matched := false
 
 			for match, replace := range accountSubstr {
-				if strings.Contains(strings.ToLower(account), strings.ToLower(match)) {
-					if replace != "" {
-						orderCopy = append(orderCopy, strings.ToLower(replace))
-					}
-
-					matched = true
-
+				if !strings.Contains(strings.ToLower(account), strings.ToLower(match)) {
 					continue
 				}
+
+				if replace != "" {
+					orderCopy = append(orderCopy, strings.ToLower(replace))
+				}
+
+				matched = true
+
+				continue
 			}
 
 			if !matched {
@@ -267,15 +275,17 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 			matched := false
 
 			for match, replace := range roleSubstr {
-				if strings.Contains(strings.ToLower(role), strings.ToLower(match)) {
-					if replace != "" {
-						orderCopy = append(orderCopy, strings.ToLower(replace))
-					}
-
-					matched = true
-
+				if !strings.Contains(strings.ToLower(role), strings.ToLower(match)) {
 					continue
 				}
+
+				if replace != "" {
+					orderCopy = append(orderCopy, strings.ToLower(replace))
+				}
+
+				matched = true
+
+				continue
 			}
 
 			if !matched {
@@ -289,6 +299,8 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 			if suffix != "" {
 				orderCopy = append(orderCopy, strings.ToLower(suffix))
 			}
+		default:
+			// no-op for unknown tokens
 		}
 	}
 
@@ -362,7 +374,7 @@ func toProfileToken(input string) string {
 func markersExist(profileName string) (bool, error) {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return false, fmt.Errorf("inspecting managed markers: %w", err)
+		return false, fmt.Errorf(fmtInspectingManagedMarkers, err)
 	}
 
 	return report.startCounts[profileName] > 0, nil
@@ -373,7 +385,7 @@ func markersExist(profileName string) (bool, error) {
 func validateMarkers(profileName string) error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return fmt.Errorf("inspecting managed markers: %w", err)
+		return fmt.Errorf(fmtInspectingManagedMarkers, err)
 	}
 
 	var errs []error
@@ -393,7 +405,7 @@ func validateMarkers(profileName string) error {
 func validateManagedMarkers() error {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return fmt.Errorf("inspecting managed markers: %w", err)
+		return fmt.Errorf(fmtInspectingManagedMarkers, err)
 	}
 
 	var errs []error
@@ -429,7 +441,7 @@ func getManagedSection(profileName string) (string, error) {
 
 	f, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return "", fmt.Errorf("opening AWS config file: %w", err)
+		return "", fmt.Errorf(fmtOpeningAWSConfigFile, err)
 	}
 
 	defer func() {
@@ -458,15 +470,17 @@ func getManagedSection(profileName string) (string, error) {
 
 		logger.DebugContext(context.Background(), " | "+line)
 
-		if doCopy {
-			_, err = tmp.WriteString(line + "\n")
-			if err != nil {
-				return "", fmt.Errorf("writing to temp file: %w", err)
-			}
+		if !doCopy {
+			continue
+		}
+
+		_, err = tmp.WriteString(line + "\n")
+		if err != nil {
+			return "", fmt.Errorf("writing to temp file: %w", err)
 		}
 	}
 
-	// Check for errors
+	// Check for errors.
 	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
 	}
@@ -495,7 +509,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) { // lint:al
 
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return "", fmt.Errorf("opening AWS config file: %w", err)
+		return "", fmt.Errorf(fmtOpeningAWSConfigFile, err)
 	}
 
 	defer func() {
@@ -556,7 +570,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) { // lint:al
 		}
 	}
 
-	// Check for errors
+	// Check for errors.
 	if err := confScanner.Err(); err != nil {
 		fmt.Println(err)
 	}
@@ -571,7 +585,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) { // lint:al
 func getAllMarkedProfiles() ([]string, error) {
 	report, err := inspectManagedMarkers()
 	if err != nil {
-		return nil, fmt.Errorf("inspecting managed markers: %w", err)
+		return nil, fmt.Errorf(fmtInspectingManagedMarkers, err)
 	}
 
 	return report.profiles, nil
@@ -584,7 +598,7 @@ func getAllManagedSections() ([]string, error) {
 
 	conf, err := os.Open(awsConfigFilePath)
 	if err != nil {
-		return ssoProfiles, fmt.Errorf("opening AWS config file: %w", err)
+		return ssoProfiles, fmt.Errorf(fmtOpeningAWSConfigFile, err)
 	}
 
 	defer func() {

@@ -38,9 +38,21 @@ func TestParseCacheDurationFlag(t *testing.T) {
 		expected time.Duration
 		wantErr  bool
 	}{
-		{name: "go duration", input: "24h", expected: 24 * time.Hour},
-		{name: "days only", input: "1d", expected: 24 * time.Hour},
-		{name: "days and hours and minutes", input: "1d6h30m", expected: 30*time.Hour + 30*time.Minute},
+		{
+			name:     "go duration",
+			input:    "24h",
+			expected: 24 * time.Hour,
+		},
+		{
+			name:     "days only",
+			input:    "1d",
+			expected: 24 * time.Hour,
+		},
+		{
+			name:     "days and hours and minutes",
+			input:    "1d6h30m",
+			expected: 30*time.Hour + 30*time.Minute,
+		},
 		{name: "invalid", input: "abc", wantErr: true},
 		{name: "zero", input: "0h", wantErr: true},
 		{name: "empty string", input: "", wantErr: true},
@@ -177,7 +189,8 @@ func TestRunRootCommandUsesFangExecute(t *testing.T) {
 		return nil
 	}
 
-	if err := runRootCommand(context.Background(), rootCmd, syscall.SIGINT, syscall.SIGTERM); err != nil {
+	err := runRootCommand(context.Background(), rootCmd, syscall.SIGINT, syscall.SIGTERM)
+	if err != nil {
 		t.Fatalf("runRootCommand returned error: %v", err)
 	}
 
@@ -204,7 +217,9 @@ func TestVerboseLevels(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
-	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
+
+	err := os.WriteFile(tmpConfig, []byte(""), 0o600)
+	if err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -226,7 +241,9 @@ func TestEnvPrefixASM(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tmpConfig := filepath.Join(tmpDir, "config.toml")
-	if err := os.WriteFile(tmpConfig, []byte(""), 0o600); err != nil {
+
+	err := os.WriteFile(tmpConfig, []byte(""), 0o600)
+	if err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -239,7 +256,9 @@ func TestEnvPrefixASM(t *testing.T) {
 		t.Setenv("ASM_PROFILE_NAME", "test-profile-from-env")
 
 		cmd := &cobra.Command{Use: "test"}
-		if err := initializeConfig(cmd); err != nil {
+
+		err := initializeConfig(cmd)
+		if err != nil {
 			t.Fatalf("initializeConfig: %v", err)
 		}
 
@@ -257,7 +276,9 @@ func TestEnvPrefixASM(t *testing.T) {
 		t.Setenv("ASV_PROFILE_NAME", "old-prefix-value")
 
 		cmd := &cobra.Command{Use: "test"}
-		if err := initializeConfig(cmd); err != nil {
+
+		err := initializeConfig(cmd)
+		if err != nil {
 			t.Fatalf("initializeConfig: %v", err)
 		}
 
@@ -268,9 +289,9 @@ func TestEnvPrefixASM(t *testing.T) {
 	})
 }
 
-// Feature: aws-sso-manager, Property 12: Cache Duration Parsing
+// Feature: aws-sso-manager, Property 12: Cache Duration Parsing.
 func TestPropertyCacheDurationParsing(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 10.6, 10.8**
+	// **Validates: Requirements 10.6, 10.8**.
 	t.Run("valid_go_durations", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			hours := rapid.IntRange(1, 100).Draw(t, "hours")
@@ -313,15 +334,15 @@ func TestPropertyCacheDurationParsing(t *testing.T) { // lint:allow_complexity
 	})
 
 	t.Run("invalid_inputs", func(t *testing.T) {
-		// Empty string
+		// Empty string.
 		if _, err := parseCacheDurationFlag(""); err == nil {
 			t.Fatal("expected error for empty string")
 		}
-		// Zero
+		// Zero.
 		if _, err := parseCacheDurationFlag("0h"); err == nil {
 			t.Fatal("expected error for zero duration")
 		}
-		// Negative
+		// Negative.
 		if _, err := parseCacheDurationFlag("-1h"); err == nil {
 			t.Fatal("expected error for negative duration")
 		}

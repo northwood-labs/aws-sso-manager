@@ -21,6 +21,8 @@ import (
 	"pgregory.net/rapid"
 )
 
+const testAccountID = "111111111111"
+
 func TestStripAccountFromURL(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -72,7 +74,7 @@ func TestMinMaxRows(t *testing.T) {
 	}{
 		{
 			name:     "empty slice returns 5",
-			items:    []int{},
+			items:    nil,
 			expected: 5,
 		},
 		{
@@ -105,11 +107,11 @@ func TestMinMaxRows(t *testing.T) {
 func TestGetRolesForAccount(t *testing.T) {
 	accounts := []listAccount{
 		{
-			ID:   "111111111111",
+			ID:   testAccountID,
 			Name: "Dev",
 			Roles: []listRole{
-				{AccountID: "111111111111", Name: "Admin", Profile: "dev-admin"},
-				{AccountID: "111111111111", Name: "ReadOnly", Profile: "dev-readonly"},
+				{AccountID: testAccountID, Name: "Admin", Profile: "dev-admin"},
+				{AccountID: testAccountID, Name: "ReadOnly", Profile: "dev-readonly"},
 			},
 		},
 		{
@@ -128,7 +130,7 @@ func TestGetRolesForAccount(t *testing.T) {
 	}{
 		{
 			name:      "matching account returns roles",
-			accountID: "111111111111",
+			accountID: testAccountID,
 			wantCount: 2,
 		},
 		{
@@ -148,9 +150,9 @@ func TestGetRolesForAccount(t *testing.T) {
 	}
 }
 
-// Feature: aws-sso-manager, Property 13: Console URL Account Subdomain Stripping
+// Feature: aws-sso-manager, Property 13: Console URL Account Subdomain Stripping.
 func TestPropertyConsoleURLAccountSubdomainStripping(t *testing.T) {
-	// **Validates: Requirements 5.9**
+	// **Validates: Requirements 5.9**.
 	t.Run("strips_account_subdomain", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			account := rapid.StringMatching(`[0-9]{12}`).Draw(t, "account")

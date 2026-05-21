@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -41,6 +41,8 @@ const (
 
 	// ExpectedRegionParts refers to the expected number of parts when splitting a region string.
 	ExpectedRegionParts = 2
+
+	errGeneral = 1
 )
 
 var (
@@ -60,7 +62,7 @@ var (
 	// ErrInvalidResultFormat is returned when a region result string does not match the expected format.
 	ErrInvalidResultFormat = errors.New("invalid result format")
 
-	// rootCmd represents the base command when called without any subcommands
+	// rootCmd represents the base command when called without any subcommands.
 	rootCmd = &cobra.Command{
 		Use:   "regions",
 		Short: "Lists all AWS regions by name and identifier.",
@@ -141,8 +143,8 @@ var (
 				}
 			}
 
-			sort.Slice(regions, func(i, j int) bool {
-				return regions[i].Identifier < regions[j].Identifier
+			slices.SortStableFunc(regions, func(a, b RegionEntry) int {
+				return strings.Compare(a.Identifier, b.Identifier)
 			})
 
 			jsonData, err := json.Marshal(regions)
@@ -164,10 +166,10 @@ type RegionEntry struct {
 }
 
 func init() { // lint:allow_init
-	const DefaultConcurrencyValue = 10
+	const defaultConcurrencyValue = 10
 
 	rootCmd.Flags().IntVarP(
-		&fConcurrency, "concurrency", "c", DefaultConcurrencyValue, "Number of concurrent requests.",
+		&fConcurrency, "concurrency", "c", defaultConcurrencyValue, "Number of concurrent requests.",
 	)
 	rootCmd.PersistentFlags().CountVarP(
 		&fVerbose, "verbose", "v", "Increase verbosity. Can be specified multiple times.",
@@ -176,11 +178,12 @@ func init() { // lint:allow_init
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
-	if err := runRootCommand(
+	err := runRootCommand(
 		context.Background(),
 		rootCmd,
 		fangNotifySignals...,
-	); err != nil {
-		osExit(1)
+	)
+	if err != nil {
+		osExit(errGeneral)
 	}
 }

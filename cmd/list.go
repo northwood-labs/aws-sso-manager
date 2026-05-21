@@ -30,6 +30,8 @@ import (
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
+const singleSpace = " "
+
 var (
 	fAccounts string
 	fRoles    string
@@ -38,7 +40,7 @@ var (
 	fMarkdown bool
 
 	accounts listAccounts
-	// profileID string
+	// profileID string.
 
 	cellStyle   = lipgloss.NewStyle().Padding(0, 1)
 	headerStyle = cellStyle.Bold(true)
@@ -111,7 +113,8 @@ var (
 			}
 
 			if profileName == "" {
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
@@ -164,14 +167,16 @@ var (
 				}
 
 				// Delete old cache after successful fetch
-				if delErr := deleteListAWSAccountsCache(listInput); delErr != nil {
+				delErr := deleteListAWSAccountsCache(listInput)
+				if delErr != nil {
 					return fmt.Errorf("could not clear accounts cache: %w", delErr)
 				}
 
 				// Write fresh data to cache
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
-					if writeErr := writeListAWSAccountsCache(cacheFilePath, accounts); writeErr != nil {
+					writeErr := writeListAWSAccountsCache(cacheFilePath, accounts)
+					if writeErr != nil {
 						logger.ErrorContext(
 							ctx,
 							"Failed to write AWS accounts cache",
@@ -188,10 +193,11 @@ var (
 						if lookupCachePath != "" {
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
 
-							if lookupErr := writeListAWSAccountsLookupCache(
+							lookupErr := writeListAWSAccountsLookupCache(
 								lookupCachePath,
 								lookupIndex,
-							); lookupErr != nil {
+							)
+							if lookupErr != nil {
 								logger.ErrorContext(
 									ctx,
 									"Failed to write lookup cache",
@@ -237,7 +243,7 @@ var (
 			if len(accounts.Accounts) == 0 {
 				fmt.Println("no AWS accounts are assigned to this user.")
 
-				os.Exit(0)
+				return nil
 			}
 
 			rows := buildListOutputRows(profileName, accounts)
@@ -314,7 +320,7 @@ func init() { // lint:allow_init
 // rows. Each row gets a generated profile name so the user can see exactly what
 // will appear in their ~/.aws/config after running "update".
 func buildListOutputRows(profileName string, accounts listAccounts) [][]string {
-	rows := make([][]string, 0)
+	var rows [][]string
 
 	for i := range accounts.Accounts {
 		for j := range accounts.Accounts[i].Roles {
@@ -355,21 +361,22 @@ func renderCSVTable(headers []string, rows [][]string) string {
 		}
 
 		buffer.WriteString(strings.Join(quoted, ","))
-		buffer.WriteByte('\n')
+
+		_ = buffer.WriteByte('\n')
 	}
 
 	return buffer.String()
 }
 
 func padRight(value string, width int) string {
-	return value + strings.Repeat(" ", width-len(value))
+	return value + strings.Repeat(singleSpace, width-len(value))
 }
 
 // renderMarkdownTable produces a GitHub-Flavored Markdown table with
 // column-aligned padding. This format is useful for pasting into PRs, wikis,
 // or documentation where a rendered table is more readable than raw CSV.
 func renderMarkdownTable(headers []string, rows [][]string) string {
-	const SeparatorWidthMax = 3
+	const separatorWidthMax = 3
 
 	widths := make([]int, len(headers))
 
@@ -390,34 +397,34 @@ func renderMarkdownTable(headers []string, rows [][]string) string {
 	buffer.WriteString("|")
 
 	for i, header := range headers {
-		buffer.WriteString(" ")
+		buffer.WriteString(singleSpace)
 		buffer.WriteString(padRight(header, widths[i]))
 		buffer.WriteString(" |")
 	}
 
-	buffer.WriteByte('\n')
+	_ = buffer.WriteByte('\n')
 	buffer.WriteString("|")
 
 	for i := range headers {
-		separatorWidth := max(widths[i], SeparatorWidthMax)
+		separatorWidth := max(widths[i], separatorWidthMax)
 
-		buffer.WriteString(" ")
+		buffer.WriteString(singleSpace)
 		buffer.WriteString(strings.Repeat("-", separatorWidth))
 		buffer.WriteString(" |")
 	}
 
-	buffer.WriteByte('\n')
+	_ = buffer.WriteByte('\n')
 
 	for _, row := range rows {
 		buffer.WriteString("|")
 
 		for i, cell := range row {
-			buffer.WriteString(" ")
+			buffer.WriteString(singleSpace)
 			buffer.WriteString(padRight(cell, widths[i]))
 			buffer.WriteString(" |")
 		}
 
-		buffer.WriteByte('\n')
+		_ = buffer.WriteByte('\n')
 	}
 
 	return buffer.String()

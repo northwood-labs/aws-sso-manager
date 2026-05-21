@@ -17,7 +17,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"math"
 	"net/url"
 	"os"
@@ -30,7 +29,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	configfile "github.com/northwood-labs/aws-config-parser/ini"
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
@@ -40,7 +39,7 @@ var (
 	fRole      string
 	fClipboard bool
 
-	// consoleCmd represents the diff command
+	// consoleCmd represents the console command.
 	consoleCmd = &cobra.Command{
 		Use:   "console [sso-profile-name] [url]",
 		Short: "Generate an AWS Console URL for an AWS Account ID and role.",
@@ -53,7 +52,7 @@ var (
 		If you do not specify the profile, account ID, or role, you will be
 		interactively prompted to select them from your AWS access.
 		`),
-		Args: cobra.RangeArgs(0, 2), // lint:allow_raw_number
+		Args: cobra.RangeArgs(0, 2),
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Prompt for both the AWS console URL and the SSO profile.
 		aws-sso-manager console
@@ -87,14 +86,14 @@ var (
 				default:
 					profileName = args[0]
 				}
-			} else if len(args) == 2 { // lint:allow_raw_number
+			} else if len(args) == 2 {
 				profileName = args[0]
 				consoleURL = args[1]
 			} else {
 				profileName = asmConfig.GetString("profile-name")
 			}
 
-			groups := []*huh.Group{}
+			groups := []*huh.Group(nil)
 
 			if consoleURL == "" {
 				logger.DebugContext(ctx, "AWS Console URL is undefined. Collect it from user.")
@@ -124,7 +123,8 @@ var (
 			if profileName == "" {
 				logger.DebugContext(ctx, "SSO profile is undefined. Collect it from user.")
 
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
@@ -200,7 +200,7 @@ var (
 						Value(&accountID).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							accts := []huh.Option[string]{}
+							accts := []huh.Option[string](nil)
 
 							for _, acct := range accounts.Accounts {
 								accts = append(accts, huh.NewOption(
@@ -227,7 +227,7 @@ var (
 						Value(&roleName).
 						Height(minMaxRows(accounts.Accounts)+1).
 						OptionsFunc(func() []huh.Option[string] {
-							roles := []huh.Option[string]{}
+							roles := []huh.Option[string](nil)
 
 							roleList := getRolesForAccount(accounts.Accounts, accountID)
 
@@ -247,7 +247,7 @@ var (
 
 			err = form.Run()
 			if err != nil {
-				log.Fatal(err)
+				return fmt.Errorf("running console form: %w", err)
 			}
 
 			logger.DebugContext(
@@ -349,14 +349,14 @@ func getRolesForAccount(accounts []listAccount, accountID string) []listRole {
 		}
 	}
 
-	return []listRole{}
+	return nil
 }
 
 // getStartURL extracts the SSO portal hostname from the config. The console
 // command needs this to construct the final redirect URL — the hostname is the
 // SSO portal that handles the account/role selection.
 func getStartURL(profileName string) (string, error) {
-	sections, err := configFile.OpenFile(awsConfigFilePath)
+	sections, err := configfile.OpenFile(awsConfigFilePath)
 	if err != nil {
 		return "", fmt.Errorf("could not open AWS config file: %w", err)
 	}

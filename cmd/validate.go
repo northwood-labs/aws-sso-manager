@@ -85,7 +85,7 @@ var (
 			markedProfiles := markerReport.profiles
 
 			// Union of both sets.
-			union := map[string]struct{}{}
+			union := make(map[string]struct{})
 			for _, p := range ssoSections {
 				union[p] = struct{}{}
 			}
@@ -102,12 +102,12 @@ var (
 			}
 
 			// Build lookup sets for fast membership tests.
-			hasSSOSection := map[string]bool{}
+			hasSSOSection := make(map[string]bool)
 			for _, p := range ssoSections {
 				hasSSOSection[p] = true
 			}
 
-			hasMarker := map[string]bool{}
+			hasMarker := make(map[string]bool)
 			for _, p := range markedProfiles {
 				hasMarker[p] = true
 			}
@@ -117,7 +117,7 @@ var (
 				errs    []string
 			}
 
-			results := []result{}
+			results := []result(nil)
 
 			foundProblems := false
 
@@ -137,7 +137,7 @@ var (
 			}
 
 			for _, profile := range allProfiles {
-				errs := []string{}
+				errs := []string(nil)
 
 				// Check structural integrity of markers.
 				if hasMarker[profile] {
@@ -172,9 +172,9 @@ var (
 			// Print report.
 			for _, r := range results {
 				if len(r.errs) == 0 {
-					_, _ = lipgloss.Println("  " + styleSuccess.Render("OK") + " " + r.profile) // lint:allow_unhandled
+					lipgloss.Println("  " + styleSuccess.Render("OK") + " " + r.profile) // lint:allow_unhandled
 				} else {
-					_, _ = lipgloss.Println(styleFailure.Render("FAIL") + " " + r.profile) // lint:allow_unhandled
+					lipgloss.Println(styleFailure.Render("FAIL") + " " + r.profile) // lint:allow_unhandled
 
 					for _, e := range r.errs {
 						fmt.Printf("       → %s\n", e)
@@ -186,7 +186,7 @@ var (
 				return ErrValidationFailed
 			}
 
-			_, _ = lipgloss.Printf( // lint:allow_unhandled
+			lipgloss.Printf( // lint:allow_unhandled
 				"\nAll %d managed profile(s) in %s are valid.\n",
 				len(results),
 				clihelpers.StyleInlineHighlight.Render(awsConfigFilePath),

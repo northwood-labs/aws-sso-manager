@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// configschema generates a JSON Schema from the Go struct model of the TOML
+// Configschema generates a JSON Schema from the Go struct model of the TOML
 // configuration file. Run it to produce docs/config-schema.json.
 package main
 
@@ -26,6 +26,8 @@ import (
 
 	"github.com/northwood-labs/aws-sso-manager/cmd"
 )
+
+const ErrGeneral = 1
 
 func main() {
 	r := &jsonschema.Reflector{
@@ -53,7 +55,7 @@ func main() {
 	out, err := json.MarshalIndent(schema, "", "  ")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error marshaling schema: %v\n", err)
-		os.Exit(1)
+		os.Exit(ErrGeneral)
 	}
 
 	fmt.Println(string(out))

@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"slices"
-	"sort"
 	"strings"
 	"testing"
 
@@ -27,13 +26,13 @@ func TestLookupAccountIDsByIdentifier(t *testing.T) {
 	index := listAWSAccountsLookupIndex{
 		ProfileName: "nwl",
 		AccountsByID: map[string]listAWSAccountsLookupAccount{
-			"111111111111": {Name: "Production"},
+			testAccountID: {Name: "Production"},
 		},
 		AccountIDsByNameCI: map[string][]string{
-			"production": {"111111111111"},
+			"production": {testAccountID},
 		},
 		AccountIDsByProfileCI: map[string][]string{
-			"prod-admin": {"111111111111"},
+			"prod-admin": {testAccountID},
 		},
 	}
 
@@ -43,11 +42,11 @@ func TestLookupAccountIDsByIdentifier(t *testing.T) {
 		wantID     string
 		wantErr    bool
 	}{
-		{name: "account ID", identifier: "111111111111", wantID: "111111111111"},
-		{name: "friendly name case insensitive", identifier: "PrOdUcTiOn", wantID: "111111111111"},
-		{name: "profile name case insensitive", identifier: "PROD-ADMIN", wantID: "111111111111"},
-		{name: "substring of account name", identifier: "prod", wantID: "111111111111"},
-		{name: "substring of profile name", identifier: "admin", wantID: "111111111111"},
+		{name: "account ID", identifier: testAccountID, wantID: testAccountID},
+		{name: "friendly name case insensitive", identifier: "PrOdUcTiOn", wantID: testAccountID},
+		{name: "profile name case insensitive", identifier: "PROD-ADMIN", wantID: testAccountID},
+		{name: "substring of account name", identifier: "prod", wantID: testAccountID},
+		{name: "substring of profile name", identifier: "admin", wantID: testAccountID},
 		{name: "missing", identifier: "does-not-exist", wantErr: true},
 	}
 
@@ -56,7 +55,7 @@ func TestLookupAccountIDsByIdentifier(t *testing.T) {
 			got, err := lookupAccountIDsByIdentifier(index, tc.identifier)
 			if tc.wantErr {
 				if err == nil {
-					t.Fatalf("expected error")
+					t.Fatal("expected error")
 				}
 
 				return
@@ -77,22 +76,22 @@ func TestResolveLookupAccountAmbiguous(t *testing.T) {
 	index := listAWSAccountsLookupIndex{
 		ProfileName: "nwl",
 		AccountsByID: map[string]listAWSAccountsLookupAccount{
-			"111111111111": {Name: "Sandbox A"},
+			testAccountID:  {Name: "Sandbox A"},
 			"222222222222": {Name: "Sandbox B"},
 		},
 		AccountIDsByNameCI: map[string][]string{
-			"sandbox": {"111111111111", "222222222222"},
+			"sandbox": {testAccountID, "222222222222"},
 		},
-		AccountIDsByProfileCI: map[string][]string{},
+		AccountIDsByProfileCI: make(map[string][]string),
 	}
 
 	_, _, err := resolveLookupAccount(index, "sandbox")
 	if err == nil {
-		t.Fatalf("expected ambiguity error")
+		t.Fatal("expected ambiguity error")
 	}
 }
 
-// Feature: aws-sso-manager, Property 15: Lookup Account Resolution Correctness
+// Feature: aws-sso-manager, Property 15: Lookup Account Resolution Correctness.
 func TestPropertyLookupAccountResolution(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(t *rapid.T) {
 		index := genLookupIndex().Draw(t, "index")
@@ -135,34 +134,38 @@ func TestPropertyLookupAccountResolution(t *testing.T) { // lint:allow_complexit
 		// 3. For ambiguous lookups, verify ambiguity error.
 		// Check AccountIDsByNameCI for keys that map to multiple account IDs.
 		for nameKey, accountIDs := range index.AccountIDsByNameCI {
-			if len(accountIDs) > 1 {
-				_, _, err := resolveLookupAccount(index, nameKey)
-				if err == nil {
-					t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", nameKey, accountIDs)
-				}
+			if len(accountIDs) <= 1 {
+				continue
+			}
 
-				if !strings.Contains(err.Error(), "ambiguous") {
-					t.Fatalf("expected ambiguity error for %q, got: %v", nameKey, err)
-				}
+			_, _, err := resolveLookupAccount(index, nameKey)
+			if err == nil {
+				t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", nameKey, accountIDs)
+			}
+
+			if !strings.Contains(err.Error(), "ambiguous") {
+				t.Fatalf("expected ambiguity error for %q, got: %v", nameKey, err)
 			}
 		}
 		// Check AccountIDsByProfileCI for keys that map to multiple account IDs.
 		for profileKey, accountIDs := range index.AccountIDsByProfileCI {
-			if len(accountIDs) > 1 {
-				_, _, err := resolveLookupAccount(index, profileKey)
-				if err == nil {
-					t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", profileKey, accountIDs)
-				}
+			if len(accountIDs) <= 1 {
+				continue
+			}
 
-				if !strings.Contains(err.Error(), "ambiguous") {
-					t.Fatalf("expected ambiguity error for %q, got: %v", profileKey, err)
-				}
+			_, _, err := resolveLookupAccount(index, profileKey)
+			if err == nil {
+				t.Fatalf("expected ambiguity error for %q (maps to %v), got nil", profileKey, accountIDs)
+			}
+
+			if !strings.Contains(err.Error(), "ambiguous") {
+				t.Fatalf("expected ambiguity error for %q, got: %v", profileKey, err)
 			}
 		}
 	})
 }
 
-// Feature: aws-sso-manager, Property 16: Lookup Role Substring Search
+// Feature: aws-sso-manager, Property 16: Lookup Role Substring Search.
 func TestPropertyLookupRoleSubstringSearch(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(t *rapid.T) {
 		// 1. Generate random accounts with roles.
@@ -189,8 +192,8 @@ func TestPropertyLookupRoleSubstringSearch(t *testing.T) { // lint:allow_complex
 				}
 			}
 
-			sort.SliceStable(matches, func(i, j int) bool {
-				return strings.ToLower(matches[i]) < strings.ToLower(matches[j])
+			slices.SortStableFunc(matches, func(a, b string) int {
+				return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 			})
 
 			// 4. Verify the result is sorted alphabetically (case-insensitive).
@@ -221,11 +224,13 @@ func TestPropertyLookupRoleSubstringSearch(t *testing.T) { // lint:allow_complex
 
 			// 7. Verify completeness: no role that should match was missed.
 			for _, roleName := range account.Roles {
-				if strings.Contains(strings.ToLower(roleName), needleLower) {
-					found := slices.Contains(matches, roleName)
-					if !found {
-						t.Fatalf("role %q contains %q but was not in matches", roleName, needle)
-					}
+				if !strings.Contains(strings.ToLower(roleName), needleLower) {
+					continue
+				}
+
+				found := slices.Contains(matches, roleName)
+				if !found {
+					t.Fatalf("role %q contains %q but was not in matches", roleName, needle)
 				}
 			}
 		}

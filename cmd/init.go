@@ -25,7 +25,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	configfile "github.com/northwood-labs/aws-config-parser/ini"
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
@@ -95,7 +95,8 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("could not acquire AWS config lock: %w", err)
 		}
 		defer func() {
-			if releaseErr := configLock.Release(); releaseErr != nil {
+			releaseErr := configLock.Release()
+			if releaseErr != nil {
 				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()
@@ -129,7 +130,7 @@ var initCmd = &cobra.Command{
 
 		// -------------------------------------------------------------------------------------------------------------
 
-		section := configFile.NewSection(sessionName)
+		section := configfile.NewSection(sessionName)
 
 		logger.InfoContext(ctx, "Ask for SSO start URL if not provided already.")
 
@@ -176,7 +177,7 @@ var initCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Create ssoStartURL entry.")
 
-		v, err := configFile.NewStringValue(ssoStartURL)
+		v, err := configfile.NewStringValue(ssoStartURL)
 		if err != nil {
 			return fmt.Errorf("failed to create 'sso_start_url' value: %w", err)
 		}
@@ -188,7 +189,7 @@ var initCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Create ssoRegion entry.")
 
-		v, err = configFile.NewStringValue(ssoRegion)
+		v, err = configfile.NewStringValue(ssoRegion)
 		if err != nil {
 			return fmt.Errorf("failed to create 'sso_region' value: %w", err)
 		}
@@ -200,7 +201,7 @@ var initCmd = &cobra.Command{
 
 		logger.InfoContext(ctx, "Create ssoScope entry.")
 
-		v, err = configFile.NewStringValue(ssoScopes)
+		v, err = configfile.NewStringValue(ssoScopes)
 		if err != nil {
 			return fmt.Errorf("failed to create 'sso_registration_scopes' value: %w", err)
 		}
@@ -225,7 +226,8 @@ var initCmd = &cobra.Command{
 				return
 			}
 
-			if closeErr := tmpConfig.Close(); closeErr != nil {
+			closeErr := tmpConfig.Close()
+			if closeErr != nil {
 				logger.ErrorContext(ctx, "Failed to close temporary AWS config file", logKeyErr, closeErr)
 			}
 		}()
@@ -250,7 +252,7 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("write managed AWS config block: %w", err)
 		}
 
-		if err = tmpConfig.Chmod(0o0644); err != nil { // lint:allow_raw_number
+		if err = tmpConfig.Chmod(0o0644); err != nil {
 			return fmt.Errorf("set permissions on temporary AWS config file: %w", err)
 		}
 

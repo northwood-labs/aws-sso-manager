@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/lithammer/dedent"
@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	// accountIDPattern is shared across lookup subcommands to distinguish a
+	// AccountIDPattern is shared across lookup subcommands to distinguish a
 	// 12-digit account ID from a human-readable name or profile identifier.
 	accountIDPattern = regexp.MustCompile(`^\d{12}$`)
 
@@ -56,7 +56,7 @@ var (
 		`)),
 	}
 
-	// lookupAccountCmd resolves a flexible identifier (account ID, name, profile
+	// LookupAccountCmd resolves a flexible identifier (account ID, name, profile
 	// name, or substring) to a single account. This flexibility lets users type
 	// whatever they remember — "internal", "prod-admin", or the full 12-digit ID
 	// — and get the canonical account ID back.
@@ -112,7 +112,7 @@ var (
 		},
 	}
 
-	// lookupRoleCmd searches for roles by substring within a single account.
+	// LookupRoleCmd searches for roles by substring within a single account.
 	// The --for flag is mandatory because role names are only meaningful in the
 	// context of a specific account (the same role name can exist across many
 	// accounts).
@@ -152,7 +152,7 @@ var (
 				return ErrRoleSubstringEmpty
 			}
 
-			matches := []string{}
+			matches := []string(nil)
 
 			for _, roleName := range account.Roles {
 				if strings.Contains(strings.ToLower(roleName), needle) {
@@ -160,8 +160,8 @@ var (
 				}
 			}
 
-			sort.SliceStable(matches, func(i, j int) bool {
-				return strings.ToLower(matches[i]) < strings.ToLower(matches[j])
+			slices.SortStableFunc(matches, func(a, b string) int {
+				return strings.Compare(strings.ToLower(a), strings.ToLower(b))
 			})
 
 			if len(matches) == 0 {
@@ -197,7 +197,7 @@ var (
 )
 
 type (
-	// lookupAccountResponse is the JSON envelope for "lookup account --json".
+	// LookupAccountResponse is the JSON envelope for "lookup account --json".
 	// It bundles everything a caller needs to identify and interact with an
 	// account without making additional lookups.
 	lookupAccountResponse struct {
@@ -208,7 +208,7 @@ type (
 		Roles      []string `json:"roles"`
 	}
 
-	// lookupRoleResponse is the JSON envelope for "lookup role --json".
+	// LookupRoleResponse is the JSON envelope for "lookup role --json".
 	// Including the query string lets callers correlate results with their input
 	// when processing multiple lookups in a pipeline.
 	lookupRoleResponse struct {
@@ -299,34 +299,38 @@ func lookupAccountIDsByIdentifier( // lint:allow_complexity
 	// fallback that enables partial-name lookups like "internal" matching
 	// "internal-prod". We deduplicate via a seen set because the same account
 	// ID can appear in both name and profile maps.
-	seen := map[string]struct{}{}
+	seen := make(map[string]struct{})
 
 	var matched []string
 
 	for nameKey, accountIDs := range index.AccountIDsByNameCI {
-		if strings.Contains(nameKey, lookupKey) {
-			for _, id := range accountIDs {
-				if _, ok := seen[id]; !ok {
-					seen[id] = struct{}{}
-					matched = append(matched, id)
-				}
+		if !strings.Contains(nameKey, lookupKey) {
+			continue
+		}
+
+		for _, id := range accountIDs {
+			if _, ok := seen[id]; !ok {
+				seen[id] = struct{}{}
+				matched = append(matched, id)
 			}
 		}
 	}
 
 	for profileKey, accountIDs := range index.AccountIDsByProfileCI {
-		if strings.Contains(profileKey, lookupKey) {
-			for _, id := range accountIDs {
-				if _, ok := seen[id]; !ok {
-					seen[id] = struct{}{}
-					matched = append(matched, id)
-				}
+		if !strings.Contains(profileKey, lookupKey) {
+			continue
+		}
+
+		for _, id := range accountIDs {
+			if _, ok := seen[id]; !ok {
+				seen[id] = struct{}{}
+				matched = append(matched, id)
 			}
 		}
 	}
 
 	if len(matched) > 0 {
-		sort.Strings(matched)
+		slices.Sort(matched)
 		return matched, nil
 	}
 

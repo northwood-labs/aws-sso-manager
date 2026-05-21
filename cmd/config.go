@@ -15,11 +15,12 @@
 package cmd
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -53,7 +54,7 @@ var (
 	configSetCmd = &cobra.Command{
 		Use:   "set <key> <value>",
 		Short: "Set a configuration value.",
-		Args:  cobra.ExactArgs(2), // lint:allow_raw_number
+		Args:  cobra.ExactArgs(2),
 		Example: strings.TrimSpace(dedent.Dedent(`
 		# Add a new config entry.
 		aws-sso-manager config set <key> <value>
@@ -62,19 +63,22 @@ var (
 			key := args[0]
 			value := args[1]
 
-			if err := validateConfigKey(key); err != nil {
+			err := validateConfigKey(key)
+			if err != nil {
 				return fmt.Errorf("invalid config key: %w", err)
 			}
 
 			configPath := asmConfig.ConfigFileUsed()
 
-			if err := os.MkdirAll(filepath.Dir(configPath), 0o0755); err != nil { // lint:allow_raw_number
+			err = os.MkdirAll(filepath.Dir(configPath), 0o0755)
+			if err != nil {
 				return fmt.Errorf("could not create config directory: %w", err)
 			}
 
 			backupConfigFile(configPath)
 
-			if err := setConfigKey(configPath, key, value); err != nil {
+			err = setConfigKey(configPath, key, value)
+			if err != nil {
 				return fmt.Errorf("could not set config key: %w", err)
 			}
 
@@ -153,7 +157,8 @@ var (
 
 			backupConfigFile(configPath)
 
-			if err := deleteConfigKey(configPath, key); err != nil {
+			err := deleteConfigKey(configPath, key)
+			if err != nil {
 				return fmt.Errorf("could not delete config key: %w", err)
 			}
 
@@ -266,8 +271,8 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 		}
 	}
 
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i][0] < pairs[j][0]
+	slices.SortFunc(pairs, func(a, b [2]string) int {
+		return cmp.Compare(a[0], b[0])
 	})
 
 	return pairs
@@ -277,7 +282,7 @@ func flattenConfig(tree map[string]any, prefix string) [][2]string {
 // a mutation so the user can recover from accidental changes. Failures are
 // logged as warnings because atomic writes already protect against corruption.
 func backupConfigFile(configPath string) {
-	const NumberOfBackups = 5
+	const numberOfBackups = 5
 
 	ctx := context.Background()
 
@@ -299,14 +304,14 @@ func backupConfigFile(configPath string) {
 	if err := os.WriteFile( // lint:allow_possible_insecure
 		backupPath,
 		data,
-		0o0644, // lint:allow_raw_number
+		0o0644,
 	); err != nil {
 		logger.WarnContext(ctx, "Could not write config backup", logKeyErr, err)
 
 		return
 	}
 
-	pruneConfigBackups(dir, NumberOfBackups)
+	pruneConfigBackups(dir, numberOfBackups)
 }
 
 // pruneConfigBackups keeps only the most recent `keep` backup files in dir,
@@ -322,14 +327,15 @@ func pruneConfigBackups(dir string, keep int) {
 		return
 	}
 
-	sort.Strings(matches)
+	slices.Sort(matches)
 
 	if len(matches) <= keep {
 		return
 	}
 
 	for _, old := range matches[:len(matches)-keep] {
-		if err := os.Remove(old); err != nil {
+		err := os.Remove(old)
+		if err != nil {
 			logger.WarnContext(ctx, "Could not remove old config backup", logKeyFile, old, logKeyErr, err)
 		}
 	}
@@ -351,7 +357,8 @@ func setConfigKey(configPath, key, value string) error {
 
 		tree = make(map[string]any)
 	} else {
-		if unmarshalErr := toml.Unmarshal(data, &tree); unmarshalErr != nil {
+		unmarshalErr := toml.Unmarshal(data, &tree)
+		if unmarshalErr != nil {
 			return fmt.Errorf("could not parse config file: %w", unmarshalErr)
 		}
 	}

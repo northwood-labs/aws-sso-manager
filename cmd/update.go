@@ -24,7 +24,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	configFile "github.com/northwood-labs/aws-config-parser/ini"
+	configfile "github.com/northwood-labs/aws-config-parser/ini"
 	clihelpers "github.com/northwood-labs/cli-helpers"
 )
 
@@ -65,7 +65,8 @@ var updateCmd = &cobra.Command{
 		}
 
 		if profileName == "" {
-			if err := promptProfileSelect(&profileName); err != nil {
+			err := promptProfileSelect(&profileName)
+			if err != nil {
 				return fmt.Errorf("prompting for profile selection: %w", err)
 			}
 		}
@@ -75,7 +76,8 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("acquiring AWS config lock: %w", err)
 		}
 		defer func() {
-			if releaseErr := configLock.Release(); releaseErr != nil {
+			releaseErr := configLock.Release()
+			if releaseErr != nil {
 				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()
@@ -148,7 +150,7 @@ var updateCmd = &cobra.Command{
 		f, err := os.OpenFile( // lint:allow_dynamic_filename
 			tmpFilename,
 			os.O_TRUNC|os.O_WRONLY,
-			0o0644, // lint:allow_raw_number
+			0o0644,
 		)
 		cobra.CheckErr(err)
 
@@ -168,7 +170,7 @@ var updateCmd = &cobra.Command{
 		logger.DebugContext(ctx, "Backup file", logKeyBackupFile, backupFilename)
 
 		// Set permissions to match the expected config file mode before rename.
-		err = os.Chmod(backupFilename, 0o0644) // lint:allow_raw_number
+		err = os.Chmod(backupFilename, 0o0644)
 		cobra.CheckErr(err)
 
 		logger.DebugContext(ctx, "Deleted file", logKeyFile, tmpFilename)
@@ -204,16 +206,16 @@ func init() { // lint:allow_init
 // the user no longer has access to are dropped. The returned count lets the
 // caller report how many profiles were written.
 func buildUpdatedManagedSections( // lint:allow_complexity
-	sections configFile.Sections,
+	sections configfile.Sections,
 	ssoProfile,
 	profileName string,
 	accounts listAccounts,
-) (configFile.Sections, int, error) {
+) (configfile.Sections, int, error) {
 	ctx := context.Background()
 
 	ssoSection, ok := sections.GetSection(ssoProfile)
 	if !ok {
-		return configFile.NewSections(), 0, fmt.Errorf(
+		return configfile.NewSections(), 0, fmt.Errorf(
 			"%w: [%s]; need to run init",
 			ErrConfigSectionMissing,
 			ssoProfile,
@@ -223,7 +225,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 	// Rebuild the managed block from scratch on each update so that the
 	// output reflects the complete current account/role list (stale profiles
 	// from previous runs are intentionally dropped).
-	nextSections := configFile.NewSections()
+	nextSections := configfile.NewSections()
 
 	nextSections = nextSections.SetSection(ssoProfile, ssoSection)
 
@@ -266,10 +268,10 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 					profileHeaderName,
 				)
 
-				section = configFile.NewSection(profileHeaderName)
+				section = configfile.NewSection(profileHeaderName)
 			}
 
-			m := map[string]string{}
+			m := make(map[string]string)
 
 			m["sso_session"] = profileName
 			m["sso_account_id"] = role.AccountID
@@ -314,14 +316,22 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 			}
 
 			for iniKey, iniValue := range m {
-				v, err := configFile.NewStringValue(iniValue)
+				v, err := configfile.NewStringValue(iniValue)
 				if err != nil {
-					return configFile.NewSections(), 0, fmt.Errorf("failed to create '%s' value: %w", iniKey, err)
+					return configfile.NewSections(), 0, fmt.Errorf(
+						"failed to create '%s' value: %w",
+						iniKey,
+						err,
+					)
 				}
 
 				err = section.UpdateValue(iniKey, v)
 				if err != nil {
-					return configFile.NewSections(), 0, fmt.Errorf("failed to update '%s' value: %w", iniKey, err)
+					return configfile.NewSections(), 0, fmt.Errorf(
+						"failed to update '%s' value: %w",
+						iniKey,
+						err,
+					)
 				}
 			}
 
@@ -334,7 +344,7 @@ func buildUpdatedManagedSections( // lint:allow_complexity
 
 			nextSections = nextSections.SetSection(profileHeaderName, section)
 			if _, ok = nextSections.GetSection(profileHeaderName); !ok {
-				return configFile.NewSections(), 0, fmt.Errorf(
+				return configfile.NewSections(), 0, fmt.Errorf(
 					"%w: [%s]",
 					ErrConfigSectionCreate,
 					profileHeaderName,
