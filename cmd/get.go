@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	// GetAccountIDPattern enforces the AWS account ID format (exactly 12 digits)
+	// getAccountIDPattern enforces the AWS account ID format (exactly 12 digits)
 	// so that callers get a clear validation error rather than a confusing
 	// "not found" when they pass a malformed ID.
 	getAccountIDPattern = regexp.MustCompile(`^\d{12}$`)
