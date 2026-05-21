@@ -108,7 +108,7 @@ linters:
     - tagalign
     - tagliatelle
     - testableexamples
-    # - testifylint #####
+    - testifylint
     # - testpackage #####
     - thelper
     - tparallel
@@ -789,6 +789,10 @@ linters:
       # Default: 30 (but we recommend 10-20)
       min-complexity: 21
 
+    godoclint: # @TODO
+
+    godot: # @TODO
+
     godox:
       # @config-manager:start linters-settings-godox
       # Report any comments starting with keywords, this is useful for TODO or FIXME comments that
@@ -1253,12 +1257,16 @@ linters:
       skip-single-param: false
       # @config-manager:end linters-settings-inamedparam
 
+    ineffassign: # @TODO
+
     interfacebloat:
       # @config-manager:start linters-settings-interfacebloat
       # The maximum number of methods allowed for an interface.
       # Default: 10
       max: 10
       # @config-manager:end linters-settings-interfacebloat
+
+    iotamixing: # @TODO
 
     lll:
       # @config-manager:start linters-settings-lll
@@ -1371,6 +1379,8 @@ linters:
         #   - '^math\.'
         #   - '^http\.StatusText$'
         # @config-manager:end linters-settings-mnd
+
+    modernize: # @TODO
 
     nakedret:
       # @config-manager:start linters-settings-nakedret
@@ -2533,18 +2543,8 @@ linters:
         # Defines the association between tag name and case.
         # Any struct tag name can be used.
         # Supported string cases:
-        # - `camel`
-        # - `pascal`
-        # - `kebab`
-        # - `snake`
-        # - `upperSnake`
-        # - `goCamel`
-        # - `goPascal`
-        # - `goKebab`
-        # - `goSnake`
-        # - `upper`
-        # - `lower`
-        # - `header`
+        # - `camel`, `pascal`, `kebab`, `snake`, `upperSnake`, `goCamel`,
+        #   `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`
         rules:
           avro: snake
           bson: camel
@@ -2563,21 +2563,10 @@ linters:
         extended-rules:
           json:
             # Supported string cases:
-            # - `camel`
-            # - `pascal`
-            # - `kebab`
-            # - `snake`
-            # - `upperSnake`
-            # - `goCamel`
-            # - `goPascal`
-            # - `goKebab`
-            # - `goSnake`
-            # - `header`
-            # - `lower`
-            # - `header`
-            #
-            # Required
+            # - `camel`, `pascal`, `kebab`, `snake`, `upperSnake`, `goCamel`,
+            #   `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`, `header`
             case: camel
+
             # # Adds 'AMQP', 'DB', 'GID', 'RTP', 'SIP', 'TS' to initialisms,
             # # and removes 'LHS', 'RHS' from initialisms.
             # # Default: false
@@ -2590,8 +2579,6 @@ linters:
             #   LHS: false # disable a default initialism.
             #   # ...
 
-            # Uses the struct field name to check the name of the struct tag.
-            # Default: false
         use-field-name: false
         # The field names to ignore.
         # Default: []
@@ -2623,6 +2610,61 @@ linters:
         #     # Default: false
         #     ignore: true
       # @config-manager:end linters-settings-tagliatelle
+
+    testifylint:
+      # @config-manager:start linters-settings-testifylint
+      # Enable all checkers (https://github.com/Antonboom/testifylint#checkers).
+      # Default: false
+      enable-all: true
+
+      disable: []
+      disable-all: false
+      enable:
+
+      bool-compare:
+        # To ignore user defined types (over builtin bool).
+        # Default: false
+        ignore-custom-types: false
+
+      expected-actual:
+        # Regexp for expected variable name.
+        # Default: (^(exp(ected)?|want(ed)?)([A-Z]\w*)?$)|(^(\w*[a-z])?(Exp(ected)?|Want(ed)?)$)
+        pattern: ^expected
+
+      formatter:
+        # To enable go vet's printf checks.
+        # Default: true
+        check-format-string: true
+
+        # To require f-assertions (e.g. `assert.Equalf`) if format string is used, even if there are no variable-length
+        # variables, i.e. it requires `require.NoErrorf` for both these cases:
+        # - require.NoErrorf(t, err, "unexpected error")
+        # - require.NoErrorf(t, err, "unexpected error for sid: %v", sid)
+        # To understand this behavior, please read the
+        # https://github.com/Antonboom/testifylint?tab=readme-ov-file#historical-reference-of-formatter.
+        # Default: false
+        require-f-funcs: false
+
+        # To require that the first element of msgAndArgs (msg) has a string type.
+        # For example, in such case assertion like `assert.True(t, b, tt.case)` will be considered as invalid.
+        # Default: true
+        require-string-msg: true
+
+      go-require:
+        # To ignore HTTP handlers (like http.HandlerFunc).
+        # Default: false
+        ignore-http-handlers: false
+
+      require-error:
+        # Regexp for assertions to analyze. If defined, then only matched error assertions will be reported.
+        # Default: ""
+        fn-pattern: ^(Errorf?|NoErrorf?)$
+
+      suite-extra-assert-call:
+        # To require or remove extra Assert() call?
+        # Default: remove
+        mode: remove
+        # @config-manager:end linters-settings-testifylint
 
     thelper:
       # @config-manager:start linters-settings-thelper
@@ -2730,7 +2772,7 @@ linters:
       # @config-manager:start linters-settings-unconvert
       # Remove conversions that force intermediate rounding.
       # Default: false
-      fast-math: false
+      fast-math: true
 
       # Be more conservative (experimental).
       # Default: false
@@ -2747,7 +2789,7 @@ linters:
       # with golangci-lint call it on a directory with the changed file.
       #
       # Default: false
-      check-exported: false
+      check-exported: true
       # @config-manager:end linters-settings-unparam
 
     unused:
@@ -2776,6 +2818,8 @@ linters:
       # Default: true
       generated-is-used: true
       # @config-manager:end linters-settings-unused
+
+    unqueryvet: # @TODO
 
     whitespace:
       # @config-manager:start linters-settings-whitespace

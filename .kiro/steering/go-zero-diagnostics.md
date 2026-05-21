@@ -163,14 +163,9 @@ Remove commented-out code blocks. If the code is needed for reference, move it b
 ```go
 asmConfig = viper.New()
 asmConfig.Set("profile-name", "test-profile")
-asmConfig.Set("sso-start-url", "https://test.awsapps.com/start")
-asmConfig.Set("sso-region", "us-east-1")
-asmConfig.Set("sso-scopes", "sso:account:access")
 ```
 
-**Cobra context nil panic:** Calling `cmd.RunE(cmd, args)` directly (without Cobra's `Execute` dispatch) leaves `cmd.Context()` as nil. Any code that calls `acquireAWSConfigLock(cmd.Context())` or `context.WithTimeout(cmd.Context(), ...)` will panic with `cannot create context from nil parent`. Fix by calling `cmd.SetContext(context.Background())` before `RunE`.
-
-**`awsConfigFilePath` in tests:** If the command reads or writes `~/.aws/config`, point `awsConfigFilePath` to a temp file (via `os.CreateTemp` in `t.TempDir()`) and restore via `t.Cleanup`.
+**Cobra context nil panic:** Calling `cmd.RunE(cmd, args)` directly (without Cobra's `Execute` dispatch) leaves `cmd.Context()` as nil. Any code that calls `context.WithTimeout(cmd.Context(), ...)` will panic with `cannot create context from nil parent`. Fix by calling `cmd.SetContext(context.Background())` before `RunE`.
 
 ### Suppression comment scope
 
