@@ -39,7 +39,7 @@ var (
 	fRole      string
 	fClipboard bool
 
-	// consoleCmd represents the diff command.
+	// consoleCmd represents the console command.
 	consoleCmd = &cobra.Command{
 		Use:   "console [sso-profile-name] [url]",
 		Short: "Generate an AWS Console URL for an AWS Account ID and role.",
