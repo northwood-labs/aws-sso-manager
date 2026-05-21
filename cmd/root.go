@@ -61,7 +61,7 @@ var (
 	cacheDuration      = 24 * time.Hour
 	userHomeDir        string
 
-	// Charmlogger defaults to stderr with caller info and timestamps. The
+	// charmlogger defaults to stderr with caller info and timestamps. The
 	// PersistentPreRunE adjusts the level based on -v count so that normal
 	// usage is quiet and -vvv gives full debug output with source locations.
 	charmlogger = log.NewWithOptions(os.Stderr, log.Options{
