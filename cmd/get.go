@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	// getAccountIDPattern enforces the AWS account ID format (exactly 12 digits)
+	// GetAccountIDPattern enforces the AWS account ID format (exactly 12 digits)
 	// so that callers get a clear validation error rather than a confusing
 	// "not found" when they pass a malformed ID.
 	getAccountIDPattern = regexp.MustCompile(`^\d{12}$`)
@@ -36,7 +36,7 @@ var (
 	fGetProfile string
 	fGetName    bool
 
-	// getCmd is the parent for "get accounts" and "get roles". It exists purely
+	// GetCmd is the parent for "get accounts" and "get roles". It exists purely
 	// as a namespace — the actual work happens in the subcommands. All output is
 	// one-value-per-line so it composes well with Unix pipes and tools like fzf.
 	getCmd = &cobra.Command{
@@ -60,7 +60,7 @@ var (
 		`)),
 	}
 
-	// getAccountsCmd prints account identifiers from the local lookup cache.
+	// GetAccountsCmd prints account identifiers from the local lookup cache.
 	// By default it prints 12-digit account IDs (sorted numerically) because
 	// that's what other commands (get roles --for, console --account-id) expect
 	// as input. The --name flag switches to human-readable names for display or
@@ -99,7 +99,7 @@ var (
 		},
 	}
 
-	// getRolesCmd prints role names for a single account. It requires --for
+	// GetRolesCmd prints role names for a single account. It requires --for
 	// because roles are scoped to an account — without it we'd have to dump
 	// every role across every account, which is rarely useful for piping.
 	getRolesCmd = &cobra.Command{

@@ -49,7 +49,8 @@ func TestPromptProfileSelectReturnsErrorWhenNoProfiles(t *testing.T) {
 		t.Fatalf("write temp file: %v", writeErr)
 	}
 
-	if closeErr := tmpFile.Close(); closeErr != nil {
+	closeErr := tmpFile.Close()
+	if closeErr != nil {
 		t.Fatalf("close temp file: %v", closeErr)
 	}
 
@@ -189,7 +190,7 @@ func TestInitCommandUsesInputPrompt(t *testing.T) {
 	}
 }
 
-// Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names
+// Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names.
 func TestPropertySSOSessionParsing(t *testing.T) { // lint:allow_complexity
 	// **Validates: Requirements 3.1, 3.2**
 	oldConfigPath := awsConfigFilePath
@@ -245,7 +246,8 @@ func TestPropertySSOSessionParsing(t *testing.T) { // lint:allow_complexity
 			t.Fatalf("write temp file: %v", writeErr)
 		}
 
-		if closeErr := tmpFile.Close(); closeErr != nil {
+		closeErr := tmpFile.Close()
+		if closeErr != nil {
 			t.Fatalf("close temp file: %v", closeErr)
 		}
 

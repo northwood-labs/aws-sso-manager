@@ -38,7 +38,7 @@ var (
 	fMarkdown bool
 
 	accounts listAccounts
-	// profileID string
+	// profileID string.
 
 	cellStyle   = lipgloss.NewStyle().Padding(0, 1)
 	headerStyle = cellStyle.Bold(true)
@@ -111,7 +111,8 @@ var (
 			}
 
 			if profileName == "" {
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
@@ -164,14 +165,16 @@ var (
 				}
 
 				// Delete old cache after successful fetch
-				if delErr := deleteListAWSAccountsCache(listInput); delErr != nil {
+				delErr := deleteListAWSAccountsCache(listInput)
+				if delErr != nil {
 					return fmt.Errorf("could not clear accounts cache: %w", delErr)
 				}
 
 				// Write fresh data to cache
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
-					if writeErr := writeListAWSAccountsCache(cacheFilePath, accounts); writeErr != nil {
+					writeErr := writeListAWSAccountsCache(cacheFilePath, accounts)
+					if writeErr != nil {
 						logger.ErrorContext(
 							ctx,
 							"Failed to write AWS accounts cache",
@@ -188,10 +191,11 @@ var (
 						if lookupCachePath != "" {
 							lookupIndex := buildListAWSAccountsLookupIndex(listInput.ProfileName, accounts)
 
-							if lookupErr := writeListAWSAccountsLookupCache(
+							lookupErr := writeListAWSAccountsLookupCache(
 								lookupCachePath,
 								lookupIndex,
-							); lookupErr != nil {
+							)
+							if lookupErr != nil {
 								logger.ErrorContext(
 									ctx,
 									"Failed to write lookup cache",

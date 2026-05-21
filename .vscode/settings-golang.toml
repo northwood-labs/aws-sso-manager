@@ -1,8 +1,11 @@
 # @config-manager:start go-top-level
 # These are for working with Go.
+'go.alternateTools' = { customFormatter = "golangci-lint" }
 'go.coverOnTestPackage' = false
-'go.formatTool' = 'gofumpt'
+'go.formatFlags' = [ "fmt", "--stdin" ]
+'go.formatTool' = 'custom'
 'go.installDependenciesWhenBuilding' = true
+'go.lintFlags' = [ "--path-mode=abs", "--fast-only" ]
 'go.lintTool' = 'golangci-lint'
 'go.testExplorer.alwaysRunBenchmarks' = true
 'go.toolsManagement.autoUpdate' = true

@@ -30,9 +30,9 @@ import (
 	"pgregory.net/rapid"
 )
 
-// Feature: config-commands, Property 1: Set-then-get round trip
+// Feature: config-commands, Property 1: Set-then-get round trip.
 func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
-	// **Validates: Requirements 2.2, 2.3, 3.2, 6.1**
+	// **Validates: Requirements 2.2, 2.3, 3.2, 6.1**.
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -50,7 +50,7 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 		key := genConfigKey().Draw(rt, "key")
 		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
 
-		// Execute configSetCmd.RunE
+		// Execute configSetCmd.RunE.
 		var buf bytes.Buffer
 		configSetCmd.SetOut(&buf)
 		configSetCmd.SetArgs([]string{key, value})
@@ -60,13 +60,13 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 			rt.Fatalf("config set failed: %v", err)
 		}
 
-		// Verify in-memory: asmConfig.GetString(key) returns the value
+		// Verify in-memory: asmConfig.GetString(key) returns the value.
 		got := asmConfig.GetString(key)
 		if got != value {
 			rt.Fatalf("in-memory mismatch: asmConfig.GetString(%q) = %q, want %q", key, got, value)
 		}
 
-		// Verify on-disk: read the TOML file back with a fresh Viper instance
+		// Verify on-disk: read the TOML file back with a fresh Viper instance.
 		freshViper := viper.New()
 		freshViper.SetConfigType("toml")
 		freshViper.SetConfigFile(configPath)
@@ -82,9 +82,9 @@ func TestPropertyConfigSetGetRoundTrip(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 5: Set confirmation output contains key and value
+// Feature: config-commands, Property 5: Set confirmation output contains key and value.
 func TestPropertyConfigSetConfirmation(t *testing.T) {
-	// **Validates: Requirements 2.6**
+	// **Validates: Requirements 2.6**.
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -123,9 +123,9 @@ func TestPropertyConfigSetConfirmation(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 7: Backup retention limit
+// Feature: config-commands, Property 7: Backup retention limit.
 func TestPropertyConfigBackupRetention(t *testing.T) {
-	// **Validates: Requirements 8.4**
+	// **Validates: Requirements 8.4**.
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -187,9 +187,9 @@ func TestPropertyConfigBackupRetention(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 8: Backup content matches pre-mutation state
+// Feature: config-commands, Property 8: Backup content matches pre-mutation state.
 func TestPropertyConfigBackupContent(t *testing.T) {
-	// **Validates: Requirements 8.1, 8.2**
+	// **Validates: Requirements 8.1, 8.2**.
 	rapid.Check(t, func(rt *rapid.T) {
 		logger = slog.New(log.New(io.Discard))
 
@@ -262,9 +262,9 @@ func TestPropertyConfigBackupContent(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 4: Nonexistent key returns error
+// Feature: config-commands, Property 4: Nonexistent key returns error.
 func TestPropertyConfigNonexistentKey(t *testing.T) {
-	// **Validates: Requirements 3.3, 4.6**
+	// **Validates: Requirements 3.3, 4.6**.
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -285,7 +285,7 @@ func TestPropertyConfigNonexistentKey(t *testing.T) {
 		// Generate a random key — but never set it.
 		key := rapid.StringMatching(`[a-z][a-z0-9]{1,8}(\.[a-z][a-z0-9]{1,8}){0,3}`).Draw(rt, "key")
 
-		// config get on a nonexistent key must return a non-nil error containing "is not set".
+		// Config get on a nonexistent key must return a non-nil error containing "is not set".
 		err := configGetCmd.RunE(configGetCmd, []string{key})
 		if err == nil {
 			rt.Fatalf("expected error for nonexistent key %q, got nil", key)
@@ -297,10 +297,10 @@ func TestPropertyConfigNonexistentKey(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 3: Wrong argument count returns error
+// Feature: config-commands, Property 3: Wrong argument count returns error.
 func TestPropertyConfigWrongArgCount(t *testing.T) {
 	t.Run("set_wrong_args", func(t *testing.T) {
-		// **Validates: Requirements 2.4**
+		// **Validates: Requirements 2.4**.
 		rapid.Check(t, func(rt *rapid.T) {
 			argCount := rapid.IntRange(0, 5).Filter(func(n int) bool {
 				return n != 2
@@ -319,7 +319,7 @@ func TestPropertyConfigWrongArgCount(t *testing.T) {
 	})
 
 	t.Run("get_wrong_args", func(t *testing.T) {
-		// **Validates: Requirements 3.4**
+		// **Validates: Requirements 3.4**.
 		rapid.Check(t, func(rt *rapid.T) {
 			argCount := rapid.IntRange(2, 5).Draw(rt, "argCount")
 
@@ -336,7 +336,7 @@ func TestPropertyConfigWrongArgCount(t *testing.T) {
 	})
 
 	t.Run("del_wrong_args", func(t *testing.T) {
-		// **Validates: Requirements 4.4**
+		// **Validates: Requirements 4.4**.
 		rapid.Check(t, func(rt *rapid.T) {
 			argCount := rapid.IntRange(0, 5).Filter(func(n int) bool {
 				return n != 1
@@ -355,9 +355,9 @@ func TestPropertyConfigWrongArgCount(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 2: Set-then-delete-then-get round trip
+// Feature: config-commands, Property 2: Set-then-delete-then-get round trip.
 func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
-	// **Validates: Requirements 4.4, 4.5, 6.2**
+	// **Validates: Requirements 4.4, 4.5, 6.2**.
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -383,7 +383,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 		key := genConfigKey().Draw(rt, "key")
 		value := rapid.StringMatching(`[A-Za-z0-9 _-]{1,30}`).Draw(rt, "value")
 
-		// Step 1: config set <key> <value>
+		// Step 1: config set <key> <value>.
 		var buf bytes.Buffer
 		configSetCmd.SetOut(&buf)
 		configSetCmd.SetArgs([]string{key, value})
@@ -393,7 +393,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 			rt.Fatalf("config set failed: %v", err)
 		}
 
-		// Step 2: config del --force <key>
+		// Step 2: config del --force <key>.
 		fForce = true
 
 		buf.Reset()
@@ -414,7 +414,7 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 
 		_ = asmConfig.ReadInConfig() // lint:allow_unhandled
 
-		// Step 3: config get <key> — must return a non-nil error containing "is not set"
+		// Step 3: config get <key> — must return a non-nil error containing "is not set".
 		buf.Reset()
 		configGetCmd.SetOut(&buf)
 		configGetCmd.SetArgs([]string{key})
@@ -445,9 +445,9 @@ func TestPropertyConfigSetDelGetRoundTrip(t *testing.T) {
 	})
 }
 
-// Feature: config-commands, Property 6: Del confirmation output contains key
+// Feature: config-commands, Property 6: Del confirmation output contains key.
 func TestPropertyConfigDelConfirmation(t *testing.T) {
-	// **Validates: Requirements 4.8**
+	// **Validates: Requirements 4.8**.
 	rapid.Check(t, func(rt *rapid.T) {
 		// Save/restore asmConfig.
 		oldConfig := asmConfig
@@ -506,11 +506,11 @@ func TestPropertyConfigDelConfirmation(t *testing.T) {
 
 // ---------------------------------------------------------------------------
 // Unit tests for edge cases and structural checks (Task 6.1)
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------.
 
 // TestConfigCommandRegistration verifies that configCmd is registered under
 // rootCmd and that configCmd has the expected subcommands: set, get, del.
-// **Validates: Requirements 1.1, 1.2**
+// **Validates: Requirements 1.1, 1.2**.
 func TestConfigCommandRegistration(t *testing.T) {
 	t.Run("configCmd_under_rootCmd", func(t *testing.T) {
 		found := false
@@ -547,13 +547,14 @@ func TestConfigCommandRegistration(t *testing.T) {
 
 // TestConfigNoSubcommandShowsHelp verifies that configCmd's help text lists
 // the set, get, and del subcommands.
-// **Validates: Requirements 1.2**
+// **Validates: Requirements 1.2**.
 func TestConfigNoSubcommandShowsHelp(t *testing.T) {
 	var buf bytes.Buffer
 	configCmd.SetOut(&buf)
 	configCmd.SetErr(&buf)
 
-	if err := configCmd.Help(); err != nil {
+	err := configCmd.Help()
+	if err != nil {
 		t.Fatalf("configCmd.Help(): %v", err)
 	}
 
@@ -568,7 +569,7 @@ func TestConfigNoSubcommandShowsHelp(t *testing.T) {
 
 // TestConfigSetCreatesParentDirectory verifies that config set creates the
 // parent directory when it doesn't exist.
-// **Validates: Requirements 2.5**
+// **Validates: Requirements 2.5**.
 func TestConfigSetCreatesParentDirectory(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
@@ -611,7 +612,7 @@ func TestConfigSetCreatesParentDirectory(t *testing.T) {
 
 // TestConfigSubcommandsUseRunE verifies that all three subcommands use RunE
 // (not Run) for their execution function.
-// **Validates: Requirements 7.1, 7.2, 7.3**
+// **Validates: Requirements 7.1, 7.2, 7.3**.
 func TestConfigSubcommandsUseRunE(t *testing.T) {
 	tests := []struct {
 		cmd  *cobra.Command
@@ -633,7 +634,7 @@ func TestConfigSubcommandsUseRunE(t *testing.T) {
 
 // TestConfigDelForceSkipsPrompt verifies that config del --force skips the
 // confirmation prompt and deletes the key immediately.
-// **Validates: Requirements 4.2, 4.4**
+// **Validates: Requirements 4.2, 4.4**.
 func TestConfigDelForceSkipsPrompt(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
@@ -687,7 +688,7 @@ func TestConfigDelForceSkipsPrompt(t *testing.T) {
 // TestConfigDelDeclinedLeavesConfigUnchanged verifies that declining the
 // confirmation prompt prints a cancellation message and leaves the config
 // unchanged.
-// **Validates: Requirements 4.3**
+// **Validates: Requirements 4.3**.
 func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
@@ -753,7 +754,7 @@ func TestConfigDelDeclinedLeavesConfigUnchanged(t *testing.T) {
 
 // TestConfigSetSkipsBackupOnFirstWrite verifies that no backup file is created
 // when config set writes the config file for the first time.
-// **Validates: Requirements 8.5**
+// **Validates: Requirements 8.5**.
 func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
@@ -790,7 +791,7 @@ func TestConfigSetSkipsBackupOnFirstWrite(t *testing.T) {
 
 // TestConfigSetBackupFailureNonFatal verifies that a backup failure does not
 // prevent the config mutation from succeeding.
-// **Validates: Requirements 8.6**
+// **Validates: Requirements 8.6**.
 func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 	logger = slog.New(log.New(io.Discard))
 
@@ -800,12 +801,14 @@ func TestConfigSetBackupFailureNonFatal(t *testing.T) {
 	configPath := filepath.Join(dir, "config.toml")
 
 	// Write an initial config file so backupConfigFile attempts a backup.
-	if err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644); err != nil {
+	err := os.WriteFile(configPath, []byte("key = \"value\"\n"), 0o0644)
+	if err != nil {
 		t.Fatalf("write initial config: %v", err)
 	}
 
 	// Make the directory read-only so the backup write fails.
-	if err := os.Chmod(dir, 0o0544); err != nil { // lint:allow_755
+	err = os.Chmod(dir, 0o0544) // lint:allow_755
+	if err != nil {
 		t.Fatalf("chmod: %v", err)
 	}
 
@@ -935,9 +938,9 @@ func TestValidateConfigKey(t *testing.T) {
 }
 
 // Feature: config-output-region-overrides, Property 3: Settings key validation
-// accepts region/output and rejects unknown keys
+// accepts region/output and rejects unknown keys.
 func TestPropertySettingsKeyValidation(t *testing.T) {
-	// **Validates: Requirements 3.1, 3.2, 3.3**
+	// **Validates: Requirements 3.1, 3.2, 3.3**.
 	rapid.Check(t, func(t *rapid.T) {
 		profile := rapid.StringMatching(`[a-z][a-z0-9]{1,8}`).Draw(t, "profile")
 		awsProfile := rapid.StringMatching(`[a-z][a-z0-9-]{2,14}`).Draw(t, "awsProfile")
@@ -949,11 +952,13 @@ func TestPropertySettingsKeyValidation(t *testing.T) {
 		}
 
 		for _, key := range validKeys {
-			if err := validateConfigKey(profile + ".settings.global." + key); err != nil {
+			err := validateConfigKey(profile + ".settings.global." + key)
+			if err != nil {
 				t.Fatalf("expected %q.settings.global.%s to be valid, got: %v", profile, key, err)
 			}
 
-			if err := validateConfigKey(profile + ".settings." + awsProfile + "." + key); err != nil {
+			err = validateConfigKey(profile + ".settings." + awsProfile + "." + key)
+			if err != nil {
 				t.Fatalf("expected %q.settings.%s.%s to be valid, got: %v", profile, awsProfile, key, err)
 			}
 		}
@@ -969,12 +974,14 @@ func TestPropertySettingsKeyValidation(t *testing.T) {
 			Filter(func(s string) bool { return !validSet[s] }).
 			Draw(t, "unknownLeaf")
 
-		if err := validateConfigKey(profile + ".settings.global." + unknown); err == nil {
+		err := validateConfigKey(profile + ".settings.global." + unknown)
+		if err == nil {
 			t.Fatalf("expected %q.settings.global.%s to be rejected, got nil", profile, unknown)
 		}
 
 		// An unknown leaf under a per-profile key must also be rejected.
-		if err := validateConfigKey(profile + ".settings." + awsProfile + "." + unknown); err == nil {
+		err = validateConfigKey(profile + ".settings." + awsProfile + "." + unknown)
+		if err == nil {
 			t.Fatalf("expected %q.settings.%s.%s to be rejected, got nil", profile, awsProfile, unknown)
 		}
 	})

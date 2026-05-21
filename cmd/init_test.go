@@ -83,9 +83,9 @@ func TestNormalizeSSOStartURL(t *testing.T) {
 	}
 }
 
-// Feature: aws-sso-manager, Property 1: SSO Start URL Normalization Round Trip
+// Feature: aws-sso-manager, Property 1: SSO Start URL Normalization Round Trip.
 func TestPropertySSOStartURLNormalization(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 1.5, 1.6, 1.7**
+	// **Validates: Requirements 1.5, 1.6, 1.7**.
 
 	// Sub-property 1: Bare subdomains (no dots, no slashes, no "://")
 	// produce https://<subdomain>.awsapps.com/start
@@ -121,7 +121,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) { // lint:allow_complexi
 	// produce https://<input>/start
 	t.Run("dot_containing", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			// Generate a string with at least one dot, no "://", no "/"
+			// Generate a string with at least one dot, no "://", no "/".
 			left := rapid.StringMatching(`[a-zA-Z][a-zA-Z0-9-]{0,9}`).Draw(t, "left")
 			right := rapid.StringMatching(`[a-zA-Z][a-zA-Z0-9]{0,9}`).Draw(t, "right")
 			input := left + "." + right
@@ -150,7 +150,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) { // lint:allow_complexi
 	// produce https://<input>
 	t.Run("slash_containing", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			// Generate a string with at least one "/", no "://"
+			// Generate a string with at least one "/", no "://".
 			host := rapid.StringMatching(`[a-zA-Z][a-zA-Z0-9.-]{1,15}`).Draw(t, "host")
 			path := rapid.StringMatching(`[a-zA-Z0-9]{1,10}`).Draw(t, "path")
 			input := host + "/" + path
@@ -176,7 +176,7 @@ func TestPropertySSOStartURLNormalization(t *testing.T) { // lint:allow_complexi
 	})
 
 	// Sub-property 4: Full URLs (starting with "https://")
-	// are returned as-is and remain parseable
+	// are returned as-is and remain parseable.
 	t.Run("full_url", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			host := rapid.StringMatching(`[a-zA-Z][a-zA-Z0-9-]{1,10}\.[a-zA-Z]{2,5}`).Draw(t, "host")

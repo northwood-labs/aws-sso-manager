@@ -81,9 +81,9 @@ func TestRenderMarkdownTable(t *testing.T) {
 	}
 }
 
-// Feature: aws-sso-manager, Property 3: Output Formats Contain All Data
+// Feature: aws-sso-manager, Property 3: Output Formats Contain All Data.
 func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 3.9, 3.10, 3.11**
+	// **Validates: Requirements 3.9, 3.10, 3.11**.
 	rapid.Check(t, func(t *rapid.T) {
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,9}`).Draw(t, "profileName")
 		accounts := genListAccounts(1, 5).Draw(t, "accounts")
@@ -100,7 +100,7 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_compl
 
 		jsonOutput := string(jsonBytes)
 
-		// Verify every account ID, account name, and role name appears in all three outputs
+		// Verify every account ID, account name, and role name appears in all three outputs.
 		for _, acct := range accounts.Accounts {
 			if !strings.Contains(csvOutput, acct.ID) {
 				t.Fatalf("CSV output missing account ID %q", acct.ID)
@@ -141,9 +141,9 @@ func TestPropertyOutputFormatsContainAllData(t *testing.T) { // lint:allow_compl
 			}
 		}
 
-		// Verify every profile name from the rows appears in CSV and markdown output
+		// Verify every profile name from the rows appears in CSV and markdown output.
 		for _, row := range rows {
-			profile := row[3] // Profile Name is the 4th column
+			profile := row[3] // Profile Name is the 4th column.
 			if !strings.Contains(csvOutput, profile) {
 				t.Fatalf("CSV output missing profile name %q", profile)
 			}

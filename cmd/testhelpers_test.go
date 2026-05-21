@@ -76,12 +76,12 @@ func genListAccounts(minAccounts, maxAccounts int) *rapid.Generator[listAccounts
 			accounts[i] = genListAccount().Draw(t, fmt.Sprintf("account%d", i))
 		}
 
-		// Sort accounts by name (case-insensitive)
+		// Sort accounts by name (case-insensitive).
 		sort.SliceStable(accounts, func(i, j int) bool {
 			return strings.ToLower(accounts[i].Name) < strings.ToLower(accounts[j].Name)
 		})
 
-		// Sort roles within each account by name (case-insensitive)
+		// Sort roles within each account by name (case-insensitive).
 		for i := range accounts {
 			sort.SliceStable(accounts[i].Roles, func(a, b int) bool {
 				return strings.ToLower(accounts[i].Roles[a].Name) < strings.ToLower(accounts[i].Roles[b].Name)
@@ -112,7 +112,7 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 	return rapid.Custom[string](func(t *rapid.T) string {
 		var sb strings.Builder
 
-		// Optional preamble content
+		// Optional preamble content.
 		if rapid.Bool().Draw(t, "hasPreamble") {
 			sb.WriteString("[default]\n")
 			sb.WriteString("region = us-east-1\n")
@@ -127,7 +127,7 @@ func genManagedBlockConfig(profiles []string) *rapid.Generator[string] {
 			sb.WriteString("sso_registration_scopes = sso:account:access\n")
 			sb.WriteString("\n")
 
-			// Generate 1-3 profile sections inside the managed block
+			// Generate 1-3 profile sections inside the managed block.
 			numProfiles := rapid.IntRange(1, 3).Draw(t, "numProfiles_"+profile)
 			for j := range numProfiles {
 				profileName := rapid.StringMatching(
@@ -173,7 +173,7 @@ func genProfilePatternConfig() *rapid.Generator[map[string]any] {
 	return rapid.Custom[map[string]any](func(t *rapid.T) map[string]any {
 		allTokens := []string{"PREFIX", "ACCOUNT", "ROLE", "SUFFIX"}
 
-		// Pick a non-empty subset of tokens in random order
+		// Pick a non-empty subset of tokens in random order.
 		numTokens := rapid.IntRange(1, len(allTokens)).Draw(t, "numTokens")
 		perm := rapid.Permutation(allTokens).Draw(t, "tokenPerm")
 		order := perm[:numTokens]
@@ -182,7 +182,7 @@ func genProfilePatternConfig() *rapid.Generator[map[string]any] {
 		prefix := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "prefix")
 		suffix := rapid.StringMatching(`[a-z]{0,5}`).Draw(t, "suffix")
 
-		// Generate substr_match_replace maps with 0-2 entries
+		// Generate substr_match_replace maps with 0-2 entries.
 		accountReplacements := make(map[string]any)
 
 		numAccountReplacements := rapid.IntRange(0, 2).Draw(t, "numAccountReplacements")

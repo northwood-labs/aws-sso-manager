@@ -32,7 +32,7 @@ source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-05-19T03:40:09Z'
+last_sync_time = '2026-05-20T18:24:01Z'
 source_hash = ''
 dest_hash = 'sha256:cdb7fb343b14466bf5552d83406a937da0285d6e38bcaee17651120d35b978f4'
 
@@ -90,6 +90,11 @@ dest_hash = 'sha256:d525ead29cc7ddab318b5376924a61171fa7da3cdfa7d69203dacbf297eb
 last_sync_time = '2026-05-17T22:08:19Z'
 source_hash = ''
 dest_hash = 'sha256:505ea96c94be42c5af23314a1c0409508deeb6a5694957c52bca53f1819a0827'
+
+[files.'.vscode/settings-golang.toml']
+last_sync_time = '2026-05-20T18:24:01Z'
+source_hash = ''
+dest_hash = 'sha256:61adca379f71c8b61fd272f0e30ae1e2268c93e77db79f5fc6cb5530ea60bc1b'
 
 [files.'.vscode/settings-llm.toml']
 last_sync_time = '2026-05-17T19:53:12Z'

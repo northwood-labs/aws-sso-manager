@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	// managedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
+	// ManagedStartMarkerPrefix and managedEndMarkerPrefix delimit the regions of
 	// ~/.aws/config that this tool owns. Content between a matching start/end
 	// pair is regenerated on every "update" — anything outside is left untouched.
 	// This marker-based approach lets the tool coexist with hand-edited sections.
@@ -466,7 +466,7 @@ func getManagedSection(profileName string) (string, error) {
 		}
 	}
 
-	// Check for errors
+	// Check for errors.
 	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
 	}
@@ -556,7 +556,7 @@ func setManagedSection(tmpFile, profileName string) (string, error) { // lint:al
 		}
 	}
 
-	// Check for errors
+	// Check for errors.
 	if err := confScanner.Err(); err != nil {
 		fmt.Println(err)
 	}

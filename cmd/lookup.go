@@ -28,14 +28,14 @@ import (
 )
 
 var (
-	// accountIDPattern is shared across lookup subcommands to distinguish a
+	// AccountIDPattern is shared across lookup subcommands to distinguish a
 	// 12-digit account ID from a human-readable name or profile identifier.
 	accountIDPattern = regexp.MustCompile(`^\d{12}$`)
 
 	fLookupProfile string
 	fLookupFor     string
 
-	// lookupCmd is the parent command. It reads exclusively from the local
+	// LookupCmd is the parent command. It reads exclusively from the local
 	// lookup index cache — no AWS API calls — so it's fast and works offline.
 	lookupCmd = &cobra.Command{
 		Use:   "lookup",
@@ -56,7 +56,7 @@ var (
 		`)),
 	}
 
-	// lookupAccountCmd resolves a flexible identifier (account ID, name, profile
+	// LookupAccountCmd resolves a flexible identifier (account ID, name, profile
 	// name, or substring) to a single account. This flexibility lets users type
 	// whatever they remember — "internal", "prod-admin", or the full 12-digit ID
 	// — and get the canonical account ID back.
@@ -112,7 +112,7 @@ var (
 		},
 	}
 
-	// lookupRoleCmd searches for roles by substring within a single account.
+	// LookupRoleCmd searches for roles by substring within a single account.
 	// The --for flag is mandatory because role names are only meaningful in the
 	// context of a specific account (the same role name can exist across many
 	// accounts).
@@ -197,7 +197,7 @@ var (
 )
 
 type (
-	// lookupAccountResponse is the JSON envelope for "lookup account --json".
+	// LookupAccountResponse is the JSON envelope for "lookup account --json".
 	// It bundles everything a caller needs to identify and interact with an
 	// account without making additional lookups.
 	lookupAccountResponse struct {
@@ -208,7 +208,7 @@ type (
 		Roles      []string `json:"roles"`
 	}
 
-	// lookupRoleResponse is the JSON envelope for "lookup role --json".
+	// LookupRoleResponse is the JSON envelope for "lookup role --json".
 	// Including the query string lets callers correlate results with their input
 	// when processing multiple lookups in a pipeline.
 	lookupRoleResponse struct {

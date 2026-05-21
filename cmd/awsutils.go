@@ -47,7 +47,7 @@ import (
 var listAWSAccountsFetcher = fetchListAWSAccountsFromSSO
 
 type (
-	// ssoProfile holds the parsed [sso-session] config for one AWS Organization.
+	// SsoProfile holds the parsed [sso-session] config for one AWS Organization.
 	// It's the bridge between the INI config on disk and the AWS SDK calls.
 	ssoProfile struct {
 		Name     string
@@ -64,7 +64,7 @@ type (
 		loginTimeout   time.Duration
 	}
 
-	// cacheFileData is the SSO OIDC auth token cache. Persisting it avoids
+	// CacheFileData is the SSO OIDC auth token cache. Persisting it avoids
 	// re-authenticating via the browser on every command — the token is valid
 	// for hours, so most invocations can reuse it.
 	cacheFileData struct {
@@ -77,7 +77,7 @@ type (
 		ClientSecret          string    `json:"clientSecret"`
 	}
 
-	// listAWSAccountsInput bundles everything needed to list accounts. Passing
+	// ListAWSAccountsInput bundles everything needed to list accounts. Passing
 	// it as a struct keeps the function signatures manageable and makes it easy
 	// to add new parameters (like filters) without breaking callers.
 	listAWSAccountsInput struct {
@@ -102,7 +102,7 @@ type (
 		Roles    []string `json:"roles"`
 	}
 
-	// listAWSAccountsLookupIndex provides O(1) lookups by account ID, name, or
+	// ListAWSAccountsLookupIndex provides O(1) lookups by account ID, name, or
 	// profile name. It's built from the accounts cache and persisted separately
 	// so that "get" and "lookup" commands can resolve identifiers without
 	// re-fetching from AWS.
@@ -179,7 +179,8 @@ func ensureAWSManagerCacheDir() (string, error) {
 		cacheDir = filepath.Join(homeDir, ".config", "aws-sso-manager", "cache")
 	}
 
-	if err := os.MkdirAll(cacheDir, 0o0755); err != nil { // lint:allow_raw_number
+	err := os.MkdirAll(cacheDir, 0o0755) // lint:allow_raw_number
+	if err != nil {
 		return "", fmt.Errorf("could not create AWS manager cache directory: %w", err)
 	}
 
@@ -349,7 +350,8 @@ func readListAWSAccountsLookupCache(cacheFilePath string) (listAWSAccountsLookup
 	}
 
 	if expiresAt.IsZero() || time.Now().After(expiresAt) {
-		if err := os.Remove(cacheFilePath); err != nil && !os.IsNotExist(err) {
+		err := os.Remove(cacheFilePath)
+		if err != nil && !os.IsNotExist(err) {
 			return listAWSAccountsLookupIndex{}, false, fmt.Errorf(
 				"could not remove expired accounts lookup cache file: %w",
 				err,
@@ -448,7 +450,8 @@ func deleteListAWSAccountsCache(input *listAWSAccountsInput) error {
 
 	lookupCachePath := input.lookupCacheFilePath()
 
-	if err := os.Remove(cacheFilePath); err != nil {
+	err := os.Remove(cacheFilePath)
+	if err != nil {
 		if !os.IsNotExist(err) {
 			return fmt.Errorf("could not remove cache file %s: %w", cacheFilePath, err)
 		}
@@ -458,7 +461,8 @@ func deleteListAWSAccountsCache(input *listAWSAccountsInput) error {
 		return nil
 	}
 
-	if err := os.Remove(lookupCachePath); err != nil {
+	err = os.Remove(lookupCachePath)
+	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -500,7 +504,8 @@ func readListAWSAccountsCache(cacheFilePath string) (listAccounts, bool, error) 
 	}
 
 	if expiresAt.IsZero() || time.Now().After(expiresAt) {
-		if err := os.Remove(cacheFilePath); err != nil && !os.IsNotExist(err) {
+		err := os.Remove(cacheFilePath)
+		if err != nil && !os.IsNotExist(err) {
 			return listAccounts{}, false, fmt.Errorf("could not remove expired accounts cache file: %w", err)
 		}
 
@@ -773,7 +778,7 @@ func waitForCustomerToAuthenticate(
 	oidcClient := ssooidc.NewFromConfig(*input.sdkConfig)
 
 	for delta < input.loginTimeout {
-		// Keep trying until the user approves the request in the browser
+		// Keep trying until the user approves the request in the browser.
 		token, err = oidcClient.CreateToken(
 			ctx, &ssooidc.CreateTokenInput{
 				ClientId:     input.registerClient.ClientId,
@@ -801,7 +806,7 @@ func waitForCustomerToAuthenticate(
 		unauthClientErr := new(types.UnauthorizedClientException)
 		unsupportedGrantErr := new(types.UnsupportedGrantTypeException)
 
-		switch { // nolint:gocritic // errors.As requires individual case evaluation
+		switch {
 		case errors.As(err, &authPendingErr):
 			time.Sleep(sleepPerCycle)
 
@@ -839,7 +844,7 @@ func waitForCustomerToAuthenticate(
 		}
 	}
 
-	// Checks to see if there is a valid token after the login timeout ends
+	// Checks to see if there is a valid token after the login timeout ends.
 	if err != nil || token.AccessToken == nil {
 		return cacheFileData{}, fmt.Errorf("failed to create token: %w", err)
 	}
@@ -886,7 +891,8 @@ func listAWSAccounts( // lint:allow_complexity
 			if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 				lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, cachedAccounts)
 
-				if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
+				err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex)
+				if err != nil {
 					inputLogger.ErrorContext(
 						ctx,
 						"Failed to write AWS accounts lookup cache",
@@ -910,7 +916,8 @@ func listAWSAccounts( // lint:allow_complexity
 	}
 
 	if cacheFilePath != "" {
-		if err := writeListAWSAccountsCache(cacheFilePath, accounts); err != nil {
+		err := writeListAWSAccountsCache(cacheFilePath, accounts)
+		if err != nil {
 			inputLogger.ErrorContext(
 				ctx,
 				"Failed to write AWS accounts cache",
@@ -926,7 +933,8 @@ func listAWSAccounts( // lint:allow_complexity
 		if shouldWriteLookupCache(input) && lookupCacheFilePath != "" {
 			lookupIndex := buildListAWSAccountsLookupIndex(input.ProfileName, accounts)
 
-			if err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex); err != nil {
+			err := writeListAWSAccountsLookupCache(lookupCacheFilePath, lookupIndex)
+			if err != nil {
 				inputLogger.ErrorContext(
 					ctx,
 					"Failed to write AWS accounts lookup cache",
@@ -1029,7 +1037,7 @@ func fetchListAWSAccountsFromSSO( // lint:allow_complexity
 				}
 			}
 
-			// Sort roles by name
+			// Sort roles by name.
 			sort.SliceStable(singleAccount.Roles, func(i, j int) bool {
 				return strings.ToLower(
 					singleAccount.Roles[i].Name,
@@ -1042,7 +1050,7 @@ func fetchListAWSAccountsFromSSO( // lint:allow_complexity
 		}
 	}
 
-	// Sort accounts by name
+	// Sort accounts by name.
 	sort.SliceStable(accts.Accounts, func(i, j int) bool {
 		return strings.ToLower(accts.Accounts[i].Name) < strings.ToLower(accts.Accounts[j].Name)
 	})

@@ -47,14 +47,14 @@ type (
 	// generated profile names. Supports both regex-based and substring-based
 	// matching strategies.
 	AccountRenameConfig struct {
-		// GlobalRegexReplace map[string]string // lint:allow_commented lint:ignore_length
+		// GlobalRegexReplace map[string]string // lint:allow_commented lint:ignore_length.
 		SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" jsonschema:"description=If the account name contains the key the entire name is replaced with the value." toml:"substr_match_replace,omitempty"` // lint:ignore_length lint:allow_format
 	}
 
 	// RoleRenameConfig holds the rules for rewriting AWS role names in generated
 	// profile names. Same matching strategies as AccountRenameConfig.
 	RoleRenameConfig struct {
-		// GlobalRegexReplace map[string]string // lint:allow_commented lint:ignore_length
+		// GlobalRegexReplace map[string]string // lint:allow_commented lint:ignore_length.
 		SubstrMatchReplace map[string]string `json:"substr_match_replace,omitempty" jsonschema:"description=If the role name contains the key the entire name is replaced with the value." toml:"substr_match_replace,omitempty"` // lint:ignore_length lint:allow_format
 	}
 
@@ -152,7 +152,8 @@ func validateConfigKey(key string) error {
 		return fmt.Errorf("%w: expected <profile>.<path> for %q", ErrConfigKeyInvalid, key)
 	}
 
-	if err := walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key); err != nil {
+	err := walkStructPath(reflect.TypeFor[SSOProfileConfig](), parts[1:], key)
+	if err != nil {
 		return fmt.Errorf("validating config key path: %w", err)
 	}
 
@@ -212,7 +213,8 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 				return nil
 			}
 
-			if walkErr := walkStructPath(ft, remaining, fullKey); walkErr != nil {
+			walkErr := walkStructPath(ft, remaining, fullKey)
+			if walkErr != nil {
 				return fmt.Errorf("struct field %q: %w", segment, walkErr)
 			}
 
@@ -245,7 +247,8 @@ func walkStructPath(t reflect.Type, parts []string, fullKey string) error { // l
 			return nil
 		}
 
-		if walkErr := walkStructPath(valueType, remaining, fullKey); walkErr != nil {
+		walkErr := walkStructPath(valueType, remaining, fullKey)
+		if walkErr != nil {
 			return fmt.Errorf("dynamic key %q: %w", segment, walkErr)
 		}
 

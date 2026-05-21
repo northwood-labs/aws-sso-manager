@@ -23,11 +23,11 @@ import (
 )
 
 var (
-	// removeFile is a test seam for os.Remove so tests can intercept file
+	// RemoveFile is a test seam for os.Remove so tests can intercept file
 	// deletion without touching the real filesystem.
 	removeFile = os.Remove
 
-	// logoutCmd deletes the cached OIDC token for an SSO profile, effectively
+	// LogoutCmd deletes the cached OIDC token for an SSO profile, effectively
 	// ending the session. Profile resolution mirrors authCmd: positional arg →
 	// Viper config → interactive prompt.
 	logoutCmd = &cobra.Command{
@@ -47,7 +47,8 @@ var (
 			}
 
 			if profileName == "" {
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}

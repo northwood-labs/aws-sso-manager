@@ -40,7 +40,7 @@ var (
 	fRole      string
 	fClipboard bool
 
-	// consoleCmd represents the diff command
+	// consoleCmd represents the diff command.
 	consoleCmd = &cobra.Command{
 		Use:   "console [sso-profile-name] [url]",
 		Short: "Generate an AWS Console URL for an AWS Account ID and role.",
@@ -124,7 +124,8 @@ var (
 			if profileName == "" {
 				logger.DebugContext(ctx, "SSO profile is undefined. Collect it from user.")
 
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}

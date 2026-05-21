@@ -27,7 +27,8 @@ import (
 // Non-blocking so we can implement our own retry loop with timeout and context
 // cancellation, rather than blocking the goroutine inside the kernel.
 func lockFileNB(fd uintptr) error {
-	if err := unix.Flock(int(fd), unix.LOCK_EX|unix.LOCK_NB); err != nil {
+	err := unix.Flock(int(fd), unix.LOCK_EX|unix.LOCK_NB)
+	if err != nil {
 		return fmt.Errorf("could not acquire file lock: %w", err)
 	}
 
@@ -36,7 +37,8 @@ func lockFileNB(fd uintptr) error {
 
 // unlockFile releases the lock on the file descriptor.
 func unlockFile(fd uintptr) error {
-	if err := unix.Flock(int(fd), unix.LOCK_UN); err != nil {
+	err := unix.Flock(int(fd), unix.LOCK_UN)
+	if err != nil {
 		return fmt.Errorf("could not release file lock: %w", err)
 	}
 

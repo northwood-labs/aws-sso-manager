@@ -193,11 +193,13 @@ func TestValidateMarkersOK(t *testing.T) {
 		"; -------- aws-sso-manager: end myprofile --------",
 	}, "\n") + "\n"
 
-	if err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644); err != nil {
+	err := os.WriteFile(awsConfigFilePath, []byte(config), 0o0644)
+	if err != nil {
 		t.Fatalf("write config: %v", err)
 	}
 
-	if err := validateMarkers("myprofile"); err != nil {
+	err = validateMarkers("myprofile")
+	if err != nil {
 		t.Fatalf("expected no error for valid markers, got: %v", err)
 	}
 }
@@ -431,7 +433,8 @@ func TestAcquireAWSConfigLockCreatesMissingDirectory(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		if releaseErr := lock.Release(); releaseErr != nil {
+		releaseErr := lock.Release()
+		if releaseErr != nil {
 			t.Fatalf("release lock: %v", releaseErr)
 		}
 	})
@@ -527,7 +530,7 @@ func TestGetProfileNameFallsBackWhenConfiguredPatternIsEmpty(t *testing.T) {
 }
 
 // Feature: aws-sso-manager, Property 7: Profile Name Generation with Pattern
-// **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**
+// **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.12**.
 func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_complexity
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
@@ -541,14 +544,14 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 
 		config := genProfilePatternConfig().Draw(rt, "patternConfig")
 
-		// Extract pattern config values
+		// Extract pattern config values.
 		patternMap, _ := config["pattern"].(map[string]any) // lint:allow_defer_close
 		order, _ := patternMap["order"].([]string)          // lint:allow_defer_close
 		delimiter, _ := patternMap["delimiter"].(string)    // lint:allow_defer_close
 		prefix, _ := config["prefix"].(string)              // lint:allow_defer_close
 		suffix, _ := config["suffix"].(string)              // lint:allow_defer_close
 
-		// Set up asvConfig with the pattern config (skip substr_match_replace for this test)
+		// Set up asvConfig with the pattern config (skip substr_match_replace for this test).
 		asmConfig.Set(profileName+".rename.pattern.order", order)
 		asmConfig.Set(profileName+".rename.pattern.delimiter", delimiter)
 		asmConfig.Set(profileName+".rename.prefix", prefix)
@@ -556,12 +559,12 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 
 		got := getProfileName(profileName, account, role)
 
-		// Property: output should be lowercased
+		// Property: output should be lowercased.
 		if got != strings.ToLower(got) {
 			rt.Fatalf("expected lowercased output, got %q", got)
 		}
 
-		// Property: output should not be empty
+		// Property: output should not be empty.
 		if got == "" {
 			rt.Fatal("expected non-empty output")
 		}
@@ -592,7 +595,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 			expected := strings.TrimSpace(strings.Join(expectedTokens, delimiter))
 			if expected == "" {
 				// When all tokens produce empty after trim, getProfileName falls back
-				// to buildDefaultProfileName — just verify it's non-empty and lowercased
+				// to buildDefaultProfileName — just verify it's non-empty and lowercased.
 				return
 			}
 
@@ -604,7 +607,7 @@ func TestPropertyProfileNameGenerationWithPattern(t *testing.T) { // lint:allow_
 	})
 }
 
-// Feature: aws-sso-manager, Property 6: Managed Block Marker Validation
+// Feature: aws-sso-manager, Property 6: Managed Block Marker Validation.
 func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_complexity
 	t.Run("well-formed configs produce no issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
@@ -613,7 +616,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 			oldConfigPath := awsConfigFilePath
 			defer func() { awsConfigFilePath = oldConfigPath }()
 
-			// Generate 1-3 unique profile names
+			// Generate 1-3 unique profile names.
 			numProfiles := rapid.IntRange(1, 3).Draw(rt, "numProfiles")
 			profiles := make([]string, numProfiles)
 			seen := map[string]bool{}
@@ -652,7 +655,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 		})
 	})
 
-	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**
+	// **Validates: Requirements 8.3, 8.4, 8.5, 8.6, 8.7**.
 	t.Run("malformed configs produce issues", func(t *testing.T) {
 		rapid.Check(t, func(rt *rapid.T) {
 			logger = slog.New(log.New(io.Discard))
@@ -662,19 +665,19 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 
 			profile := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profile")
 
-			// Pick an anomaly type: 0=missing end (unclosed), 1=extra end (unmatched), 2=duplicate start
+			// Pick an anomaly type: 0=missing end (unclosed), 1=extra end (unmatched), 2=duplicate start.
 			anomaly := rapid.IntRange(0, 2).Draw(rt, "anomaly")
 
 			var sb strings.Builder
 
 			switch anomaly {
-			case 0: // Missing end marker (unclosed block)
+			case 0: // Missing end marker (unclosed block).
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				sb.WriteString("sso_start_url = https://example.awsapps.com/start\n")
-			case 1: // Extra end marker (unmatched end)
+			case 1: // Extra end marker (unmatched end).
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
-			case 2: // Duplicate start markers
+			case 2: // Duplicate start markers.
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: start %s --------\n", profile)
 				fmt.Fprintf(&sb, "[sso-session %s]\n", profile)
 				fmt.Fprintf(&sb, "; -------- aws-sso-manager: end %s --------\n", profile)
@@ -701,7 +704,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 				rt.Fatalf("expected issues for malformed config (anomaly=%d), got none", anomaly)
 			}
 
-			// Verify the profile with the anomaly has issues
+			// Verify the profile with the anomaly has issues.
 			if _, ok := report.issues[profile]; !ok {
 				rt.Fatalf("expected issues for profile %q, got issues for: %v", profile, report.issues)
 			}
@@ -710,7 +713,7 @@ func TestPropertyManagedBlockMarkerValidation(t *testing.T) { // lint:allow_comp
 }
 
 // Feature: aws-sso-manager, Property 8: Substring Match Replacement in Profile Names
-// **Validates: Requirements 9.6, 9.8**
+// **Validates: Requirements 9.6, 9.8**.
 func TestPropertySubstringMatchReplacement(t *testing.T) {
 	rapid.Check(t, func(rt *rapid.T) {
 		oldConfig := asmConfig
@@ -720,7 +723,7 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 
 		profileName := rapid.StringMatching(`[a-z][a-z0-9]{2,10}`).Draw(rt, "profileName")
 
-		// Generate a random account name (3-15 alphanumeric chars)
+		// Generate a random account name (3-15 alphanumeric chars).
 		account := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "account")
 
 		// Pick a random substring of the account name as the match key.
@@ -730,13 +733,13 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 		endIdx := rapid.IntRange(startIdx+1, len(accountLower)).Draw(rt, "endIdx")
 		matchKey := accountLower[startIdx:endIdx]
 
-		// Generate a random replacement value (1-6 lowercase chars)
+		// Generate a random replacement value (1-6 lowercase chars).
 		replacement := rapid.StringMatching(`[a-z]{1,6}`).Draw(rt, "replacement")
 
 		role := rapid.StringMatching(`[A-Za-z][A-Za-z0-9]{2,14}`).Draw(rt, "role")
 
 		// Set up asvConfig with pattern order ["ACCOUNT", "ROLE"], delimiter "-",
-		// and the substr_match_replace map
+		// and the substr_match_replace map.
 		asmConfig.Set(profileName+".rename.pattern.order", []string{"ACCOUNT", "ROLE"})
 		asmConfig.Set(profileName+".rename.pattern.delimiter", "-")
 		asmConfig.Set(profileName+".rename.accounts.substr_match_replace", map[string]any{
@@ -757,9 +760,9 @@ func TestPropertySubstringMatchReplacement(t *testing.T) {
 	})
 }
 
-// Feature: aws-sso-manager, Property 9: Default Profile Name Generation
+// Feature: aws-sso-manager, Property 9: Default Profile Name Generation.
 func TestPropertyDefaultProfileNameGeneration(t *testing.T) {
-	// **Validates: Requirements 9.10**
+	// **Validates: Requirements 9.10**.
 	t.Run("toProfileToken_idempotence", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			input := rapid.String().Draw(t, "input")

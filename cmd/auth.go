@@ -32,7 +32,7 @@ import (
 var (
 	fBrowser bool
 
-	// authCmd represents the auth command
+	// authCmd represents the auth command.
 	authCmd = &cobra.Command{
 		Use:   "auth [sso-profile-name]",
 		Short: "Authenticates with AWS SSO and retrieves temporary credentials.",
@@ -67,7 +67,8 @@ var (
 			}
 
 			if profileName == "" {
-				if err := promptProfileSelect(&profileName); err != nil {
+				err := promptProfileSelect(&profileName)
+				if err != nil {
 					return fmt.Errorf("could not select SSO profile: %w", err)
 				}
 			}
@@ -109,12 +110,13 @@ func ensureAuthenticatedSSOSession(requestCtx context.Context, profileName strin
 	// Can we read the cache?
 	cacheResults, err := cacheData.read(cacheFilePath)
 	if err != nil {
-		if authErr := authenticateAndCacheSSOSession(
+		authErr := authenticateAndCacheSSOSession(
 			requestCtx,
 			profileName,
 			sessionProfile,
 			cacheFilePath,
-		); authErr != nil {
+		)
+		if authErr != nil {
 			return fmt.Errorf("could not authenticate SSO session: %w", authErr)
 		}
 	} else {
@@ -244,7 +246,8 @@ func getOrRefreshAuthenticatedCache(
 		err,
 	)
 
-	if authErr := ensureAuthenticatedSSOSession(requestCtx, profileName); authErr != nil {
+	authErr := ensureAuthenticatedSSOSession(requestCtx, profileName)
+	if authErr != nil {
 		return nil, fmt.Errorf("could not ensure authenticated SSO session: %w", authErr)
 	}
 

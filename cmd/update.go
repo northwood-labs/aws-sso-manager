@@ -65,7 +65,8 @@ var updateCmd = &cobra.Command{
 		}
 
 		if profileName == "" {
-			if err := promptProfileSelect(&profileName); err != nil {
+			err := promptProfileSelect(&profileName)
+			if err != nil {
 				return fmt.Errorf("prompting for profile selection: %w", err)
 			}
 		}
@@ -75,7 +76,8 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("acquiring AWS config lock: %w", err)
 		}
 		defer func() {
-			if releaseErr := configLock.Release(); releaseErr != nil {
+			releaseErr := configLock.Release()
+			if releaseErr != nil {
 				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()

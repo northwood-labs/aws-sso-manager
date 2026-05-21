@@ -95,7 +95,8 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("could not acquire AWS config lock: %w", err)
 		}
 		defer func() {
-			if releaseErr := configLock.Release(); releaseErr != nil {
+			releaseErr := configLock.Release()
+			if releaseErr != nil {
 				logger.ErrorContext(ctx, "Failed to release AWS config lock", logKeyErr, releaseErr)
 			}
 		}()
@@ -225,7 +226,8 @@ var initCmd = &cobra.Command{
 				return
 			}
 
-			if closeErr := tmpConfig.Close(); closeErr != nil {
+			closeErr := tmpConfig.Close()
+			if closeErr != nil {
 				logger.ErrorContext(ctx, "Failed to close temporary AWS config file", logKeyErr, closeErr)
 			}
 		}()

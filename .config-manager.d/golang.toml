@@ -29,9 +29,9 @@
     bash = 'bash .vscode/extensions.sh'
 
 [[files]]
-  stub = 'configs/stubs/.vscode/settings-go.toml'
-  source = 'configs/templates/.vscode/settings-go.toml'
-  destination = '.vscode/settings-go.toml'
+  stub = 'configs/stubs/.vscode/settings-golang.toml'
+  source = 'configs/templates/.vscode/settings-golang.toml'
+  destination = '.vscode/settings-golang.toml'
 
   [files.post_update_hook]
     bash = 'bash .vscode/settings.sh'

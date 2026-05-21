@@ -23,11 +23,11 @@ import (
 )
 
 const (
-	// awsConfigLockRetryInterval controls how often we re-attempt the lock.
+	// AwsConfigLockRetryInterval controls how often we re-attempt the lock.
 	// 100ms is short enough to feel responsive but avoids busy-spinning the CPU.
 	awsConfigLockRetryInterval = 100 * time.Millisecond
 
-	// awsConfigLockTimeout caps the total wait so a stuck lock holder (e.g., a
+	// AwsConfigLockTimeout caps the total wait so a stuck lock holder (e.g., a
 	// crashed process that didn't release) doesn't block the user indefinitely.
 	awsConfigLockTimeout = 5 * time.Second
 )
@@ -70,7 +70,8 @@ func acquireAWSConfigLock(ctx context.Context) (*awsConfigLock, error) {
 			// We hold the lock. Write our PID so that a human investigating a
 			// stale lock file can identify which process held it. Truncate first
 			// to clear any leftover PID from a previous holder.
-			if truncateErr := lockFile.Truncate(0); truncateErr != nil {
+			truncateErr := lockFile.Truncate(0)
+			if truncateErr != nil {
 				_ = lockFile.Close() // lint:allow_unhandled
 				return nil, fmt.Errorf("truncate AWS config lock file %q: %w", lockPath, truncateErr)
 			}

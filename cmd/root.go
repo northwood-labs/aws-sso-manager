@@ -50,7 +50,7 @@ var (
 	fVerbose       int
 	fJSON          bool
 
-	// asmConfig is the Viper instance that merges TOML config, env vars, and
+	// AsmConfig is the Viper instance that merges TOML config, env vars, and
 	// CLI flags into a single configuration source. It's a package-level var
 	// so every command can read profile-specific settings without passing it
 	// around.
@@ -61,7 +61,7 @@ var (
 	cacheDuration      = 24 * time.Hour
 	userHomeDir        string
 
-	// charmlogger defaults to stderr with caller info and timestamps. The
+	// Charmlogger defaults to stderr with caller info and timestamps. The
 	// PersistentPreRunE adjusts the level based on -v count so that normal
 	// usage is quiet and -vvv gives full debug output with source locations.
 	charmlogger = log.NewWithOptions(os.Stderr, log.Options{
@@ -72,7 +72,7 @@ var (
 
 	logger *slog.Logger
 
-	// fangNotifySignals, fangExecute, runRootCommand, and osExit are test seams.
+	// FangNotifySignals, fangExecute, runRootCommand, and osExit are test seams.
 	// They let tests verify signal handling and exit behavior without actually
 	// killing the test process or requiring real signal delivery.
 	fangNotifySignals = []os.Signal{syscall.SIGINT, syscall.SIGTERM}
@@ -220,11 +220,12 @@ func parseCacheDurationFlag(raw string) (time.Duration, error) {
 
 // Execute configures the Cobra CLI app framework and executes the root command.
 func Execute() {
-	if err := runRootCommand(
+	err := runRootCommand(
 		context.Background(),
 		rootCmd,
 		fangNotifySignals...,
-	); err != nil {
+	)
+	if err != nil {
 		osExit(1)
 	}
 }
@@ -242,7 +243,7 @@ func Root() *cobra.Command {
 func initializeConfig(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 
-	asmConfig.SetEnvPrefix("ASM") // AWS SSO Manager
+	asmConfig.SetEnvPrefix("ASM") // AWS SSO Manager.
 
 	// Map dots and hyphens in config keys to underscores for env var lookup,
 	// so "profile-name" in TOML becomes ASM_PROFILE_NAME as an env var.
@@ -264,7 +265,8 @@ func initializeConfig(cmd *cobra.Command) error {
 
 		asmConfig.SetConfigFile(fConfigFile)
 	} else {
-		if err := ensureDefaultConfigFile(ctx, defaultConfigFile); err != nil {
+		err := ensureDefaultConfigFile(ctx, defaultConfigFile)
+		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
 

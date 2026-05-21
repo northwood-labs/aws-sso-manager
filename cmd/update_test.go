@@ -243,11 +243,13 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 	}
 
 	tmpManaged := filepath.Join(dir, "managed.ini")
-	if writeErr := os.WriteFile(
+
+	writeErr := os.WriteFile(
 		tmpManaged,
 		[]byte(strings.TrimSpace(generateAWSConfig(nextSections))+"\n"),
 		0o0644,
-	); writeErr != nil {
+	)
+	if writeErr != nil {
 		t.Fatalf("write managed tmp: %v", writeErr)
 	}
 
@@ -289,7 +291,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 		t.Fatalf("expected managed block to preserve SSO start URL:\n%s", got)
 	}
 
-	// generateAWSConfig iterates sections.List(), which sorts section names; the
+	// GenerateAWSConfig iterates sections.List(), which sorts section names; the
 	// rendered managed block should therefore stay in deterministic order.
 	assertHeadersInOrder(
 		t,
@@ -315,7 +317,7 @@ func TestUpdateManagedBlockRewriteIntegration(t *testing.T) {
 	}
 }
 
-// Feature: aws-sso-manager, Property 17: Update Managed Section Generation
+// Feature: aws-sso-manager, Property 17: Update Managed Section Generation.
 func TestPropertyUpdateManagedSectionGeneration(t *testing.T) { // lint:allow_complexity
 	logger = slog.New(log.New(io.Discard))
 
@@ -335,7 +337,8 @@ func TestPropertyUpdateManagedSectionGeneration(t *testing.T) { // lint:allow_co
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+		updateErr := ssoSection.UpdateValue("sso_region", regionVal)
+		if updateErr != nil {
 			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
@@ -412,9 +415,9 @@ func TestPropertyUpdateManagedSectionGeneration(t *testing.T) { // lint:allow_co
 }
 
 // Feature: config-output-region-overrides, Property 1: Region resolution
-// respects config override with sso_region fallback
+// respects config override with sso_region fallback.
 func TestPropertyRegionOverrideResolution(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 1.1, 1.2, 1.3, 4.1**
+	// **Validates: Requirements 1.1, 1.2, 1.3, 4.1**.
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
@@ -453,7 +456,8 @@ func TestPropertyRegionOverrideResolution(t *testing.T) { // lint:allow_complexi
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+		updateErr := ssoSection.UpdateValue("sso_region", regionVal)
+		if updateErr != nil {
 			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
@@ -494,9 +498,9 @@ func TestPropertyRegionOverrideResolution(t *testing.T) { // lint:allow_complexi
 	})
 }
 
-// Feature: config-output-region-overrides, Property 2: Output resolution respects config override with "json" fallback
+// Feature: config-output-region-overrides, Property 2: Output resolution respects config override with "json" fallback.
 func TestPropertyOutputOverrideResolution(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 2.1, 2.2, 2.3, 4.2**
+	// **Validates: Requirements 2.1, 2.2, 2.3, 4.2**.
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
@@ -535,7 +539,8 @@ func TestPropertyOutputOverrideResolution(t *testing.T) { // lint:allow_complexi
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+		updateErr := ssoSection.UpdateValue("sso_region", regionVal)
+		if updateErr != nil {
 			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
@@ -574,9 +579,9 @@ func TestPropertyOutputOverrideResolution(t *testing.T) { // lint:allow_complexi
 	})
 }
 
-// Feature: config-output-region-overrides, Property 4: Update idempotence with settings overrides
+// Feature: config-output-region-overrides, Property 4: Update idempotence with settings overrides.
 func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
-	// **Validates: Requirements 5.1**
+	// **Validates: Requirements 5.1**.
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
@@ -616,7 +621,8 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+		updateErr := ssoSection.UpdateValue("sso_region", regionVal)
+		if updateErr != nil {
 			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
@@ -649,9 +655,9 @@ func TestPropertyUpdateIdempotenceWithOverrides(t *testing.T) {
 	})
 }
 
-// Feature: config-output-region-overrides, Property 5: Per-profile settings override global settings
+// Feature: config-output-region-overrides, Property 5: Per-profile settings override global settings.
 func TestPropertyPerProfileOverridePrecedence(t *testing.T) { // lint:allow_complexity
-	// **Validates: per-profile override takes precedence over global**
+	// **Validates: per-profile override takes precedence over global**.
 	logger = slog.New(log.New(io.Discard))
 
 	oldConfig := asmConfig
@@ -698,7 +704,8 @@ func TestPropertyPerProfileOverridePrecedence(t *testing.T) { // lint:allow_comp
 			t.Fatalf("new string value for sso_region: %v", err)
 		}
 
-		if updateErr := ssoSection.UpdateValue("sso_region", regionVal); updateErr != nil {
+		updateErr := ssoSection.UpdateValue("sso_region", regionVal)
+		if updateErr != nil {
 			t.Fatalf("update sso_region: %v", updateErr)
 		}
 
