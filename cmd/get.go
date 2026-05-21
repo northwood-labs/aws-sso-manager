@@ -36,7 +36,7 @@ var (
 	fGetProfile string
 	fGetName    bool
 
-	// GetCmd is the parent for "get accounts" and "get roles". It exists purely
+	// getCmd is the parent for "get accounts" and "get roles". It exists purely
 	// as a namespace — the actual work happens in the subcommands. All output is
 	// one-value-per-line so it composes well with Unix pipes and tools like fzf.
 	getCmd = &cobra.Command{
