@@ -168,7 +168,7 @@ var (
 		},
 	}
 
-	// ConfirmDeletion is a test seam for the deletion confirmation prompt.
+	// confirmDeletion is a test seam for the deletion confirmation prompt.
 	// Tests swap this to avoid TUI interaction.
 	confirmDeletion = func(key string, value any) (bool, error) {
 		confirmed := false
