@@ -27,7 +27,7 @@ var (
 	// deletion without touching the real filesystem.
 	removeFile = os.Remove
 
-	// LogoutCmd deletes the cached OIDC token for an SSO profile, effectively
+	// logoutCmd deletes the cached OIDC token for an SSO profile, effectively
 	// ending the session. Profile resolution mirrors authCmd: positional arg →
 	// Viper config → interactive prompt.
 	logoutCmd = &cobra.Command{
