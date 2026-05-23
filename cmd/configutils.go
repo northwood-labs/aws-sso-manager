@@ -301,7 +301,7 @@ func getProfileName(profileName, account, role string) string { // lint:allow_co
 				orderCopy = append(orderCopy, strings.ToLower(suffix))
 			}
 		default:
-			// no-op for unknown tokens
+			// no-op for unknown tokens.
 		}
 	}
 

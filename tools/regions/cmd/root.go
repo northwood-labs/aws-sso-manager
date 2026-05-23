@@ -95,13 +95,13 @@ var (
 			})
 
 			for p.HasMorePages() {
-				// Get the next page of results
+				// Get the next page of results.
 				page, pageErr := p.NextPage(ctx)
 				if pageErr != nil {
 					return fmt.Errorf("failed to get next page of results: %w", pageErr)
 				}
 
-				// Get a batch of results
+				// Get a batch of results.
 				for _, param := range page.Parameters {
 					group.Submit(func() string {
 						output, fetchErr := ssmClient.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{

@@ -40,11 +40,6 @@ local linters = new Mapping<String, Group> {
   }
   ["golang"] = new Group {
     steps {
-      ["go-fieldalignment"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        fix = "cd {{ workspace }} && fieldalignment -fix ./..."
-      }
       ["go-fix"] {
         workspace_indicator = "go.mod"
         glob = "**/*.go"
@@ -71,13 +66,10 @@ local linters = new Mapping<String, Group> {
         fix = "cd {{ workspace }} && golangci-lint run --fix ./..."
         depends =
           List(
-            "go-fieldalignment",
             "go-fix",
             "go-fmt",
             "go-mod-tidy",
-            "go-modernize",
             "go-same-receiver-pointer",
-            "go-vet",
             "golines",
           )
       }
@@ -98,21 +90,10 @@ local linters = new Mapping<String, Group> {
         check = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod -diff"
         fix = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod"
       }
-      ["go-modernize"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        check = "cd {{ workspace }} && modernize -fix -diff ./..."
-        fix = "cd {{ workspace }} && modernize -fix ./..."
-      }
       ["go-same-receiver-pointer"] {
         workspace_indicator = "go.mod"
         glob = "**/*.go"
         fix = "cd {{ workspace }} && smrcptr --constructor=true ./..."
-      }
-      ["go-vet"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        check = "cd {{ workspace }} && go vet ./..."
       }
     }
   }

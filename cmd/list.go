@@ -148,7 +148,7 @@ var (
 			}
 
 			if fNoCache {
-				// Fetch fresh data first, bypassing cache
+				// Fetch fresh data first, bypassing cache.
 				err = spinner.New().
 					WithOutput(os.Stderr).
 					Title("Looking up accounts and roles...").
@@ -166,13 +166,13 @@ var (
 					logger.ErrorContext(ctx, "Failed to fetch fresh data", logKeyErr, err)
 				}
 
-				// Delete old cache after successful fetch
+				// Delete old cache after successful fetch.
 				delErr := deleteListAWSAccountsCache(listInput)
 				if delErr != nil {
 					return fmt.Errorf("could not clear accounts cache: %w", delErr)
 				}
 
-				// Write fresh data to cache
+				// Write fresh data to cache.
 				cacheFilePath := listInput.cacheFilePath()
 				if cacheFilePath != "" {
 					writeErr := writeListAWSAccountsCache(cacheFilePath, accounts)
@@ -258,7 +258,7 @@ var (
 				return nil
 			}
 
-			// Prepare table for TUI
+			// Prepare table for TUI.
 			t := table.New().
 				Border(lipgloss.RoundedBorder()).
 				Headers(listOutputHeaders...).

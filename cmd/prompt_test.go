@@ -83,7 +83,7 @@ func TestAuthCommandUsesSelectPrompt(t *testing.T) {
 
 	t.Cleanup(func() { asmConfig = oldConfig })
 
-	asmConfig = viper.New() // empty config, no profile-name set
+	asmConfig = viper.New() // empty config, no profile-name set.
 
 	logger = slog.New(log.New(io.Discard))
 
@@ -218,7 +218,7 @@ func TestInitCommandUsesInputPrompt(t *testing.T) {
 
 // Feature: sso-profile-select, Property 1: SSO session parsing extracts correct sorted profile names.
 func TestPropertySSOSessionParsing(t *testing.T) { // lint:allow_complexity
-	// **Validates: Requirements 3.1, 3.2**
+	// **Validates: Requirements 3.1, 3.2**.
 	oldConfigPath := awsConfigFilePath
 
 	t.Cleanup(func() { awsConfigFilePath = oldConfigPath })
