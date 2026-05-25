@@ -101,6 +101,9 @@ brew "yamlfmt"
 # @config-manager:start npm
 # https://www.npmjs.com/package/@endevco/aube
 npm "@endevco/aube"
+
+# https://www.npmjs.com/package/kirograph
+npm "kirograph"
 # @config-manager:end npm
 
 #-------------------------------------------------------------------------------

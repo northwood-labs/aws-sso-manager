@@ -194,7 +194,7 @@
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.enableCodebaseIndexing": true,
   "kiroAgent.enableTabAutocomplete": true,
-  "kiroAgent.modelSelection": "auto",
+  "kiroAgent.modelSelection": "Auto",
   "kiroAgent.notifications.agent.actionRequired": true,
   "kiroAgent.notifications.agent.failure": true,
   "kiroAgent.notifications.agent.success": true,

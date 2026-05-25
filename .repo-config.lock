@@ -92,9 +92,9 @@ source_hash = ''
 dest_hash = 'sha256:505ea96c94be42c5af23314a1c0409508deeb6a5694957c52bca53f1819a0827'
 
 [files.'.vscode/settings-golang.toml']
-last_sync_time = '2026-05-20T18:24:01Z'
+last_sync_time = '2026-05-25T06:07:11Z'
 source_hash = ''
-dest_hash = 'sha256:61adca379f71c8b61fd272f0e30ae1e2268c93e77db79f5fc6cb5530ea60bc1b'
+dest_hash = 'sha256:c1efc9e31bbd67ed5011a12c390ddf3fa37dc5153ac2d154bbf93df0c9e6ba0b'
 
 [files.'.vscode/settings-llm.toml']
 last_sync_time = '2026-05-17T19:53:12Z'
@@ -137,9 +137,9 @@ source_hash = ''
 dest_hash = 'sha256:a62e3351eedfbbc596ac16cfebfd50368067e9e0dc00ce9f58d74e66f6155dd1'
 
 [files.'tools/Brewfile.standard']
-last_sync_time = '2026-05-17T22:28:34Z'
+last_sync_time = '2026-05-25T06:07:17Z'
 source_hash = ''
-dest_hash = 'sha256:2e350c33491f8f7d0e5aff174a1aadc07bd61172bd621a8a254fdfb28625a3ad'
+dest_hash = 'sha256:2d879cf64760a29523625fb2a95cb8fbc07f109fa7a0e4061e8832b6e8bc94f9'
 
 [files.'tools/Taskfile.admin.yml']
 last_sync_time = '2026-05-19T02:06:47Z'
