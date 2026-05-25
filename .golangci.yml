@@ -39,13 +39,13 @@ linters:
     # - exhaustruct
     - exptostd
     - fatcontext
-    # - forbidigo
+    # - forbidigo #####
     - forcetypeassert
     - funcorder
     - funlen
-    # - ginkgolinter
+    # - ginkgolinter #####
     - gocheckcompilerdirectives
-    # - gochecknoglobals
+    # - gochecknoglobals #####
     - gochecknoinits
     - gochecksumtype
     - gocognit
@@ -56,11 +56,11 @@ linters:
     - godot
     - godox
     - goheader
-    # - gomoddirectives
+    # - gomoddirectives #####
     # - gomodguard_v2
     - goprintffuncname
     - gosec
-    # - gosmopolitan
+    # - gosmopolitan #####
     - govet
     - grouper
     - iface
@@ -70,16 +70,16 @@ linters:
     - interfacebloat
     - intrange
     - iotamixing
-    # - ireturn
+    # - ireturn #####
     - lll
-    # - loggercheck
+    # - loggercheck #####
     - maintidx
     - makezero
     - mirror
     - misspell
     - mnd
     - modernize
-    # - musttag
+    # - musttag #####
     - nakedret
     - nestif
     - nilerr
@@ -93,14 +93,14 @@ linters:
     - nosprintfhostport
     - paralleltest
     - perfsprint
-    # - prealloc
-    # - predeclared
-    # - promlinter
+    # - prealloc #####
+    # - predeclared #####
+    # - promlinter #####
     - protogetter
     - reassign
     - recvcheck
     - revive
-    # - rowserrcheck
+    # - rowserrcheck #####
     - sloglint
     - spancheck
     - sqlclosecheck
@@ -109,16 +109,16 @@ linters:
     - tagliatelle
     - testableexamples
     - testifylint
-    # - testpackage
+    # - testpackage #####
     - thelper
     - tparallel
     - unconvert
     - unparam
-    # - unqueryvet
+    - unqueryvet
     - unused
     - usestdlibvars
     - usetesting
-    # - varnamelen
+    # - varnamelen #####
     - wastedassign
     - whitespace
     - wrapcheck
@@ -126,7 +126,7 @@ linters:
     - zerologlint
     # @config-manager:end linters-enable
 
-  # All available settings of specific linters.
+    # All available settings of specific linters.
   settings:
     asasalint:
       # @config-manager:start linters-settings-asasalint
@@ -212,9 +212,19 @@ linters:
       # @config-manager:end linters-settings-decorder
 
     depguard:
+      # - File Variables
+      #   Use an exclamation mark `!` to negate a variable.
+      #   Example: `!$test` matches any file that is not a go test file.
+      #
+      #   `$all` - matches all go files
+      #   `$test` - matches all go test files
+      #
+      # - Package Variables
+      #
+      #   `$gostd` - matches all of go's standard library (Pulled from `GOROOT`)
       rules:
-        # @config-manager:start linters-settings-depguard
         main:
+          # @config-manager:start linters-settings-depguard
           # - `original`: allowed if it doesn't match the deny list and either matches the allow list or the allow list is empty.
           # - `strict`: allowed only if it matches the allow list and either doesn't match the deny list or the allow rule is more specific (longer) than the deny rule.
           # - `lax`: allowed if it doesn't match the deny list or the allow rule is more specific (longer) than the deny rule.
@@ -422,6 +432,7 @@ linters:
         - io/ioutil.ReadFile
         - io.Copy(*bytes.Buffer)
         - io.Copy(os.Stdout)
+        - (*os.File).Close
 
       # Display function signature instead of selector.
       # Default: false
@@ -647,7 +658,8 @@ linters:
 
       # Which checks should be disabled; can't be combined with 'enabled-checks'.
       # Default: []
-      # disabled-checks:
+      disabled-checks:
+        - unnamedResult
 
       # Enable multiple checks by tags in addition to default checks.
       # Run `GL_DEBUG=gocritic golangci-lint run --enable=gocritic` to see all tags and checks.
@@ -768,21 +780,18 @@ linters:
           # Default: true
           skipRecvDeref: true
 
-        unnamedResult:
-          # Whether to check exported functions.
-          # Default: false
-          checkExported: false
-          # @config-manager:end linters-settings-gocritic
+        # unnamedResult:
+        #   # Whether to check exported functions.
+        #   # Default: false
+        #   checkExported: false
+        # @config-manager:end linters-settings-gocritic
 
     gocyclo:
-      # @config-manager:start linters-settings-gocyclo
       # Minimal code complexity to report.
       # Default: 30 (but we recommend 10-20)
       min-complexity: 21
-      # @config-manager:end linters-settings-gocyclo
 
     godoclint:
-      # @config-manager:start linters-settings-godoclint
       # Default set of rules to enable.
       # Possible values are: `basic`, `all` or `none`.
       # Default: `basic` (enables `pkg-doc`, `single-pkg-doc`, `start-with-name`, and `deprecated`)
@@ -852,28 +861,8 @@ linters:
           # Include unexported symbols when applying the `start-with-name` rule.
           # Default: false
           include-unexported: false
-          # @config-manager:end linters-settings-godoclint
 
-    godot:
-      # @config-manager:start linters-settings-godot
-      # Comments to be checked: `declarations`, `toplevel`, `noinline` or `all`.
-      scope: all
-
-      # List of regexps for excluding particular comment lines from check.
-      # Default: []
-      exclude: []
-      # Exclude todo and fixme comments.
-      # - "^fixme:"
-      # - "^todo:"
-
-      # Check that each sentence ends with a period.
-      # Default: true
-      period: true
-
-      # Check that each sentence starts with a capital letter.
-      # Default: false
-      capital: false
-      # @config-manager:end linters-settings-godot
+    godot: # @TODO
 
     godox:
       # @config-manager:start linters-settings-godox
@@ -1078,7 +1067,6 @@ linters:
           # Audit mode enables addition checks that for normal code analysis might be too nosy.
           # Default: false
           audit: true
-
         G101:
           # Regexp pattern for variables and constants to find.
           # Default: "(?i)passwd|pass|password|pwd|secret|token|pw|apiKey|bearer|cred"
@@ -1130,6 +1118,8 @@ linters:
         G104:
           fmt:
             - Fscanf
+          os.File:
+            - Close
 
         G111:
           # Regexp pattern to find potential directory traversal.
@@ -1151,6 +1141,65 @@ linters:
 
     govet:
       # @config-manager:start linters-settings-govet
+      # Disable all analyzers.
+      # Default: false
+      # disable-all: true
+      # Enable analyzers by name.
+      # (In addition to default:
+      #   appends, asmdecl, assign, atomic, bools, buildtag, cgocall, composites, copylocks, defers, directive, errorsas,
+      #   framepointer, httpresponse, ifaceassert, loopclosure, lostcancel, nilfunc, printf, shift, sigchanyzer, slog,
+      #   stdmethods, stringintconv, structtag, testinggoroutine, tests, timeformat, unmarshal, unreachable, unsafeptr,
+      #   unusedresult
+      # ).
+      # Run `GL_DEBUG=govet golangci-lint run --enable=govet` to see default, all available analyzers, and enabled analyzers.
+      # Default: []
+      # enable:
+      #   - appends # Check for missing values after append.
+      #   - asmdecl # Report mismatches between assembly files and Go declarations.
+      #   - assign # Check for useless assignments.
+      #   - atomic # Check for common mistakes using the sync/atomic package.
+      #   - atomicalign # Check for non-64-bits-aligned arguments to sync/atomic functions.
+      #   - bools # Check for common mistakes involving boolean operators.
+      #   - buildtag # Check //go:build and // +build directives.
+      #   - cgocall # Detect some violations of the cgo pointer passing rules.
+      #   - composites # Check for unkeyed composite literals.
+      #   - copylocks # Check for locks erroneously passed by value.
+      #   - deepequalerrors # Check for calls of reflect.DeepEqual on error values.
+      #   - defers # Report common mistakes in defer statements.
+      #   - directive # Check Go toolchain directives such as //go:debug.
+      #   - errorsas # Report passing non-pointer or non-error values to errors.As.
+      #   - fieldalignment # Find structs that would use less memory if their fields were sorted.
+      #   - findcall # Find calls to a particular function.
+      #   - framepointer # Report assembly that clobbers the frame pointer before saving it.
+      #   - hostport # Check format of addresses passed to net.Dial.
+      #   - httpmux # Report using Go 1.22 enhanced ServeMux patterns in older Go versions.
+      #   - httpresponse # Check for mistakes using HTTP responses.
+      #   - ifaceassert # Detect impossible interface-to-interface type assertions.
+      #   - loopclosure # Check references to loop variables from within nested functions.
+      #   - lostcancel # Check cancel func returned by context.WithCancel is called.
+      #   - nilfunc # Check for useless comparisons between functions and nil.
+      #   - nilness # Check for redundant or impossible nil comparisons.
+      #   - printf # Check consistency of Printf format strings and arguments.
+      #   - reflectvaluecompare # Check for comparing reflect.Value values with == or reflect.DeepEqual.
+      #   - shadow # Check for possible unintended shadowing of variables.
+      #   - shift # Check for shifts that equal or exceed the width of the integer.
+      #   - sigchanyzer # Check for unbuffered channel of os.Signal.
+      #   - slog # Check for invalid structured logging calls.
+      #   - sortslice # Check the argument type of sort.Slice.
+      #   - stdmethods # Check signature of methods of well-known interfaces.
+      #   - stdversion # Report uses of too-new standard library symbols.
+      #   - stringintconv # Check for string(int) conversions.
+      #   - structtag # Check that struct field tags conform to reflect.StructTag.Get.
+      #   - testinggoroutine # Report calls to (*testing.T).Fatal from goroutines started by a test.
+      #   - tests # Check for common mistaken usages of tests and examples.
+      #   - timeformat # Check for calls of (time.Time).Format or time.Parse with 2006-02-01.
+      #   - unmarshal # Report passing non-pointer or non-interface values to unmarshal.
+      #   - unreachable # Check for unreachable code.
+      #   - unsafeptr # Check for invalid conversions of uintptr to unsafe.Pointer.
+      #   - unusedresult # Check for unused results of calls to some functions.
+      #   - unusedwrite # Checks for unused writes.
+      #   - waitgroup # Check for misuses of sync.WaitGroup.
+
       # Enable all analyzers.
       # Default: false
       enable-all: true
@@ -1281,12 +1330,7 @@ linters:
       skip-single-param: false
       # @config-manager:end linters-settings-inamedparam
 
-    ineffassign:
-      # @config-manager:start linters-settings-ineffassign
-      # Check escaping variables of type error, may cause false positives.
-      # Default: false
-      check-escaping-errors: true
-      # @config-manager:end linters-settings-ineffassign
+    ineffassign: # @TODO
 
     interfacebloat:
       # @config-manager:start linters-settings-interfacebloat
@@ -1295,12 +1339,7 @@ linters:
       max: 10
       # @config-manager:end linters-settings-interfacebloat
 
-    iotamixing:
-      # @config-manager:start linters-settings-iotamixing
-      # Whether to report individual consts rather than just the const block.
-      # Default: false
-      report-individual: true
-      # @config-manager:end linters-settings-iotamixing
+    iotamixing: # @TODO
 
     lll:
       # @config-manager:start linters-settings-lll
@@ -1414,12 +1453,7 @@ linters:
         #   - '^http\.StatusText$'
         # @config-manager:end linters-settings-mnd
 
-    modernize:
-      # @config-manager:start linters-settings-modernize
-      # List of analyzers to disable.
-      # By default, all analyzers are enabled.
-      disable: []
-      # @config-manager:end linters-settings-modernize
+    modernize: # @TODO
 
     nakedret:
       # @config-manager:start linters-settings-nakedret
@@ -1549,23 +1583,19 @@ linters:
       hex-format: true
       # @config-manager:end linters-settings-perfsprint
 
-    prealloc:
-      # @config-manager:start linters-settings-prealloc
-      # IMPORTANT: we don't recommend using this linter before doing performance profiling.
-      # For most programs usage of prealloc will be a premature optimization.
+    # prealloc:
+    #   # IMPORTANT: we don't recommend using this linter before doing performance profiling.
+    #   # For most programs usage of prealloc will be a premature optimization.
 
-      # Report pre-allocation suggestions only on simple loops that have no returns/breaks/continues/gotos in them.
-      # Default: true
-      simple: false
-
-      # Report pre-allocation suggestions on range loops.
-      # Default: true
-      range-loops: false
-
-      # Report pre-allocation suggestions on for loops.
-      # Default: false
-      for-loops: true
-      # @config-manager:end linters-settings-prealloc
+    #   # Report pre-allocation suggestions only on simple loops that have no returns/breaks/continues/gotos in them.
+    #   # Default: true
+    #   simple: false
+    #   # Report pre-allocation suggestions on range loops.
+    #   # Default: true
+    #   range-loops: false
+    #   # Report pre-allocation suggestions on for loops.
+    #   # Default: false
+    #   for-loops: true
 
     predeclared:
       # @config-manager:start linters-settings-predeclared
@@ -1580,17 +1610,30 @@ linters:
       qualified-name: true
       # @config-manager:end linters-settings-predeclared
 
-    promlinter:
-      # @config-manager:start linters-settings-promlinter
-      # Promlinter cannot infer all metrics name in static analysis.
-      # Enable strict mode will also include the errors caused by failing to parse the args.
-      # Default: false
-      strict: true
-
-      # Please refer to https://github.com/yeya24/promlinter#usage for detailed usage.
-      # Default: []
-      disabled-linters: []
-      # @config-manager:end linters-settings-promlinter
+    # promlinter:
+    #   # Promlinter cannot infer all metrics name in static analysis.
+    #   # Enable strict mode will also include the errors caused by failing to parse the args.
+    #   # Default: false
+    #   strict: true
+    #   # Please refer to https://github.com/yeya24/promlinter#usage for detailed usage.
+    #   # Default: []
+    #   disabled-linters:
+    #     # Help detects issues related to the help text for a metric.
+    #     - Help
+    #     # MetricUnits detects issues with metric unit names.
+    #     - MetricUnits
+    #     # Counter detects issues specific to counters, as well as patterns that should only be used with counters.
+    #     - Counter
+    #     # HistogramSummaryReserved detects when other types of metrics use names or labels reserved for use by histograms and/or summaries.
+    #     - HistogramSummaryReserved
+    #     # MetricTypeInName detects when metric types are included in the metric name.
+    #     - MetricTypeInName
+    #     # ReservedChars detects colons in metric names.
+    #     - ReservedChars
+    #     # CamelCase detects metric names and label names written in camelCase.
+    #     - CamelCase
+    #     # UnitAbbreviations detects abbreviated units in the metric name.
+    #     - UnitAbbreviations
 
     protogetter:
       # @config-manager:start linters-settings-protogetter
@@ -1954,7 +1997,7 @@ linters:
           disabled: false
           exclude: [""]
           arguments:
-            - max: 1000
+            - max: 1500
               skip-comments: true
               skip-blank-lines: true
 
@@ -2282,6 +2325,7 @@ linters:
             - "^(fmt|lipgloss)\\.(Fprint|Print|Sprint)(f|ln)?$"
             - "(.*)\\.Close$"
             - "(.*)\\.Write$"
+            - "(.*)\\.WriteByte$"
             - "(.*)\\.WriteRune$"
             - "(.*)\\.WriteString$"
 
@@ -2647,9 +2691,9 @@ linters:
       # Default: false
       enable-all: true
 
-      # disable: []
-      # disable-all: false
-      # enable: []
+      disable: []
+      disable-all: false
+      enable:
 
       bool-compare:
         # To ignore user defined types (over builtin bool).
@@ -2849,92 +2893,7 @@ linters:
       generated-is-used: true
       # @config-manager:end linters-settings-unused
 
-    # unqueryvet:
-    # @config-manager:start linters-settings-unqueryvet
-    # # Enable SQL builder checking.
-    # # Default: true
-    # check-sql-builders: false
-
-    # # Enable aliased wildcard detection like `SELECT t.*`.
-    # # Default: true
-    # check-aliased-wildcard: false
-
-    # # Enable string concatenation analysis.
-    # # Default: true
-    # check-string-concat: false
-
-    # # Enable format string analysis like `fmt.Sprintf`.
-    # # Default: true
-    # check-format-strings: false
-
-    # # Enable strings.Builder analysis.
-    # # Default: true
-    # check-string-builder: false
-
-    # # Enable subquery analysis.
-    # # Default: true
-    # check-subqueries: false
-
-    # # Detects N+1 Query.
-    # # Default: false
-    # check-n1: true
-
-    # # Detects SQL injection.
-    # # Default: false
-    # check-sql-injection: true
-
-    # # Detects transaction leaks.
-    # # Default: false
-    # check-tx-leaks: true
-
-    # # Regex patterns for acceptable `SELECT *` usage.
-    # # Default:
-    # # - "SELECT \\* FROM information_schema\\..*"
-    # # - "SELECT \\* FROM pg_catalog\\..*"
-    # # - "SELECT COUNT\\(\\*\\)"
-    # # - "SELECT MAX\\(\\*\\)"
-    # # - "SELECT MIN\\(\\*\\)"
-    # allowed-patterns:
-    #   - "SELECT \\* FROM temp_.*"
-    #   - "SELECT \\* FROM.*-- migration"
-
-    # # Allow is a list of SQL patterns to allow (whitelist).
-    # # Default: []
-    # allow:
-    #   - foo
-
-    # # Functions to ignore (regex patterns)
-    # # Default: []
-    # ignored-functions:
-    #   - "debug\\..*"
-    #   - "test.*"
-
-    # # SQL builder libraries to check.
-    # # Default: all true.
-    # sql-builders:
-    #   squirrel: false
-    #   gorm: false
-    #   sqlx: false
-    #   ent: false
-    #   pgx: false
-    #   bun: false
-    #   sqlboiler: false
-    #   jet: false
-
-    # # List of user-defined DSL rules.
-    # # https://github.com/MirrexOne/unqueryvet?tab=readme-ov-file#custom-rules-dsl
-    # # Default: []
-    # custom-rules:
-    #   - id: allow-temp-tables
-    #     pattern: "SELECT * FROM $TABLE"
-    #     when: "isTempTable(table)"
-    #     action: allow
-
-    #   - id: dangerous-delete
-    #     pattern: "DELETE FROM $TABLE"
-    #     when: "!has_where"
-    #     message: "DELETE without WHERE clause"
-    # @config-manager:end linters-settings-unqueryvet
+    unqueryvet: # @TODO
 
     whitespace:
       # @config-manager:start linters-settings-whitespace
@@ -3173,6 +3132,11 @@ linters:
         text: (is not checked)
         linters:
           - errcheck
+
+      - source: "\\.Close"
+        linters:
+          - errcheck
+          - gosec
 
       - source: lint:allow_defer_close
         text: (is not checked)

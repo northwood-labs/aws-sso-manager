@@ -130,15 +130,22 @@ host_request_interval = "500ms"
 exclude = [
   # @config-manager:start host-excludes
   '@github.com',
+  'bitbucket.org/org/',
+  'file://..',
+  'github.com/org/',
+  'gitlab.com/org/',
+  'go.nwlabs.dev',
   'https://(([^\.]+)\.)?(([^\.]+)\.)?console.aws.amazon.com',
   'https://([^\.]+).awsapps.com',
   'https://(www\.)?example.(com|net|org)',
   'https://(www\.)?npmjs.com/package/',
   'https://aws-mcp(\.([^\.]+).api.aws)?',
   'https://region-code(.signin.aws.amazon.com)?',
-  'file://..',
   'package://',
+  'pkg.go.dev/go.nwlabs.dev',
+  'shellcheck.net',
   'taplo://',
   # @config-manager:end host-excludes
-  'https://www.shellcheck.net',
+  '://...',
+  '://host/',
 ]
