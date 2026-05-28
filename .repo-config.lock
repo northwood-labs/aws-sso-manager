@@ -1,6 +1,16 @@
 schema_version = '1'
 
 [files]
+[files.'.vscode/settings-golang.toml']
+last_sync_time = '2026-05-28T20:14:30Z'
+source_hash = ''
+dest_hash = 'sha256:c1efc9e31bbd67ed5011a12c390ddf3fa37dc5153ac2d154bbf93df0c9e6ba0b'
+
+[files.'Taskfile.dist.yml']
+last_sync_time = '2026-05-28T20:14:30Z'
+source_hash = ''
+dest_hash = 'sha256:b3b57174cfde2989c350b400bdd01de1c4501857ecbe29c94ee05294d6366977'
+
 [files.'tools/Brewfile.standard']
 last_sync_time = '2026-05-28T20:06:27Z'
 source_hash = ''

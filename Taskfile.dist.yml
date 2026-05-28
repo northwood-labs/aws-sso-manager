@@ -64,15 +64,15 @@ tasks:
       Uses 'hk' to perform standardized code validation and hook management.
     preconditions:
       - sh: command -v gommit
-        msg: "gommit must be installed to validate commit messages. Run 'task install-tools` first."
+        msg: "gommit must be installed to validate commit messages. Run 'task install:tools` first."
       - sh: command -v hk
-        msg: "hk must be installed to manage hooks. Run 'task install-tools` first."
+        msg: "hk must be installed to manage hooks. Run 'task install:tools` first."
     cmds:
       - task: internal:header
         vars: {TEXT: "Installing Git hooks..."}
       - hk install
 
-  install-tools:
+  install:tools:
     desc: Install all dependencies required for development for this project.
     summary: |
       Install all dependencies required for development for this project.
@@ -113,10 +113,36 @@ tasks:
       Runs all linter, static analysis, and security tooling for the files in
       the repository that have changed since last commit. This is faster than
       linting everything.
+
+      Goal is for this to complete in under 5 seconds.
     cmds:
       - task: internal:header
         vars: {TEXT: "Linting changed files..."}
       - hk fix --no-fail-fast
+
+  lint:full:
+    desc: Run a battery of linters to ensure high quality on the changed files.
+    summary: |
+      Run a battery of linters to ensure high quality on the changed files.
+
+      Runs all linter, static analysis, and security tooling for the files in
+      the repository that have changed since last commit. This is faster than
+      linting everything.
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting changed files..."}
+      - hk fix --no-fail-fast --profile slow
+
+  lint:*:
+    desc: Run a specific linter on changed files.
+    summary: |
+      Runs a specific linter on changed files.
+    vars:
+      STEP: "{{ index .MATCH 0 }}"
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting changed files with {{ .STEP }}..."}
+      - hk fix --no-fail-fast --step {{ .STEP }} --profile slow
 
   lint:deep:
     desc: Run a battery of linters to ensure high quality on ALL files.
@@ -130,6 +156,18 @@ tasks:
         vars: {TEXT: "Linting ALL files..."}
       - hk fix --all --no-fail-fast
 
+  lint:deep:full:
+    desc: Run a battery of linters to ensure high quality on ALL files.
+    summary: |
+      Run a battery of linters to ensure high quality on ALL files.
+
+      Runs all linter, static analysis, and security tooling for ALL files in
+      the repository. This is slower, but more comprehensive.
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting ALL files with ALL (including slow) tools..."}
+      - hk fix --all --no-fail-fast --profile slow
+
   lint:deep:*:
     desc: Run a specific linter on ALL files.
     summary: |
@@ -139,23 +177,51 @@ tasks:
     cmds:
       - task: internal:header
         vars: {TEXT: "Linting ALL files with {{ .STEP }}..."}
-      - hk fix --all --no-fail-fast --step {{ .STEP }}
+      - hk fix --all --no-fail-fast --step {{ .STEP }} --profile slow
 
   lint:list:
-    desc: Get a list of available linters.
+    desc: Get a list of available linters as an fzf list.
     summary: |
-      Gets a list of available linters.
+      Gets a list of available linters as an fzf list.
 
       Values are read from the hk.pkl file.
-    vars:
-      TASKS:
-        sh: hk check --json --plan 2>/dev/null | jq -Mr '.groups[0].stepIds | sort | .[]'
+    preconditions:
+      - sh: command -v fzf
+        msg: "fzf must be installed to validate commit messages. Run 'task install:tools` first."
     cmds:
-      - task: internal:header
-        vars: {TEXT: "Listing available linters..."}
-      - for:
-          var: TASKS
-        cmd: "echo task lint:deep:{{ .ITEM }}"
+      - cmd: >
+          eval "$(
+            hk check --json --plan 2>/dev/null \
+            | jq -Mr '
+              [
+                .groups[].stepIds
+                | .[]
+              ]
+              | [
+                .[]
+                | . as $item
+                | ["task lint:\($item)", "task lint:deep:\($item)"]
+                | .[]
+              ]
+              | .+ ["task lint"]
+              | .+ ["task lint:full"]
+              | .+ ["task lint:deep"]
+              | .+ ["task lint:deep:full"]
+              | .+ ["task lint:list"]
+              | sort
+              | .[]
+            ' \
+            | fzf \
+              --algo=v2 \
+              --cycle \
+              --highlight-line \
+              --layout=default \
+              --no-extended \
+              --preview='' \
+              --select-1 \
+              --smart-case \
+              --header='[Type to filter, or select with arrows. Esc to close.]'
+          )"
         silent: true
   # @config-manager:end linting-standard
   #-----------------------------------------------------------------------------

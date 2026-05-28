@@ -205,6 +205,11 @@
 # Imported taskfiles
 # https://taskfile.dev/docs/guide#flatten-includes
 [[files]]
+  stub = 'configs/stubs/Taskfile.dist.yml'
+  source = 'configs/templates/Taskfile.dist.yml'
+  destination = 'Taskfile.dist.yml'
+
+[[files]]
   stub = 'configs/stubs/tools/Taskfile.admin.yml'
   source = 'configs/templates/tools/Taskfile.admin.yml'
   destination = 'tools/Taskfile.admin.yml'
