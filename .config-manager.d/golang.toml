@@ -10,9 +10,9 @@
   # KIRO DIRECTORY
 
 [[files]]
-  stub = 'configs/stubs/.kiro/steering/go-zero-diagnostics.md'
-  source = 'configs/templates/.kiro/steering/go-zero-diagnostics.md'
-  destination = '.kiro/steering/go-zero-diagnostics.md'
+  stub = 'configs/stubs/.kiro/steering/go-code-conventions.md'
+  source = 'configs/templates/.kiro/steering/go-code-conventions.md'
+  destination = '.kiro/steering/go-code-conventions.md'
 
   #-------------------------------------------------------------------------------
   # GITHUB DIRECTORY

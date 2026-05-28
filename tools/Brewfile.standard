@@ -22,6 +22,9 @@ brew "bun"
 # https://github.com/editorconfig-checker/editorconfig-checker
 brew "editorconfig-checker"
 
+# https://github.com/junegunn/fzf
+brew "fzf"
+
 # https://git-cliff.org/
 brew "git-cliff"
 
@@ -101,9 +104,6 @@ brew "yamlfmt"
 # @config-manager:start npm
 # https://www.npmjs.com/package/@endevco/aube
 npm "@endevco/aube"
-
-# https://www.npmjs.com/package/kirograph
-npm "kirograph"
 # @config-manager:end npm
 
 #-------------------------------------------------------------------------------

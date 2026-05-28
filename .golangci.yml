@@ -39,13 +39,13 @@ linters:
     # - exhaustruct
     - exptostd
     - fatcontext
-    # - forbidigo #####
+    # - forbidigo
     - forcetypeassert
     - funcorder
     - funlen
-    # - ginkgolinter #####
+    # - ginkgolinter
     - gocheckcompilerdirectives
-    # - gochecknoglobals #####
+    # - gochecknoglobals
     - gochecknoinits
     - gochecksumtype
     - gocognit
@@ -56,11 +56,11 @@ linters:
     - godot
     - godox
     - goheader
-    # - gomoddirectives #####
+    # - gomoddirectives
     # - gomodguard_v2
     - goprintffuncname
     - gosec
-    # - gosmopolitan #####
+    # - gosmopolitan
     - govet
     - grouper
     - iface
@@ -70,16 +70,16 @@ linters:
     - interfacebloat
     - intrange
     - iotamixing
-    # - ireturn #####
+    # - ireturn
     - lll
-    # - loggercheck #####
+    # - loggercheck
     - maintidx
     - makezero
     - mirror
     - misspell
     - mnd
     - modernize
-    # - musttag #####
+    # - musttag
     - nakedret
     - nestif
     - nilerr
@@ -93,14 +93,14 @@ linters:
     - nosprintfhostport
     - paralleltest
     - perfsprint
-    # - prealloc #####
-    # - predeclared #####
-    # - promlinter #####
+    # - prealloc
+    # - predeclared
+    # - promlinter
     - protogetter
     - reassign
     - recvcheck
     - revive
-    # - rowserrcheck #####
+    # - rowserrcheck
     - sloglint
     - spancheck
     - sqlclosecheck
@@ -109,16 +109,16 @@ linters:
     - tagliatelle
     - testableexamples
     - testifylint
-    # - testpackage #####
+    # - testpackage
     - thelper
     - tparallel
     - unconvert
     - unparam
-    - unqueryvet
+    # - unqueryvet
     - unused
     - usestdlibvars
     - usetesting
-    # - varnamelen #####
+    # - varnamelen
     - wastedassign
     - whitespace
     - wrapcheck
