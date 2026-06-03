@@ -244,7 +244,7 @@ tasks:
       jq, then using a for-loop to call the matches.
     vars:
       TASKS:
-        sh: task --list --json | jq -Mr '.tasks[] | select(.name | startswith("docs-") and . != "docs-serve") | .name'
+        sh: task --list --json | jq -Mr '.tasks[] | select(.name | startswith("docs:") and . != "docs:serve") | .name'
     cmds:
       - for:
           var: TASKS

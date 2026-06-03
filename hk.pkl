@@ -1,8 +1,8 @@
 // @config-manager:start imports
 // https://github.com/jdx/hk/blob/main/hk.pkl
 // https://github.com/jdx/hk/releases/latest
-amends "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Builtins.pkl"
 // @config-manager:end imports
 
 local linters = new Mapping<String, Group> {
@@ -16,10 +16,12 @@ local linters = new Mapping<String, Group> {
       ["check-json"] = (Builtins.jq) {}
       ["check-merge-conflict"] = (Builtins.check_merge_conflict) {}
       ["check-symlinks"] = (Builtins.check_symlinks) {}
-      ["check-toml"] = (Builtins.taplo_format) {}
+      ["check-toml-fmt"] = (Builtins.taplo_format) {}
+      ["check-toml-lint"] = (Builtins.taplo) {}
       ["check-trailing-whitespace"] = (Builtins.trailing_whitespace) {}
       ["check-xml"] = (Builtins.xmllint) {}
       ["check-yaml"] = (Builtins.yamlfmt) {}
+      ["detect-private-key"] = (Builtins.detect_private_key) {}
       ["editorconfig-checker"] {
         workspace_indicator = ".editorconfig-checker.json"
         glob = "**/*"
@@ -32,11 +34,38 @@ local linters = new Mapping<String, Group> {
       ["markdown-lint"] = (Builtins.rumdl) {}
       ["mise-fmt"] = (Builtins.mise) {}
       ["mixed-line-ending"] = (Builtins.mixed_line_ending) {}
+      ["pinact"] = (Builtins.pinact) {}
+      ["pinact-update"] = (Builtins.pinact_update) {}
       ["pkl-eval"] = (Builtins.pkl) {
         glob = "**/*.pkl"
       }
       ["pkl-format"] = (Builtins.pkl_format) {
         glob = "**/*.pkl"
+      }
+    }
+  }
+  ["containers"] = new Group {
+    steps {
+      ["hadolint"] = (Builtins.hadolint) {}
+    }
+  }
+  ["databases"] = new Group {
+    steps {
+      ["sqlfluff"] = (Builtins.sql_fluff) {
+        check = "uvx sqlfluff lint {{ files }}"
+        fix = "uvx sqlfluff fix {{ files }}"
+      }
+    }
+  }
+  ["frontend"] = new Group {
+    steps {
+      ["sort-package-json"] = (Builtins.sort_package_json) {
+        check = "aubx -y sort-package-json --check {{ files }}"
+        fix = "aubx -y sort-package-json {{ files }}"
+      }
+      ["svg-optimize"] {
+        glob = "**/*.svg"
+        fix = "ogvs --config tools/ogvs.config.yaml {{ files }}"
       }
     }
   }
@@ -95,11 +124,13 @@ local linters = new Mapping<String, Group> {
       }
       ["go-mod-tidy"] {
         workspace_indicator = "go.mod"
+        glob = "**/*.go"
         check = "cd {{ workspace }} && go mod tidy -diff"
         fix = "cd {{ workspace }} && go mod tidy"
       }
       ["go-mod-tidy-tools"] {
         workspace_indicator = "go.tools.mod"
+        glob = "**/*.go"
         check = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod -diff"
         fix = "cd {{ workspace }} && go mod tidy -modfile=go.tools.mod"
       }
@@ -124,28 +155,28 @@ local linters = new Mapping<String, Group> {
       }
     }
   }
-  ["containers"] = new Group {
+  ["python"] = new Group {
     steps {
-      ["hadolint"] = (Builtins.hadolint) {}
-    }
-  }
-  ["databases"] = new Group {
-    steps {
-      ["sqlfluff"] = (Builtins.sql_fluff) {
-        check = "uvx sqlfluff lint {{ files }}"
-        fix = "uvx sqlfluff fix {{ files }}"
+      ["python-check-ast"] = (Builtins.python_check_ast) {
+        glob = List("**/*.py", "**/*.pyi")
+        profiles = List("slow")
       }
-    }
-  }
-  ["frontend"] = new Group {
-    steps {
-      ["sort-package-json"] = (Builtins.sort_package_json) {
-        check = "aubx -y sort-package-json --check {{ files }}"
-        fix = "aubx -y sort-package-json {{ files }}"
+      ["python-debug-statements"] = (Builtins.python_debug_statements) {
+        glob = List("**/*.py", "**/*.pyi")
       }
-      ["svg-optimize"] {
-        glob = "**/*.svg"
-        fix = "ogvs --config tools/ogvs.config.yaml {{ files }}"
+      ["python-ruff"] = (Builtins.ruff) {
+        glob = List("**/*.py", "**/*.pyi")
+        check = "uv tool run ruff check --force-exclude {{ files }}"
+        fix = "uv tool run ruff check --force-exclude --fix {{ files }}"
+      }
+      ["python-format"] = (Builtins.ruff_format) {
+        glob = List("**/*.py", "**/*.pyi")
+        check = "uv tool run ruff format --quiet --force-exclude --diff {{ files }}"
+        fix = "uv tool run ruff format --quiet --force-exclude {{ files }}"
+      }
+      ["python-typechecking"] {
+        glob = List("**/*.py", "**/*.pyi")
+        check = "uv tool run zuban check {{ files }}"
       }
     }
   }
@@ -187,7 +218,6 @@ local linters = new Mapping<String, Group> {
   }
   ["tofu"] = new Group {
     steps {
-      ["hcl-fmt"] = (Builtins.hclfmt) {}
       ["opentofu-format"] = (Builtins.tofu) {
         glob = List("**/*.tf", "**/*.tofu", "**/*.tfvars", "**/*.tftest.hcl")
       }

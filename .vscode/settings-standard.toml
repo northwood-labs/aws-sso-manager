@@ -102,19 +102,21 @@
   "^(.*(/|\\\\)\\\\.?taplo\\\\.toml|\\\\.?taplo\\\\.toml)$" = 'taplo://taplo.toml'
 
 ['files.associations']
+  '.style.yapf' = 'ini'
+  '.terraformrc' = 'hcl'
   '*.chatmode.md' = 'markdown'
   '*.hcl' = 'terraform'
   '*.ini' = 'ini'
   '*.instructions.md' = 'markdown'
+  '*.kiro.hook' = 'json'
   '*.md' = 'markdown'
   '*.prompt.md' = 'markdown'
   '*.sh' = 'shellscript'
   '*.tf' = 'terraform'
   '*.tofu' = 'opentofu'
   '*.toml' = 'toml'
-  '.style.yapf' = 'ini'
-  '.terraformrc' = 'hcl'
   'Brewfile*' = 'ruby'
+  'Dockerfile*' = 'dockerfile'
   config = 'ini'
 
 [['githubIssues.queries']]

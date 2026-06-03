@@ -2,7 +2,7 @@
   "Debug": false,
   "Exclude": [
     "\\.config-manager\\.d/",
-    "\\.kiro/hooks/",
+    "\\.kiro/",
     "\\.kirograph/",
     "\\.rumdl_cache/",
     "node_modules/",

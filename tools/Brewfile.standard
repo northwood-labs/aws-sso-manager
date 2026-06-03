@@ -73,6 +73,9 @@ brew "node"
 # https://pandoc.org/
 brew "pandoc"
 
+# https://github.com/suzuki-shunsuke/pinact
+brew "pinact"
+
 # https://pkl-lang.org
 brew "pkl"
 

@@ -15,7 +15,7 @@ Exclude = [
   # @config-manager:start excludes
   # Directories
   "\\.config-manager\\.d/",
-  "\\.kiro/hooks/",
+  "\\.kiro/",
   "\\.kirograph/",
   "\\.rumdl_cache/",
   "node_modules/",
