@@ -1,6 +1,13 @@
 #-------------------------------------------------------------------------------
 # DEFAULT FILES
 
+# git-cliff
+# https://git-cliff.org
+[[files]]
+  stub = 'configs/stubs/cliff.toml'
+  source = 'configs/templates/cliff.toml'
+  destination = 'cliff.toml'
+
 # Snyk: Ignore definition
 # https://snyk.io
 [[files]]
@@ -99,6 +106,12 @@
   stub = 'configs/stubs/yamlfmt.yml'
   destination = '.yamlfmt.yml'
 
+[[files]]
+  stub = 'configs/stubs/scripts/generate-contributors.sh'
+  source = 'configs/templates/scripts/generate-contributors.sh'
+  destination = 'scripts/generate-contributors.sh'
+  executable = true
+
   #-------------------------------------------------------------------------------
   # KIRO DIRECTORY
 
@@ -139,6 +152,11 @@
 [[files]]
   stub = 'configs/stubs/.github/dependabot.yml'
   destination = '.github/dependabot.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/update-on-push.yml'
+  source = 'configs/templates/.github/workflows/__harden-hosts.yml'
+  destination = '.github/workflows/update-on-push.yml'
 
   #-------------------------------------------------------------------------------
   # VSCODE DIRECTORY
