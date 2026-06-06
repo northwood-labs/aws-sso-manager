@@ -52,9 +52,9 @@ source_hash = ''
 dest_hash = 'sha256:69725397b647b04784294624cba1a0af894a0a09c70380f74a2fe6e946cc0638'
 
 [files.'.rumdl.toml']
-last_sync_time = '2026-06-03T03:41:43Z'
+last_sync_time = '2026-06-04T19:50:20Z'
 source_hash = ''
-dest_hash = 'sha256:e41434f3ffa971c614ae2c0c02f889c0035a21104aeba6a72d82d0145cb16f1c'
+dest_hash = 'sha256:4a8c1176a408c35c0fd28b46baaed2d69c0a2bc90ca7a594ce8b821108d04cfa'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-06-03T03:41:43Z'
@@ -87,7 +87,7 @@ source_hash = ''
 dest_hash = 'sha256:d525ead29cc7ddab318b5376924a61171fa7da3cdfa7d69203dacbf297eb2976'
 
 [files.'.vscode/settings-golang.toml']
-last_sync_time = '2026-06-03T04:06:58Z'
+last_sync_time = '2026-06-04T19:50:20Z'
 source_hash = ''
 dest_hash = 'sha256:c1efc9e31bbd67ed5011a12c390ddf3fa37dc5153ac2d154bbf93df0c9e6ba0b'
 
@@ -112,12 +112,12 @@ source_hash = ''
 dest_hash = 'sha256:40f8b9893bfc72b3efff1f2fe0c30f99387d6d7c39adfe0c581c419b95efa425'
 
 [files.'Taskfile.dist.yml']
-last_sync_time = '2026-06-03T04:06:58Z'
+last_sync_time = '2026-06-04T19:50:20Z'
 source_hash = ''
 dest_hash = 'sha256:4418271e7456dc3edfd2e22aab31a1e07172c681e58cffcef530f2894baeec4c'
 
 [files.'cliff.toml']
-last_sync_time = '2026-06-03T04:06:58Z'
+last_sync_time = '2026-06-04T19:50:20Z'
 source_hash = ''
 dest_hash = 'sha256:ff2c2dee18cdb0941c8a4d37ba22a2c62c2ff93fbcaf77509a653fcfc2a3d8ff'
 
@@ -137,7 +137,7 @@ source_hash = ''
 dest_hash = 'sha256:c585ef493427b4c4fc685d271cc3070123d4cece90344f6a6aa2fa07aafed4b6'
 
 [files.'scripts/generate-contributors.sh']
-last_sync_time = '2026-06-03T04:06:58Z'
+last_sync_time = '2026-06-04T19:50:20Z'
 source_hash = ''
 dest_hash = 'sha256:592727f74c07f3d3929c8d6e1c9768d461901b88642a6f53c21f9c72f4e1c8ee'
 

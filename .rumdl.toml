@@ -196,7 +196,7 @@
 # https://rumdl.dev/md012/
 [MD012]
   # no-multiple-blanks
-  enabled = true
+  enabled = false
   maximum = 1
 
 # https://rumdl.dev/md013/
@@ -557,6 +557,9 @@
   cache = true
   cache-dir = ".rumdl_cache"
   disable = [
+    # https://rumdl.dev/md012/
+    "MD012",
+
     # https://rumdl.dev/md020/
     # no-missing-space-closed-atx
     "MD020",
