@@ -1,13 +1,15 @@
 {
   "name": "kirograph",
-  "description": "KiroGraph-aware agent — semantic code graph for symbol lookup, call graphs, impact analysis, architecture metrics. Workflow steering files are registered as resources — activate one with /kirograph-review, /kirograph-debug, /kirograph-architecture, /kirograph-onboard, /kirograph-refactor.",
+  "description": "KiroGraph-aware agent — semantic code graph for symbol lookup, call graphs, impact analysis, architecture metrics, security auditing, AST pattern search. Workflow steering files are registered as resources — activate one with /kirograph-review, /kirograph-debug, /kirograph-architecture, /kirograph-onboard, /kirograph-refactor, /kirograph-security, /kirograph-patterns.",
   "resources": [
     "file://.kiro/steering/kirograph.md",
     "file://.kiro/steering/kirograph-review.md",
     "file://.kiro/steering/kirograph-debug.md",
     "file://.kiro/steering/kirograph-onboard.md",
     "file://.kiro/steering/kirograph-refactor.md",
-    "file://.kiro/steering/kirograph-architecture.md"
+    "file://.kiro/steering/kirograph-architecture.md",
+    "file://.kiro/steering/kirograph-security.md",
+    "file://.kiro/steering/kirograph-patterns.md"
   ],
   "tools": [
     "@builtin",
@@ -70,7 +72,10 @@
     "@kirograph/kirograph_security_flows",
     "@kirograph/kirograph_supply_chain",
     "@kirograph/kirograph_dep_confusion",
-    "@kirograph/kirograph_remediation"
+    "@kirograph/kirograph_remediation",
+    "@kirograph/kirograph_pattern_coverage",
+    "@kirograph/kirograph_pattern_save_baseline",
+    "@kirograph/kirograph_pattern_diff"
   ],
   "useLegacyMcpJson": true,
   "hooks": {

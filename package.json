@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "kirograph": "^0.20.1"
+  },
+  "aube": {
+    "allowBuilds": {
+      "@ast-grep/lang-bash": true,
+      "@ast-grep/lang-c": true,
+      "@ast-grep/lang-cpp": true,
+      "@ast-grep/lang-csharp": true,
+      "@ast-grep/lang-dart": true,
+      "@ast-grep/lang-elixir": true,
+      "@ast-grep/lang-go": true,
+      "@ast-grep/lang-haskell": true,
+      "@ast-grep/lang-java": true,
+      "@ast-grep/lang-kotlin": true,
+      "@ast-grep/lang-lua": true,
+      "@ast-grep/lang-php": true,
+      "@ast-grep/lang-python": true,
+      "@ast-grep/lang-ruby": true,
+      "@ast-grep/lang-rust": true,
+      "@ast-grep/lang-scala": true,
+      "@ast-grep/lang-swift": true,
+      "better-sqlite3": true,
+      "onnxruntime-node": true,
+      "protobufjs": true,
+      "qdrant-local": true,
+      "sharp": true
+    }
+  }
+}
