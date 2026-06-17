@@ -49,7 +49,7 @@ includes:
     flatten: true
     # @config-manager:end golang
     vars:
-      GO_VER: 1.26.3
+      GO_VER: 1.26.4
 
 tasks:
   #-----------------------------------------------------------------------------
