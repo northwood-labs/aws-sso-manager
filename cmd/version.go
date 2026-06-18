@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	clihelpers "github.com/northwood-labs/cli-helpers"
+	clihelpers "go.nwlabs.dev/cli-helpers/v2"
 )
 
 var versionCmd = clihelpers.VersionScreen()

@@ -27,7 +27,7 @@ import (
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
-	clihelpers "github.com/northwood-labs/cli-helpers"
+	clihelpers "go.nwlabs.dev/cli-helpers/v2"
 )
 
 const singleSpace = " "

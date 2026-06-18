@@ -26,7 +26,8 @@ import (
 	"github.com/spf13/cobra"
 
 	configfile "github.com/northwood-labs/aws-config-parser/ini"
-	clihelpers "github.com/northwood-labs/cli-helpers"
+
+	clihelpers "go.nwlabs.dev/cli-helpers/v2"
 )
 
 // initCmd sets up a new SSO session in ~/.aws/config. It's the first command a

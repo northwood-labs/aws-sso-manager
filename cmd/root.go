@@ -35,7 +35,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	clihelpers "github.com/northwood-labs/cli-helpers"
+	clihelpers "go.nwlabs.dev/cli-helpers/v2"
 )
 
 const (

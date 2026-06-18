@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
-	clihelpers "github.com/northwood-labs/cli-helpers"
+	clihelpers "go.nwlabs.dev/cli-helpers/v2"
 )
 
 var (
