@@ -21,7 +21,7 @@ tasks:
   #-----------------------------------------------------------------------------
   # Building
 
-  build:
+  build:go:
     desc: Build a local copy of the program.
     summary: |
       Builds a local copy of the program.
@@ -38,7 +38,7 @@ tasks:
           TEXT: "Building and installing..."
       - cmd: go install -a -ldflags="-s -w" -trimpath .
 
-  tidy:
+  tidy:go:
     desc: Run 'go mod tidy' for all go.mod files in the project.
     summary: |
       Runs 'go mod tidy' for all go.mod files in the project.
@@ -51,7 +51,7 @@ tasks:
             | {{ .XARGS }} -I% dirname "%" \
             | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }}'
 
-  godeps:
+  deps:go:
     desc: Update packages to their latest semver minor versions.
     summary: |
       Updates all of the packages to their latest semver minor versions.
@@ -65,12 +65,20 @@ tasks:
           {{ .FIND }} . -type f -name "go.mod" \
             | {{ .XARGS }} -I% dirname "%" \
             | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }} && go get -u -t -v ./...'
-      - task: tidy
+      - task: tidy:go
+
+  godeps:
+    desc: (Deprecated) Alias for 'deps:go'.
+    cmds:
+      - task: internal:error
+        vars:
+          TEXT: "(Deprecated) call 'deps:go' instead."
+      - task: deps:go
 
   #-----------------------------------------------------------------------------
   # Testing
 
-  #-------------------------------------------------------------------------------
+  #-----------------------------------------------------------------------------
   # Documentation
 
   docs:serve:

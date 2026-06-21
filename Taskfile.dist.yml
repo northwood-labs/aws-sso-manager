@@ -22,7 +22,9 @@ vars:
   # Explicitly define these paths to point to Homebrew-installed GNU versions.
   BASH: /opt/homebrew/opt/bash/bin/bash
   FIND: /opt/homebrew/opt/findutils/bin/gfind
-  RM: /opt/homebrew/opt/coreutils/libexec/gnubin/rm
+  GREP: /opt/homebrew/opt/grep/bin/ggrep
+  RM: /opt/homebrew/opt/coreutils/bin/grm
+  SED: /opt/homebrew/opt/gsed/bin/gsed
   XARGS: /opt/homebrew/opt/findutils/bin/gxargs
   # @config-manager:end standard-vars
 
@@ -41,12 +43,14 @@ includes:
   # @config-manager:start aws-user
   aws:
     taskfile: ./tools/Taskfile.aws.yml
+    optional: true
   # @config-manager:end aws-user
 
   # @config-manager:start golang
   go:
     taskfile: ./tools/Taskfile.golang.yml
     flatten: true
+    optional: true
     # @config-manager:end golang
     vars:
       GO_VER: 1.26.4
@@ -56,7 +60,7 @@ tasks:
   # Installation and setup
 
   # @config-manager:start installation-standard
-  install-hooks:
+  install:hooks:
     desc: Install Git hooks which perform standard tasks on pre-commit.
     summary: |
       Installs Git hooks which perform standard tasks on pre-commit.
@@ -85,6 +89,7 @@ tasks:
       - >
         gfind ./tools -type f -name "Brewfile.*"
         | gxargs -I% brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file="%"
+      - vet https://raw.githubusercontent.com/mtdowling/chag/master/install.sh
   # @config-manager:end installation-standard
   # @config-manager:start gitconfig-standard
   gitconfig:

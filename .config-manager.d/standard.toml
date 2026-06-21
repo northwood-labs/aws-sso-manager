@@ -49,6 +49,7 @@
   stub = 'configs/stubs/hk.pkl'
   source = 'configs/templates/hk.pkl'
   destination = 'hk.pkl'
+  replaces = [ '.pre-commit' ]
 
 # Detect broken links.
 # https://lychee.cli.rs
@@ -69,6 +70,7 @@
   stub = 'configs/stubs/rumdl.toml'
   source = 'configs/templates/rumdl.toml'
   destination = '.rumdl.toml'
+  replaces = [ '.markdownlint.json', '.markdownlintrc', 'markdownlint.config.toml' ]
 
 # Shellcheck for shell scripts
 # https://github.com/koalaman/shellcheck
@@ -76,6 +78,13 @@
   stub = 'configs/stubs/shellcheckrc'
   source = 'configs/templates/shellcheckrc'
   destination = '.shellcheckrc'
+
+# Shuck is a replacement for Shellcheck and shfmt.
+# https://ewhauser.github.io/shuck/
+[[files]]
+  stub = 'configs/stubs/shuck.toml'
+  source = 'configs/templates/shuck.toml'
+  destination = '.shuck.toml'
 
 # Taplo formatter for TOML files
 # https://taplo.tamasfe.dev
@@ -120,6 +129,11 @@
   destination = '.kirograph/'
 
 [[files]]
+  stub = 'configs/stubs/.kirograph/.gitignore'
+  source = 'configs/templates/.kirograph/.gitignore'
+  destination = '.kirograph/.gitignore'
+
+[[files]]
   stub = 'configs/stubs/.kiro/steering/markdown-style.md'
   source = 'configs/templates/.kiro/steering/markdown-style.md'
   destination = '.kiro/steering/markdown-style.md'
@@ -153,9 +167,24 @@
   stub = 'configs/stubs/.github/dependabot.yml'
   destination = '.github/dependabot.yml'
 
+# Security scan for GitHub Actions
+# https://docs.zizmor.sh
+[[files]]
+  stub = 'configs/stubs/.github/zizmor.yml'
+  source = 'configs/templates/.github/zizmor.yml'
+  destination = '.github/zizmor.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/dependabot-auto-merge.yml'
+  source = 'configs/templates/.github/workflows/dependabot-auto-merge.yml'
+  destination = '.github/workflows/dependabot-auto-merge.yml'
+
 [[files]]
   stub = 'configs/stubs/.github/workflows/update-on-push.yml'
-  source = 'configs/templates/.github/workflows/__harden-hosts.yml'
+  source = [
+    'configs/templates/.github/workflows/update-on-push.yml',
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+  ]
   destination = '.github/workflows/update-on-push.yml'
 
   #-------------------------------------------------------------------------------

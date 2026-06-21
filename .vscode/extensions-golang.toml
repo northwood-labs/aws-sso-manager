@@ -1,11 +1,9 @@
 recommendations = [
   # @config-manager:start golang
   'casualjim.gotemplate',
+  'ethan-reesor.vscode-go-test-adapter',
   'golang.go',
   'maxmedia.go-prof',
-  'msyrus.go-doc',
-  'neverik.go-critic',
   'premparihar.gotestexplorer',
-  'windmilleng.vscode-go-autotest',
   # @config-manager:end golang
 ]

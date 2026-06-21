@@ -76,6 +76,7 @@ jobs:
             api.ote-godaddy.com:443
             api.scorecard.dev:443
             api.securityscorecards.dev:443
+            api.stripe.com:443
             auth.docker.io:443
             bestpractices.coreinfrastructure.org:443
             cdn.fwupd.org:443
@@ -110,6 +111,7 @@ jobs:
             hosted-compute-watchdog-prod-iad-02.githubapp.com:443
             index.crates.io:443
             index.docker.io:443
+            keychecker.trufflesecurity.com:443
             lfs.github.com:443
             nodejs.org:443
             oauth2.sigstore.dev:443
@@ -129,6 +131,7 @@ jobs:
             releases.astral.sh:443
             releases.hashicorp.com:443
             sigstore-tuf-root.storage.googleapis.com:443
+            slack.com:443
             snyk.io:443
             static.crates.io:443
             storage.googleapis.com:443
@@ -152,7 +155,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout Source
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 

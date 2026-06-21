@@ -92,5 +92,7 @@ Exclude = [
   "min\\.js$",
   "package-lock\\.json$",
   "standard\\.mk$",
+  "Taskfile\\.([^\\.]+)\\.(yaml|yml)$",
+  "Taskfile\\.(yaml|yml)$",
   # @config-manager:end excludes
 ]

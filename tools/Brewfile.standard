@@ -10,12 +10,19 @@ tap "go-task/tap"
 tap "okooo5km/tap"
 tap "oven-sh/bun"
 tap "trufflesecurity/trufflehog"
+tap "vet-run/vet"
 # @config-manager:end taps
 
 #-------------------------------------------------------------------------------
 # FORMULAE
 
 # @config-manager:start brew
+# https://aube.en.dev
+brew "aube"
+
+# https://github.com/sharkdp/bat
+brew "bat"
+
 # https://bun.sh/
 brew "bun"
 
@@ -34,8 +41,8 @@ brew "git-delta"
 # https://github.com/newren/git-filter-repo
 brew "git-filter-repo"
 
-# https://github.com/nvie/gitflow
-brew "git-flow"
+# https://git-flow.sh
+brew "git-flow-next"
 
 # https://git-lfs.com/
 brew "git-lfs"
@@ -88,6 +95,9 @@ brew "shellcheck"
 # https://github.com/mvdan/sh
 brew "shfmt"
 
+# https://ewhauser.github.io/shuck/
+brew "ewhauser/tap/shuck-cli"
+
 # https://taplo.tamasfe.dev
 brew "taplo"
 
@@ -97,6 +107,9 @@ brew "trivy"
 # https://github.com/trufflesecurity/trufflehog
 brew "trufflesecurity/trufflehog/trufflehog"
 
+# https://github.com/vet-run/vet
+brew "vet-run/vet/vet-run"
+
 # https://github.com/google/yamlfmt
 brew "yamlfmt"
 # @config-manager:end brew
@@ -105,8 +118,6 @@ brew "yamlfmt"
 # NPM
 
 # @config-manager:start npm
-# https://www.npmjs.com/package/@endevco/aube
-npm "@endevco/aube"
 # @config-manager:end npm
 
 #-------------------------------------------------------------------------------
@@ -122,5 +133,4 @@ go "github.com/pelletier/go-toml/v2/cmd/tomljson"
 go "github.com/pelletier/go-toml/v2/cmd/tomll"
 go "github.com/psampaz/gothanks"
 go "github.com/tomwright/dasel/v3/cmd/dasel"
-go "github.com/trufflesecurity/driftwood"
 # @config-manager:end go

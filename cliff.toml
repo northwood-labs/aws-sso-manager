@@ -44,7 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
   {%- endfor %}
 {% endfor %}
 {%- macro remote_url() -%}
-  https://github.com/northwood-labs/terraform-provider-corefunc
+  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
 {%- endmacro -%}
 """
 

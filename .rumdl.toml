@@ -339,10 +339,12 @@
     # @config-manager:start proper-names
     "Commonmark",
     "CSS",
+    "Dependabot",
     "GFM",
     "GitHub-Flavored Markdown",
     "HTML",
     "JSON",
+    "KiroGraph",
     "macOS",
     "Markdown",
     "Northwood Labs",

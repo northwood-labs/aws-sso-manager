@@ -76,7 +76,9 @@
     "min\\.css$",
     "min\\.js$",
     "package-lock\\.json$",
-    "standard\\.mk$"
+    "standard\\.mk$",
+    "Taskfile\\.([^\\.]+)\\.(yaml|yml)$",
+    "Taskfile\\.(yaml|yml)$"
   ],
   "IgnoreDefaults": true,
   "NoColor": false,

@@ -28,10 +28,7 @@ KiroGraph builds a semantic knowledge graph of your codebase. Use its MCP tools 
 | What packages/layers exist?            | `kirograph_architecture`                  |
 | How coupled is package X?              | `kirograph_coupling`                      |
 | What does package X depend on?         | `kirograph_package`                       |
-| What data files are indexed?           | `kirograph_data_list`                     |
-| What columns does this dataset have?   | `kirograph_data_describe`                 |
-| Query rows with filters                | `kirograph_data_query`                    |
-| Aggregate data (sum, avg, count)       | `kirograph_data_aggregate`                |
+| Check token savings stats              | `kirograph_gain`                          |
 | Are there vulnerable dependencies?     | `kirograph_security`                      |
 | Which CVEs affect my project?          | `kirograph_vulns`                         |
 | Is this vulnerability reachable?       | `kirograph_reachability`                  |
@@ -208,6 +205,7 @@ kirograph_package(package: "auth")
 kirograph_package(package: "src/services", includeFiles: false)
 ```
 
+
 ---
 
 ## Workflows
@@ -239,6 +237,7 @@ kirograph_package(package: "src/services", includeFiles: false)
 2. `kirograph_circular_deps`: find import cycles to untangle.
 3. `kirograph_surprising`: find unexpected coupling to decouple.
 
+
 ---
 
 ## Workflow steering files
@@ -254,14 +253,15 @@ Read file: .kiro/steering/kirograph-security.md
 Read file: .kiro/steering/kirograph-review.md
 ```
 
-| User intent                                       | File to load                                                               |
-|---------------------------------------------------|----------------------------------------------------------------------------|
-| security audit, check vulnerabilities, CVE review | `.kiro/steering/kirograph-security.md` _(requires enableSecurity)_         |
-| code review, review this PR                       | `.kiro/steering/kirograph-review.md`                                       |
-| debug, trace this bug, root cause                 | `.kiro/steering/kirograph-debug.md`                                        |
-| architecture, understand structure, package map   | `.kiro/steering/kirograph-architecture.md` _(requires enableArchitecture)_ |
-| onboard, understand this codebase                 | `.kiro/steering/kirograph-onboard.md`                                      |
-| refactor, rename, safe refactoring                | `.kiro/steering/kirograph-refactor.md`                                     |
+| User intent                                       | File to load                               |
+|---------------------------------------------------|--------------------------------------------|
+| security audit, check vulnerabilities, CVE review | `.kiro/steering/kirograph-security.md`     |
+| code review, review this PR                       | `.kiro/steering/kirograph-review.md`       |
+| debug, trace this bug, root cause                 | `.kiro/steering/kirograph-debug.md`        |
+| architecture, understand structure, package map   | `.kiro/steering/kirograph-architecture.md` |
+| onboard, understand this codebase                 | `.kiro/steering/kirograph-onboard.md`      |
+| refactor, rename, safe refactoring                | `.kiro/steering/kirograph-refactor.md`     |
+| memory, recall decisions, conflict detection      | `.kiro/steering/kirograph-mem-workflow.md` |
 
 Each file contains numbered steps, exact tool calls, and an interpretation reference. Follow the steps in order.
 
@@ -281,18 +281,32 @@ Auto-clarity exceptions: temporarily revert to normal prose for (1) security war
 
 ## Memory
 
-KiroGraph has persistent memory. Use `kirograph_mem_search` to recall past decisions,
-errors, and patterns before making changes. Use `kirograph_mem_store` to save important
-observations (architecture decisions, bug root causes, patterns discovered).
+KiroGraph has persistent memory. Use it to recall past decisions and store new ones.
 
-Memory is searchable via hybrid FTS + vector search. Observations are automatically
-linked to code symbols in the graph and surface in `kirograph_context` and
-`kirograph_impact` results when relevant.
+| Question                                  | Tool                                            |
+|-------------------------------------------|-------------------------------------------------|
+| What did we decide about X?               | `kirograph_mem_search`                          |
+| Store a decision / bug fix / pattern      | `kirograph_mem_store`                           |
+| Does this contradict something stored?    | `kirograph_mem_conflicts_scan`                  |
+| Two observations conflict — which wins?   | `kirograph_mem_compare` → `kirograph_mem_judge` |
+| Extract observations from structured text | `kirograph_mem_capture`                         |
+| Which observations need re-evaluation?    | `kirograph_mem_review`                          |
+| Mark an observation as still valid        | `kirograph_mem_mark_reviewed`                   |
+
+Memory is searchable via hybrid FTS + vector search. Observations surface automatically in
+`kirograph_context` and `kirograph_impact` results when linked to relevant code symbols.
 
 **When to store:** After fixing a bug, making an architecture decision, discovering a pattern,
-encountering a non-obvious error, or learning something about the codebase that future sessions
-should know. Keep observations concise — one fact per store call. A hook will also remind you
+or learning something future sessions should know. One fact per store call. A hook reminds you
 at session end.
+
+**topicKey:** Use a stable semantic key (e.g. `"architecture/auth-model"`) when storing a
+decision that may be superseded or revisited. Lets you address the same concept across sessions.
+
+**reviewAfter:** Pass an epoch-ms timestamp when an observation should expire or be re-evaluated
+(e.g. after a planned migration, a library upgrade, or a time-boxed experiment).
+
+For the full conflict-detection workflow, load: `.kiro/steering/kirograph-mem-workflow.md`
 
 ## Documentation
 
