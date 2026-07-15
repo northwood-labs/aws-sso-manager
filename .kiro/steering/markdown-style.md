@@ -110,9 +110,9 @@ These terms must use exact casing wherever they appear in prose (not enforced in
 
 ## HTML
 
-<!-- @config-manager:start elements -->
+<!-- @config-manager:start htmltags -->
 Inline HTML is restricted to these allowed elements: `a`, `b`, `br`, `code`, `details`, `div`, `img`, `li`, `nobr`, `ol`, `p`, `pre`, `span`, `summary`, `ul`. All other HTML elements will trigger a lint warning.
-<!-- @config-manager:end elements -->
+<!-- @config-manager:end htmltags -->
 
 ## Blockquotes
 

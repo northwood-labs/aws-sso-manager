@@ -7,7 +7,7 @@
 
 [remote.github]
   owner = "northwood-labs"
-  repo = "@TODO: Update the repository value here."
+  repo  = "@TODO: Update the repository value here."
 
 [changelog]
   # @config-manager:start changelog-content
@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 """
 
   # template for the changelog body
-  # https://keats.github.io/tera/docs/#introduction
+  # https://keats.github.io/tera/
   body = """
 {% if version %}
   ## {{ version | trim_start_matches(pat="v") }} — {{ timestamp | date(format="%Y-%m-%d") }}
@@ -60,15 +60,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
   postprocessors = [
     # @config-manager:start post-processors
-    { pattern = "([^ ]+)\\(\\)", replace = "`$0`" },
-    { pattern = "AUTHORS|CONTRIBUTORS|CONTRIBUTING|README", replace = "$0.md" },
-    { pattern = "([^ ]+)\\.md", replace = "`$0`" },
-    { pattern = "([^ ]+)\\.ya?ml", replace = "`$0`" },
-    { pattern = "\\.md\\.md", replace = ".md" },
-    { pattern = "go\\.(mod|sum)", replace = "`$0`" },
-    { pattern = "(?i)pkg\\.go\\.dev", replace = "`$0`" },
-    { pattern = "Bump ([^ ]+)", replace = "Bump `$1`" },
-    { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](@REPO/issues/${1}))" },
+    {pattern = "(?i)pkg\\.go\\.dev", replace = "`$0`"},
+    {pattern = "([^ ]+)\\(\\)", replace = "`$0`"},
+    {pattern = "([^ ]+)\\.md", replace = "`$0`"},
+    {pattern = "([^ ]+)\\.ya?ml", replace = "`$0`"},
+    {pattern = "AUTHORS|CONTRIBUTORS|CONTRIBUTING|README", replace = "$0.md"},
+    {pattern = "Bump ([^ ]+)", replace = "Bump `$1`"},
+    {pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](@REPO/issues/${1}))"},
+    {pattern = "\\.md\\.md", replace = ".md"},
+    {pattern = "go\\.(mod|sum)", replace = "`$0`"},
     # @config-manager:end post-processors
   ]
 
@@ -115,23 +115,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
   # regex for parsing and grouping commits
   commit_parsers = [
     # @config-manager:start commit-parsers
-    { group = "<!-- 0 -->:rocket: Features", message = "^feat" },
-    { group = "<!-- 1 -->:bug: Bug Fixes", message = "^fix" },
-    { group = "<!-- 2 -->:racecar: Performance", message = "^perf" },
-    { group = ":books: Documentation", message = "^docs" },
-    { group = ":tractor: Refactor", message = "^refactor" },
-    { group = ":art: Styling", message = "^style" },
-    { group = ":dependabot: Building and Dependencies", message = "^build|deps" },
-    { group = ":test_tube: Testing", message = "^test" },
-    { group = ":soap: Linting", message = "^lint" },
-    { message = "^chore\\(release\\): prepare for", skip = true },
-    { message = "^chore\\(deps\\)", skip = true },
-    { message = "^chore\\(pr\\)", skip = true },
-    { message = "^chore\\(pull\\)", skip = true },
-    { message = "^relprep", skip = true },
-    { group = "<!-- ZZZ -->:gear: Miscellaneous Tasks", message = "^chore|ci" },
-    { body = ".*security", group = ":closed_lock_with_key: Security" },
-    { group = "<!-- ZYY -->:x: Revert", message = "^revert" },
-    { message = "^automation", skip = true },
+    {body = ".*security", group = ":closed_lock_with_key: Security"},
+    {group = ":art: Styling", message = "^style"},
+    {group = ":books: Documentation", message = "^docs"},
+    {group = ":dependabot: Building and Dependencies", message = "^build|deps"},
+    {group = ":soap: Linting", message = "^lint"},
+    {group = ":test_tube: Testing", message = "^test"},
+    {group = ":tractor: Refactor", message = "^refactor"},
+    {group = "<!-- 0 -->:rocket: Features", message = "^feat"},
+    {group = "<!-- 1 -->:bug: Bug Fixes", message = "^fix"},
+    {group = "<!-- 2 -->:racecar: Performance", message = "^perf"},
+    {group = "<!-- ZYY -->:x: Revert", message = "^revert"},
+    {group = "<!-- ZZZ -->:gear: Miscellaneous Tasks", message = "^chore|ci"},
+    {message = "^automation", skip = true},
+    {message = "^chore\\(deps\\)", skip = true},
+    {message = "^chore\\(pr\\)", skip = true},
+    {message = "^chore\\(pull\\)", skip = true},
+    {message = "^chore\\(release\\): prepare for", skip = true},
+    {message = "^relprep", skip = true},
     # @config-manager:end commit-parsers
   ]

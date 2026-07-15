@@ -6,11 +6,11 @@
 # TAPS
 
 # @config-manager:start taps
-tap "go-task/tap"
-tap "okooo5km/tap"
-tap "oven-sh/bun"
-tap "trufflesecurity/trufflehog"
-tap "vet-run/vet"
+tap "go-task/tap", trusted: true
+tap "okooo5km/tap", trusted: true
+tap "oven-sh/bun", trusted: true
+tap "trufflesecurity/trufflehog", trusted: true
+tap "vet-run/vet", trusted: true
 # @config-manager:end taps
 
 #-------------------------------------------------------------------------------
@@ -31,6 +31,9 @@ brew "editorconfig-checker"
 
 # https://github.com/junegunn/fzf
 brew "fzf"
+
+# https://github.com/suzuki-shunsuke/ghalint
+brew "ghalint"
 
 # https://git-cliff.org/
 brew "git-cliff"
@@ -112,6 +115,9 @@ brew "vet-run/vet/vet-run"
 
 # https://github.com/google/yamlfmt
 brew "yamlfmt"
+
+# https://zizmor.sh
+brew "zizmor"
 # @config-manager:end brew
 
 #-------------------------------------------------------------------------------

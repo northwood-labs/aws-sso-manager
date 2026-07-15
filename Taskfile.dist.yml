@@ -33,27 +33,33 @@ includes:
   admin:
     taskfile: ./tools/Taskfile.admin.yml
     flatten: true
-  gitconfig:
-    taskfile: ./tools/Taskfile.gitconfig.yml
-    flatten: true
-  internal:
-    taskfile: ./tools/Taskfile.internal.yml
-  # @config-manager:end standard
-
-  # @config-manager:start aws-user
   aws:
     taskfile: ./tools/Taskfile.aws.yml
     optional: true
-  # @config-manager:end aws-user
-
-  # @config-manager:start golang
+  frontend:
+    taskfile: ./tools/Taskfile.frontend.yml
+    flatten: true
+    optional: true
+  gitconfig:
+    taskfile: ./tools/Taskfile.gitconfig.yml
+    flatten: true
   go:
     taskfile: ./tools/Taskfile.golang.yml
     flatten: true
     optional: true
-    # @config-manager:end golang
-    vars:
-      GO_VER: 1.26.4
+  hugo:
+    taskfile: ./tools/Taskfile.hugo.yml
+    flatten: true
+    optional: true
+  internal:
+    taskfile: ./tools/Taskfile.internal.yml
+  kiro:
+    taskfile: ./tools/Taskfile.kiro.yml
+  x:
+    # This is for project-specific tasks that are not synced.
+    taskfile: ./Taskfile.x.yml
+    optional: true
+    # @config-manager:end standard
 
 tasks:
   #-----------------------------------------------------------------------------
@@ -91,6 +97,7 @@ tasks:
         | gxargs -I% brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file="%"
       - vet https://raw.githubusercontent.com/mtdowling/chag/master/install.sh
   # @config-manager:end installation-standard
+
   # @config-manager:start gitconfig-standard
   gitconfig:
     desc: Apply standard project git configurations.
@@ -138,17 +145,6 @@ tasks:
         vars: {TEXT: "Linting changed files..."}
       - hk fix --no-fail-fast --profile slow
 
-  lint:*:
-    desc: Run a specific linter on changed files.
-    summary: |
-      Runs a specific linter on changed files.
-    vars:
-      STEP: "{{ index .MATCH 0 }}"
-    cmds:
-      - task: internal:header
-        vars: {TEXT: "Linting changed files with {{ .STEP }}..."}
-      - hk fix --no-fail-fast --step {{ .STEP }} --profile slow
-
   lint:deep:
     desc: Run a battery of linters to ensure high quality on ALL files.
     summary: |
@@ -172,17 +168,6 @@ tasks:
       - task: internal:header
         vars: {TEXT: "Linting ALL files with ALL (including slow) tools..."}
       - hk fix --all --no-fail-fast --profile slow
-
-  lint:deep:*:
-    desc: Run a specific linter on ALL files.
-    summary: |
-      Runs a specific linter on ALL files.
-    vars:
-      STEP: "{{ index .MATCH 0 }}"
-    cmds:
-      - task: internal:header
-        vars: {TEXT: "Linting ALL files with {{ .STEP }}..."}
-      - hk fix --all --no-fail-fast --step {{ .STEP }} --profile slow
 
   lint:list:
     desc: Get a list of available linters as an fzf list.
@@ -228,7 +213,31 @@ tasks:
               --header='[Type to filter, or select with arrows. Esc to close.]'
           )"
         silent: true
+
+  lint:deep:*:
+    desc: Run a specific linter on ALL files.
+    summary: |
+      Runs a specific linter on ALL files.
+    vars:
+      STEP: "{{ index .MATCH 0 }}"
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting ALL files with {{ .STEP }}..."}
+      - hk fix --all --no-fail-fast --step {{ .STEP }} --profile slow
+
+  lint:*:
+    desc: Run a specific linter on changed files.
+    summary: |
+      Runs a specific linter on changed files.
+    vars:
+      STEP: "{{ index .MATCH 0 }}"
+    cmds:
+      - task: internal:header
+        vars: {TEXT: "Linting changed files with {{ .STEP }}..."}
+      - hk fix --no-fail-fast --step {{ .STEP }} --profile slow
+
   # @config-manager:end linting-standard
+
   #-----------------------------------------------------------------------------
   # Building
 

@@ -46,6 +46,7 @@ recommendations = [
   'steditor.line-endings',
   'stkb.rewrap',
   'tamasfe.even-better-toml',
+  'task.vscode-task',
   'timonwong.shellcheck',
   'tomoki1207.pdf',
   'tyriar.sort-lines',

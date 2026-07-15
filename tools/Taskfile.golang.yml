@@ -12,7 +12,6 @@ set: [pipefail]
 shopt: [globstar]
 
 vars:
-  GO_VER: '{{ default "1.25" .GO_VER }}'
   BASH: /opt/homebrew/opt/bash/bin/bash
   FIND: /opt/homebrew/opt/findutils/bin/gfind
   XARGS: /opt/homebrew/opt/findutils/bin/gxargs
@@ -22,7 +21,9 @@ tasks:
   # Building
 
   build:go:
-    desc: Build a local copy of the program.
+    desc: >
+      Build a local copy of the program. Set SOURCEPATH for a non-default
+      code path.
     summary: |
       Builds a local copy of the program.
 
@@ -32,11 +33,12 @@ tasks:
       copy it to Taskfile.yml and make changes there.
     envs:
       GOEXPERIMENT: jsonv2
+      SOURCEPATH: '{{ .SOURCEPATH | default "." }}'
     cmds:
       - task: internal:header
         vars:
           TEXT: "Building and installing..."
-      - cmd: go install -a -ldflags="-s -w" -trimpath .
+      - cmd: go install -a -ldflags="-s -w" -trimpath {{ .SOURCEPATH }}
 
   tidy:go:
     desc: Run 'go mod tidy' for all go.mod files in the project.
@@ -49,7 +51,7 @@ tasks:
       - cmd: |
           {{ .FIND }} . -type f -name "go.mod" \
             | {{ .XARGS }} -I% dirname "%" \
-            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }}'
+            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy'
 
   deps:go:
     desc: Update packages to their latest semver minor versions.
@@ -64,7 +66,7 @@ tasks:
       - cmd: |
           {{ .FIND }} . -type f -name "go.mod" \
             | {{ .XARGS }} -I% dirname "%" \
-            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy -go={{ .GO_VER }} && go get -u -t -v ./...'
+            | {{ .XARGS }} -I@ {{ .BASH }} -c 'cd "@" && go mod tidy && go get -u -t -v ./...'
       - task: tidy:go
 
   godeps:
@@ -117,5 +119,4 @@ tasks:
           TEXT: "Cleaning artifacts from benchmarks..."
       - cmd: '{{ .FIND }} . -type f -name "__*.out" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
       - cmd: '{{ .FIND }} . -type f -name "*.test" | {{ .XARGS }} -I% {{ .RM }} -fv "%"'
-
 # @config-manager:end golang

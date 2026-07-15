@@ -9,11 +9,11 @@
 'github.copilot.chat.copilotDebugCommand.enabled' = false
 'github.copilot.chat.editor.temporalContext.enabled' = true
 'github.copilot.chat.edits.temporalContext.enabled' = true
-'github.copilot.chat.reviewSelection.instructions' = [  ]
+'github.copilot.chat.reviewSelection.instructions' = []
 'kiroAgent.agentAutonomy' = 'Autopilot'
 'kiroAgent.enableCodebaseIndexing' = true
 'kiroAgent.enableTabAutocomplete' = true
-'kiroAgent.modelSelection' = "Auto"
+'kiroAgent.modelSelection' = 'auto'
 'kiroAgent.usageSummary' = true
 'kiroAgent.notifications.agent.actionRequired' = true
 'kiroAgent.notifications.agent.failure' = true
@@ -23,27 +23,32 @@
   'aube *',
   'aubr *',
   'aubx *',
+  'bun *',
+  'bunx *',
   'cat *',
+  'cd *',
   'curl *',
   'find *',
-  'go build *',
-  'go test *',
-  'go vet *',
+  'go *',
   'gofumpt *',
   'golangci-lint run *',
   'golines *',
   'grep *',
+  'hexdump *',
   'hk *',
+  'ls *',
   'make *',
-  'npm *',
-  'npx *',
+  'mkdir *',
   'pnpm *',
   'pnpx *',
   'sed *',
   'tail *',
   'task *',
+  'tee *',
+  'touch *',
   'wc *',
   'wget *',
+  'which *',
   #
 ]
 'remote.defaultExtensionsIfInstalledLocally' = [
@@ -55,31 +60,31 @@
 
 # @config-manager:start llm
 ['chat.mcp.discovery.enabled']
-  claude-desktop = true
-  cursor-global = true
+  claude-desktop   = true
+  cursor-global    = true
   cursor-workspace = true
-  windsurf = true
+  windsurf         = true
 
 ['chat.promptFilesLocations']
   prompts = true
 
 ['github.copilot.enable']
-  '*' = true
-  apex = true
-  erb = true
-  go = true
-  java = true
-  javascript = true
-  markdown = false
-  plaintext = false
-  python = true
-  ruby = true
-  rust = true
-  scala = true
-  scminput = false
-  shellscript = true
-  starlark = true
-  terraform = true
-  typescript = true
+  '*'             = true
+  apex            = true
+  erb             = true
+  go              = true
+  java            = true
+  javascript      = true
+  markdown        = false
+  plaintext       = false
+  python          = true
+  ruby            = true
+  rust            = true
+  scala           = true
+  scminput        = false
+  shellscript     = true
+  starlark        = true
+  terraform       = true
+  typescript      = true
   typescriptreact = true
   # @config-manager:end llm
