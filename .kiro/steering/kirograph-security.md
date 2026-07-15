@@ -61,6 +61,16 @@ kirograph_licenses(policy: true)
 Review any DENY violations — these must be resolved before shipping.
 WARN violations should be documented and approved by the team.
 
+### 5b. structural vulnerability patterns (AST search)
+
+```text
+kirograph_live_search(pattern: "eval($X)", language: "javascript")
+kirograph_live_search(pattern: "$OBJ.query($A + $B)", language: "typescript")
+```
+
+Use `kirograph pattern --list` to browse bundled SAST rules (SQL injection, path traversal, hardcoded secrets, etc.).
+These patterns find code issues missed by dependency scanning.
+
 ### 6. dependency staleness
 
 ```text
@@ -87,12 +97,13 @@ kirograph_vex()    // Vulnerability Exploitability eXchange
 
 ## Interpretation reference
 
-| Signal                    | Meaning                       | Action                      |
-|---------------------------|-------------------------------|-----------------------------|
-| `affected` + EPSS >= 0.5  | Actively exploited, reachable | Patch immediately           |
-| `affected` + CVSS >= 9.0  | Critical, reachable           | Patch this sprint           |
-| `affected` + CVSS 7.0–8.9 | High, reachable               | Plan fix within 2 weeks     |
-| `not_affected`            | No reachable path found       | Document, no action needed  |
-| `under_investigation`     | Reachability unclear          | Manual review required      |
-| Stale >= 0.7              | Very outdated                 | Review for accumulated CVEs |
-| License DENY              | Policy violation              | Must resolve before release |
+| Signal                                  | Meaning                                | Action                               |
+|-----------------------------------------|----------------------------------------|--------------------------------------|
+| `affected` + EPSS >= 0.5                | Actively exploited, reachable          | Patch immediately                    |
+| `affected` + CVSS >= 9.0                | Critical, reachable                    | Patch this sprint                    |
+| `affected` + CVSS 7.0–8.9               | High, reachable                        | Plan fix within 2 weeks              |
+| `not_affected`                          | No reachable path found                | Document, no action needed           |
+| `under_investigation`                   | Reachability unclear                   | Manual review required               |
+| Stale >= 0.7                            | Very outdated                          | Review for accumulated CVEs          |
+| License DENY                            | Policy violation                       | Must resolve before release          |
+| Pattern match in security-critical code | Code-level vulnerability pattern found | Review context with `kirograph_node` |

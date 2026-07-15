@@ -20,17 +20,19 @@ Follow these steps to systematically trace and debug issues using the knowledge 
    kirograph_context(task: "<describe the bug>")
    ```
 
-3. **Trace the call chain**
+3. **Check what recently changed in related symbols**
+
+   ```text
+   kirograph_diff_context()
+   ```
+
+   Most bugs trace back to recent changes — this surfaces them immediately.
+
+4. **Trace the call chain**
 
    ```text
    kirograph_callers(symbol: "<suspected function>")
    kirograph_callees(symbol: "<suspected function>")
-   ```
-
-4. **Check what changed recently**
-
-   ```text
-   kirograph_diff()
    ```
 
 5. **Understand blast radius**
@@ -42,5 +44,5 @@ Follow these steps to systematically trace and debug issues using the knowledge 
 ## Tips
 
 * Check both callers and callees to understand the full context
-* Recent changes (via diff) are the most common source of new issues
+* `kirograph_diff_context` is the fastest way to spot a regression — check it first
 * Use `kirograph_path` to trace how two symbols are connected

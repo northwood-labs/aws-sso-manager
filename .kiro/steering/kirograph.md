@@ -8,35 +8,41 @@ KiroGraph builds a semantic knowledge graph of your codebase. Use its MCP tools 
 
 ## Quick decision guide
 
-| Question                               | Tool                                      |
-|----------------------------------------|-------------------------------------------|
-| Where do I start on this task?         | `kirograph_context`                       |
-| What is this symbol / show me its code | `kirograph_node` with `includeCode: true` |
-| Find a symbol by name                  | `kirograph_search`                        |
-| Who calls function X?                  | `kirograph_callers`                       |
-| What does function X call?             | `kirograph_callees`                       |
-| What breaks if I change X?             | `kirograph_impact`                        |
-| How are X and Y connected?             | `kirograph_path`                          |
-| What extends / implements this type?   | `kirograph_type_hierarchy`                |
-| Which code is never called?            | `kirograph_dead_code`                     |
-| Are there import cycles?               | `kirograph_circular_deps`                 |
-| What files are indexed?                | `kirograph_files`                         |
-| Is the index healthy?                  | `kirograph_status`                        |
-| What are the most critical symbols?    | `kirograph_hotspots`                      |
-| Any unexpected cross-module coupling?  | `kirograph_surprising`                    |
-| What changed since the last snapshot?  | `kirograph_diff`                          |
-| What packages/layers exist?            | `kirograph_architecture`                  |
-| How coupled is package X?              | `kirograph_coupling`                      |
-| What does package X depend on?         | `kirograph_package`                       |
-| Check token savings stats              | `kirograph_gain`                          |
-| Are there vulnerable dependencies?     | `kirograph_security`                      |
-| Which CVEs affect my project?          | `kirograph_vulns`                         |
-| Is this vulnerability reachable?       | `kirograph_reachability`                  |
-| What licenses do my dependencies use?  | `kirograph_licenses`                      |
-| Are dependencies outdated?             | `kirograph_staleness`                     |
-| Generate SBOM/VEX                      | `kirograph_sbom` / `kirograph_vex`        |
-| Add a private CVE                      | `kirograph_vuln_add`                      |
-| Find structural code patterns?         | `kirograph_live_search`                   |
+| Question                                     | Tool                                      |
+|----------------------------------------------|-------------------------------------------|
+| Where do I start on this task?               | `kirograph_context`                       |
+| What is this symbol / show me its code       | `kirograph_node` with `includeCode: true` |
+| Find a symbol by name                        | `kirograph_search`                        |
+| Who calls function X?                        | `kirograph_callers`                       |
+| What does function X call?                   | `kirograph_callees`                       |
+| What breaks if I change X?                   | `kirograph_impact`                        |
+| What files are indexed?                      | `kirograph_files`                         |
+| Is the index healthy?                        | `kirograph_status`                        |
+| How are X and Y connected?                   | `kirograph_path`                          |
+| What extends / implements this type?         | `kirograph_type_hierarchy`                |
+| Which code is never called?                  | `kirograph_dead_code`                     |
+| Are there import cycles?                     | `kirograph_circular_deps`                 |
+| What are the most critical symbols?          | `kirograph_hotspots`                      |
+| Any unexpected cross-module coupling?        | `kirograph_surprising`                    |
+| What changed since the last snapshot?        | `kirograph_diff`                          |
+| What packages/layers exist?                  | `kirograph_architecture`                  |
+| How coupled is package X?                    | `kirograph_coupling`                      |
+| What does package X depend on?               | `kirograph_package`                       |
+| Compress text or shell output before sending | `kirograph_compress`                      |
+| Check token savings stats                    | `kirograph_gain`                          |
+| Are there vulnerable dependencies?           | `kirograph_security`                      |
+| Which CVEs affect my project?                | `kirograph_vulns`                         |
+| Is this vulnerability reachable?             | `kirograph_reachability`                  |
+| What licenses do my dependencies use?        | `kirograph_licenses`                      |
+| Are dependencies outdated?                   | `kirograph_staleness`                     |
+| Generate SBOM/VEX                            | `kirograph_sbom` / `kirograph_vex`        |
+| Add a private CVE                            | `kirograph_vuln_add`                      |
+| Find structural code patterns?               | `kirograph_live_search`                   |
+| What symbols did I change?                   | `kirograph_diff_context`                  |
+| Build commit message context                 | `kirograph_commit_context`                |
+| Generate PR description                      | `kirograph_pr_context`                    |
+| What tests cover symbol X?                   | `kirograph_test_map`                      |
+| Show per-file coverage report                | `kirograph_test_coverage`                 |
 
 ---
 
@@ -129,6 +135,7 @@ Runs Tarjan's SCC over import edges. No parameters needed.
 kirograph_circular_deps()
 ```
 
+
 ### `kirograph_files`: indexed file structure
 
 ```text
@@ -205,6 +212,54 @@ kirograph_package(package: "auth")
 kirograph_package(package: "src/services", includeFiles: false)
 ```
 
+---
+
+## Git context tools _(require `enableGitContext: true` in config)_
+
+### `kirograph_diff_context`: changed symbols in working tree
+
+Returns symbols whose definitions overlap with `git diff` line ranges, plus their callers and callees. Use before a commit to understand what you actually changed.
+
+```text
+kirograph_diff_context()              // unstaged changes
+kirograph_diff_context(staged: true)  // staged changes only
+```
+
+### `kirograph_commit_context`: staged changes summary
+
+Returns staged files, diff stat, and affected symbols. Ready to paste into a commit message prompt.
+
+```text
+kirograph_commit_context()
+```
+
+### `kirograph_pr_context`: semantic diff between two refs
+
+Returns symbols added/removed/changed between two git refs. Use for PR descriptions.
+
+```text
+kirograph_pr_context(base: "main", head: "HEAD")
+kirograph_pr_context(base: "v1.2.0")
+```
+
+### `kirograph_test_map`: symbol → test file mapping
+
+Shows which test files cover a symbol (by caller graph), and which symbols have no test coverage at all.
+
+```text
+kirograph_test_map()                         // all uncovered symbols
+kirograph_test_map(symbol: "processPayment") // tests for a specific symbol
+```
+
+### `kirograph_test_coverage`: per-file coverage report
+
+Parses lcov/Istanbul/Cobertura files. Sorted worst-first by default.
+
+```text
+kirograph_test_coverage()
+kirograph_test_coverage(sortBy: "desc", limit: 20)  // best coverage first
+```
+
 
 ---
 
@@ -237,6 +292,17 @@ kirograph_package(package: "src/services", includeFiles: false)
 2. `kirograph_circular_deps`: find import cycles to untangle.
 3. `kirograph_surprising`: find unexpected coupling to decouple.
 
+**Pre-commit / pre-push review:**
+
+1. `kirograph_diff_context`: understand what symbols changed and who calls them.
+2. `kirograph_test_map`: verify changed symbols have test coverage.
+3. `kirograph_commit_context`: build a structured commit message.
+
+**PR description:**
+
+1. `kirograph_pr_context(base: "main")`: get semantic diff between branches.
+2. Use the output as structured context for the PR summary.
+
 
 ---
 
@@ -253,15 +319,17 @@ Read file: .kiro/steering/kirograph-security.md
 Read file: .kiro/steering/kirograph-review.md
 ```
 
-| User intent                                       | File to load                               |
-|---------------------------------------------------|--------------------------------------------|
-| security audit, check vulnerabilities, CVE review | `.kiro/steering/kirograph-security.md`     |
-| code review, review this PR                       | `.kiro/steering/kirograph-review.md`       |
-| debug, trace this bug, root cause                 | `.kiro/steering/kirograph-debug.md`        |
-| architecture, understand structure, package map   | `.kiro/steering/kirograph-architecture.md` |
-| onboard, understand this codebase                 | `.kiro/steering/kirograph-onboard.md`      |
-| refactor, rename, safe refactoring                | `.kiro/steering/kirograph-refactor.md`     |
-| memory, recall decisions, conflict detection      | `.kiro/steering/kirograph-mem-workflow.md` |
+| User intent                                       | File to load                                |
+|---------------------------------------------------|---------------------------------------------|
+| security audit, check vulnerabilities, CVE review | `.kiro/steering/kirograph-security.md`      |
+| code review, review this PR                       | `.kiro/steering/kirograph-review.md`        |
+| debug, trace this bug, root cause                 | `.kiro/steering/kirograph-debug.md`         |
+| architecture, understand structure, package map   | `.kiro/steering/kirograph-architecture.md`  |
+| onboard, understand this codebase                 | `.kiro/steering/kirograph-onboard.md`       |
+| refactor, rename, safe refactoring                | `.kiro/steering/kirograph-refactor.md`      |
+| git diff review, PR context, commit message       | `.kiro/steering/kirograph-git-context.md`   |
+| memory, recall decisions, conflict detection      | `.kiro/steering/kirograph-mem-workflow.md`  |
+| wiki, update knowledge base, ingest docs          | `.kiro/steering/kirograph-wiki-workflow.md` |
 
 Each file contains numbered steps, exact tool calls, and an interpretation reference. Follow the steps in order.
 
@@ -341,6 +409,73 @@ KiroGraph can search for structural code patterns using @ast-grep/napi.
 * `kirograph pattern --library <id>` — run a specific library rule
 
 **When to use:** When you need to find code patterns that can't be expressed as symbol names or semantic queries — "all eval() calls", "all SQL string concatenation", "all readFile with request parameters".
+
+## General-purpose compression
+
+`kirograph_compress` is an on-demand tool for reducing token usage before content reaches the model.
+Call it whenever you receive large input that you need to reason over but not reproduce verbatim.
+
+**Two engines — auto-routed by the `command` parameter:**
+
+| Scenario                                                           | Call                                                  |
+|--------------------------------------------------------------------|-------------------------------------------------------|
+| Paste of shell output (git log, npm install, test run, docker ps…) | `kirograph_compress(text: "...", command: "git log")` |
+| Prose text, RAG chunk, observation, or mixed content               | `kirograph_compress(text: "...")`                     |
+
+* **With `command`:** rtk-style structural filters — pattern-matched to the command family (git, test, lint, docker, etc.), removes noise, deduplicates repeated lines, keeps structure.
+* **Without `command`:** caveman grammar — removes filler words, articles, hedging phrases, and (at ultra level) applies standard abbreviations. Preserves code blocks, paths, URLs, and identifiers unchanged.
+
+**Compression levels** (same enum for both engines):
+
+* `lite` / `normal` — light touch: remove noise and filler only
+* `full` / `aggressive` — default: also remove articles, hedging, group repeated output
+* `ultra` — maximum: abbreviations, causality arrows (→), conjunction compression (+)
+
+**When to use:**
+
+* You received a large file diff, log dump, or search result and only need the structure
+* You want to store an observation in memory and the text is verbose
+* A tool output is close to or over budget and you need to trim before reasoning
+
+**When NOT to use:**
+
+* Content that must be reproduced exactly (code to be written to disk, user quotes)
+* Short content (< 200 tokens) — overhead not worth it
+* Already-compressed output (KiroGraph_exec already applies rtk filters automatically)
+
+**Savings are reported inline:** `[42% saved | 1800→1044 | rtk:git:aggressive]`
+
+## Wiki
+
+KiroGraph maintains a structured LLM wiki — a set of Markdown pages that compound knowledge
+across sessions. Use it to look up project decisions, architecture facts, and domain knowledge
+before starting work. Use it to save knowledge that should survive context resets.
+
+**Available tools:**
+
+* `kirograph_wiki_ingest` — build an ingest prompt for a source text; pass the result to yourself to generate a WIKI_DIFF
+* `kirograph_wiki_apply_diff` — apply a WIKI_DIFF to create or update wiki pages
+* `kirograph_wiki_search` — full-text search over wiki pages
+* `kirograph_wiki_page` — retrieve the full content of a page by slug
+* `kirograph_wiki_list` — list all pages with metadata
+* `kirograph_wiki_lint` — health check: broken links, orphan pages, contradictions
+
+**When to consult the wiki:**
+
+* Before starting a complex feature or bug fix: `kirograph_wiki_search(query: "<topic>")`
+* When the user references a concept you don't recognize from the code graph alone
+* After `kirograph_context` returns wiki enrichments (pages above threshold score)
+
+**When to update the wiki:**
+
+* End of a session that produced durable knowledge (architecture decision, API contract, process)
+* The ingest hook will remind you at agentStop if `enableWiki: true` is set
+
+**Quick workflow:**
+
+1. `kirograph_wiki_ingest` — get the prompt with SCHEMA + MANIFEST + your source text
+2. Generate a `WIKI_DIFF` block (create/upsert/append per page)
+3. `kirograph_wiki_apply_diff` — apply it; review any pending conflicts in the response
 
 ## Security
 
