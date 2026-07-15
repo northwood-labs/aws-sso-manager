@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`fd0465e`](https://github.com/northwood-labs/aws-sso-manager/commit/fd0465ebdd9a47c96cca0c27a86cd8c05e439a17): Enhance KiroGraph with security auditing, AST patterns, memory, and docs. ([@skyzyx](https://github.com/skyzyx))
 * [`32b43fa`](https://github.com/northwood-labs/aws-sso-manager/commit/32b43fafb6d96406ba2aa49fc429194c48a3b1a6): Enhance KiroGraph, standardize configs, add development tools. ([@skyzyx](https://github.com/skyzyx))
 * [`4ee7a7c`](https://github.com/northwood-labs/aws-sso-manager/commit/4ee7a7c1ee4517612846b9a7998c95f1cfabe5aa): Standardize configurations and enhance development tooling. ([@skyzyx](https://github.com/skyzyx))
+* [`3143cbe`](https://github.com/northwood-labs/aws-sso-manager/commit/3143cbe2ad476e3ef108b5623b126ecbee0bd949): Enhance KiroGraph and standardize development configurations. ([@skyzyx](https://github.com/skyzyx))
 
 ### :dependabot: Building and Dependencies
 
