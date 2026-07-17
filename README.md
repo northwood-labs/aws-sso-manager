@@ -44,32 +44,15 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
-    ```bash
-    aws-sso-manager init <ID>
-    ```
+https://github.com/user-attachments/assets/e740b506-2d43-47dc-8b48-9c6f5317b49f
 
-    The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
-
-    You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
-
-2. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
-
-    ```text
-    ; -------- aws-sso-manager: start abc --------
-    [sso-session abc]
-    sso_region = us-east-1
-    sso_registration_scopes = sso:account:access
-    sso_start_url = https://abc.awsapps.com/start
-    ; -------- aws-sso-manager: end abc --------
-    ```
+You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
 ## Authenticate with your AWS identity center account
 
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
-    ```bash
-    aws-sso-manager auth <ID>
-    ```
+    https://github.com/user-attachments/assets/a4981aae-1e0f-4652-a8b2-57160c737e82
 
 2. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
 
@@ -79,36 +62,34 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
     <div><img src="docs/approve@2x.png" alt="Grant permission to botocore" width="50%"></div>
 
-## Updating your accounts
+## Listing and updating your accounts
 
 > [!NOTE]
 > The `aws-sso-manager: start` and `end` markers are what allows the `update` functionality to work correctly. Removing them will break updates. Please leave these markers in-place.
 
-1. If you want to see the list of accounts and roles you have access to via AWS Identity Center, run `list`.
+With a user configuration file, you can control how your AWS accounts and profile names are generated.
 
-    ```bash
-    aws-sso-manager list <ID>
-    ```
+https://github.com/user-attachments/assets/7fd08090-74eb-44dc-903d-f7456e9546d9
 
-2. If you want to update your config file with the current set of accounts and profiles you have available, run the following:
+See `docs/config_file.md` for more information.
 
-    ```bash
-    aws-sso-manager update <ID>
-    ```
+## Configuring a default AWS Organization
 
-3. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
+In order to save some typing, if there's one AWS Organization that you use most often, you can set it as your default value. If you want to run commands on a different AWS Organization, you can still specify the alias at runtime.
 
-    See `docs/config_file.md` for more information.
+https://github.com/user-attachments/assets/bc99a0e1-7df6-4bff-a2a4-ed40e09154ed
+
+## Lookup accounts and role names
+
+You often need to lookup AWS Account IDs or SSO profile names as part of running commands with AWS CLI. AWS SSO Manager can simplify this.
+
+https://github.com/user-attachments/assets/9a1d3ef1-57fc-4fd0-afcc-13dee1a843c7
 
 ## Generate console links
 
-1. One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
+One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
 
-    ```bash
-    aws-sso-manager console <ID> <CONSOLE_URL>
-    ```
-
-    It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
+https://github.com/user-attachments/assets/591718da-59a9-4bee-ba85-d96b2f989fdb
 
 ## Usage
 
@@ -146,46 +127,31 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 
 ## Comparisons
 
-<details>
-<summary>Compared to aws-sso-cli</summary><br>
+### Compared to aws-sso-cli
 
 This project, and [aws-sso-cli], have some overlap. This project tries to follow the Unix philosophy of _doing one thing well_. Both projects are written in Go and have zero runtime dependencies. `aws-sso-cli` begins to cross the boundary into what [AWS Vault] does well, and has several additional integrations that are powerful at the cost of complexity. This project is intentionally less complex, and focuses more narrowly on managing SSO profiles. This project is licensed under the "open source" [Apache 2.0][Apache-2.0] license, while `aws-sso-cli` is licensed under the "free software" [GPL 3.0 (or later)][GPL-3.0-or-later] license.
 
-</details>
-
-<details>
-<summary>Compared to AWS CLI v2</summary><br>
+### Compared to AWS CLI v2
 
 This project, and [AWS CLI v2], are _complementary_. `aws-sso-manager` is intended to _replace_ the `aws configure sso` command. It streamlines the work of setting up AWS SSO; supports pattern-matching to rename accounts, roles, and profiles locally; and makes it much easier to update your current list of SSO roles as they change over time.
 
 [AWS CLI v2] leverages the profile configurations that `aws-sso-manager` provides.
 
-</details>
-
-<details>
-<summary>Compared to AWS Vault</summary><br>
+### Compared to AWS Vault
 
 This project, and [AWS Vault], are _complementary_. For the purpose of managing AWS Identity Center (née _SSO_), [AWS Vault] leverages the same AWS profile configuration that [AWS CLI v2] uses to authenticate, which is generated and maintained by this project.
 
-</details>
-
-<details>
-<summary>Compared to Gimme Creds</summary><br>
+### Compared to Gimme Creds
 
 [Gimme Creds] is a Python solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It also requires the use of Okta as the Identity Provider (IdP).
 
 This project is focused on AWS Identity Center, therefore it never crosses paths with [Gimme Creds]. They solve entirely different problems.
 
-</details>
-
-<details>
-<summary>saml2aws</summary><br>
+### saml2aws
 
 [saml2aws] is a Go solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It supports several Identity Providers (IdPs).
 
 This project is focused on AWS Identity Center, therefore it never crosses paths with [saml2aws]. They solve entirely different problems.
-
-</details>
 
 [Apache-2.0]: https://choosealicense.com/licenses/apache-2.0/
 [AWS CLI v2]: https://aws.amazon.com/cli/
