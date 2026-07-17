@@ -18,10 +18,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
-	"charm.land/huh/v2/spinner"
 	"charm.land/lipgloss/v2"
 	"charm.land/lipgloss/v2/table"
 	"github.com/lithammer/dedent"
@@ -148,20 +146,8 @@ var (
 			}
 
 			if fNoCache {
-				// Fetch fresh data first, bypassing cache.
-				err = spinner.New().
-					WithOutput(os.Stderr).
-					Title("Looking up accounts and roles...").
-					Type(spinner.Dots).
-					Action(func(accounts *listAccounts) func() {
-						return func() {
-							accts, fetchErr := listAWSAccountsFetcher(listInput)
-							cobra.CheckErr(fetchErr)
-
-							*accounts = accts
-						}
-					}(&accounts)).
-					Run()
+				logger.InfoContext(ctx, "Looking up accounts and roles...")
+				accounts, err := listAWSAccounts(listInput)
 				if err != nil {
 					logger.ErrorContext(ctx, "Failed to fetch fresh data", logKeyErr, err)
 				}
@@ -211,22 +197,9 @@ var (
 					}
 				}
 			} else {
-				err = spinner.New().
-					WithOutput(os.Stderr).
-					Title("Looking up accounts and roles...").
-					Type(spinner.Dots).
-					Action(func(accounts *listAccounts) func() {
-						return func() {
-							accts, fetchErr := listAWSAccounts(listInput)
-							cobra.CheckErr(fetchErr)
-
-							*accounts = accts
-						}
-					}(&accounts)).
-					Run()
-				if err != nil {
-					cobra.CheckErr(err)
-				}
+				logger.InfoContext(ctx, "Looking up accounts and roles...")
+				accounts, err = listAWSAccounts(listInput)
+				cobra.CheckErr(err)
 			}
 
 			if fJSON {

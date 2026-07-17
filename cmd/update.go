@@ -20,7 +20,6 @@ import (
 	"os"
 	"strings"
 
-	"charm.land/huh/v2/spinner"
 	"github.com/lithammer/dedent"
 	"github.com/spf13/cobra"
 
@@ -118,30 +117,17 @@ var updateCmd = &cobra.Command{
 			cobra.CheckErr(fmt.Sprintf("config file does not have section [%s]; need to run init", ssoProfile))
 		}
 
-		err = spinner.New().
-			WithOutput(os.Stderr).
-			Title("Looking up accounts and roles...").
-			Type(spinner.Dots).
-			Action(func(accounts *listAccounts) func() {
-				return func() {
-					accts, fetchErr := listAWSAccounts(&listAWSAccountsInput{
-						Cmd:           cmd,
-						SDKConfig:     &sdkConfig,
-						Cache:         cache,
-						Logger:        logger,
-						ProfileName:   profileName,
-						AccountFilter: fAccounts,
-						RoleFilter:    fRoles,
-					})
-					cobra.CheckErr(fetchErr)
-
-					*accounts = accts
-				}
-			}(&accounts)).
-			Run()
-		if err != nil {
-			cobra.CheckErr(err)
-		}
+		logger.InfoContext(ctx, "Looking up accounts and roles...")
+		accounts, fetchErr := listAWSAccounts(&listAWSAccountsInput{
+			Cmd:           cmd,
+			SDKConfig:     &sdkConfig,
+			Cache:         cache,
+			Logger:        logger,
+			ProfileName:   profileName,
+			AccountFilter: fAccounts,
+			RoleFilter:    fRoles,
+		})
+		cobra.CheckErr(fetchErr)
 
 		nextSections, counter, err := buildUpdatedManagedSections(sections, ssoProfile, profileName, accounts)
 		if err != nil {
@@ -186,12 +172,14 @@ var updateCmd = &cobra.Command{
 		err = os.Rename(backupFilename, awsConfigFilePath)
 		cobra.CheckErr(err)
 
-		fmt.Printf("Updated %d profiles for %q.\n", counter, profileName)
+		fmt.Fprintf(os.Stderr, "Updated %d profiles for %q.\n", counter, profileName)
 		fmt.Fprintf(
 			os.Stderr,
 			"Note: used cached account data. Run \"aws-sso-manager list %s --no-cache\" first to fetch fresh data.\n",
 			profileName,
 		)
+
+		// time.Sleep(500 * time.Millisecond)
 
 		return nil
 	},

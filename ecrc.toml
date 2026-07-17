@@ -19,14 +19,18 @@ Exclude = [
   "\\.kiro/",
   "\\.kirograph/",
   "\\.rumdl_cache/",
+  "\\.venv",
   "\\.vite/",
   "node_modules/",
   "testdata/",
+  "testfixtures/.*$",
 
   # Files
+  "Cargo\\.lock$",
   "LICENSE(\\.(md|txt))?$",
   "Taskfile\\.([^\\.]+)\\.(yaml|yml)$",
   "Taskfile\\.(yaml|yml)$",
+  "TerraformOptions.json$",
   "\\.7z$",
   "\\.avif$",
   "\\.bak$",
@@ -90,6 +94,7 @@ Exclude = [
   "^package-lock\\.json$",
   "aube-lock\\.yaml$",
   "cliff\\.toml$",
+  "composer\\.lock$",
   "go\\.mod$",
   "go\\.sum$",
   "go\\.tools\\.mod$",
@@ -101,6 +106,8 @@ Exclude = [
   "package\\.json$",
   "pnpm-lock\\.yaml$",
   "pnpm-workspace\\.yaml$",
+  "poetry\\.lock$",
   "standard\\.mk$",
+  "yarn\\.lock$",
   # @config-manager:end excludes
 ]

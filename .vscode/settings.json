@@ -234,9 +234,9 @@
   "kiroAgent.usageSummary": true,
   "makefile.configureOnOpen": false,
   "markdown-table-formatter.markdownGrammarScopes": [
-    "markdown",
     "gohtml",
-    "gotmpl"
+    "gotmpl",
+    "markdown"
   ],
   "markdown-table-formatter.removeColonsIfSameAsDefault": true,
   "markdown.extension.list.indentationSize": "inherit",
@@ -275,8 +275,8 @@
   "testExplorer.useNativeTesting": true,
   "todo-tree.general.tags": [
     "BUG",
-    "HACK",
     "FIXME",
+    "HACK",
     "TODO",
     "XXX",
     "[ ]",
@@ -284,10 +284,15 @@
   ],
   "workbench.editorAssociations": {
     "*.copilotmd": "vscode.markdown.preview.editor",
+    "*.csv": "duckdb.dataFileViewer",
     "*.ipynb": "jupyter-notebook",
+    "*.parquet": "duckdb.dataFileViewer",
     "*.svg": "default",
+    "*.tsv": "duckdb.dataFileViewer",
+    "*.xlsx": "duckdb.dataFileViewer",
     "git-rebase-todo": "default",
-    "{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json": "default"
+    "{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json": "default",
+    "{git,gitlens,conflictResolution,vscode-local-history}:/**/*.{asl.json,asl.yaml,asl.yml}": "default"
   },
   "yaml.schemas": {
     "https://goreleaser.com/static/schema-pro.json": ".goreleaser.yml"

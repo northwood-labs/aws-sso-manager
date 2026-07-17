@@ -75,8 +75,8 @@
   '*.tofu'            = 'opentofu'
   '*.toml'            = 'toml'
   'Brewfile*'         = 'ruby'
+  'config'            = 'ini'
   'Dockerfile*'       = 'dockerfile'
-  config              = 'ini'
 
 [['githubIssues.queries']]
   label = 'My Issues'
@@ -122,11 +122,16 @@
   'editor.defaultFormatter' = 'foxundermoon.shell-format'
 
 ['workbench.editorAssociations']
-  '*.copilotmd'                                                         = 'vscode.markdown.preview.editor'
-  '*.ipynb'                                                             = 'jupyter-notebook'
-  '*.svg'                                                               = 'default'
-  git-rebase-todo                                                       = 'default'
-  '{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json' = 'default'
+  '{git,gitlens,conflictResolution,vscode-local-history}:/**/*.{asl.json,asl.yaml,asl.yml}' = 'default'
+  '{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json'                     = 'default'
+  '*.copilotmd'                                                                             = 'vscode.markdown.preview.editor'
+  '*.csv'                                                                                   = 'duckdb.dataFileViewer'
+  '*.ipynb'                                                                                 = 'jupyter-notebook'
+  '*.parquet'                                                                               = 'duckdb.dataFileViewer'
+  '*.svg'                                                                                   = 'default'
+  '*.tsv'                                                                                   = 'duckdb.dataFileViewer'
+  '*.xlsx'                                                                                  = 'duckdb.dataFileViewer'
+  'git-rebase-todo'                                                                         = 'default'
 
 ['[yaml]']
   'editor.defaultFormatter' = 'redhat.vscode-yaml'

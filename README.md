@@ -48,9 +48,9 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager init <ID>
     ```
 
-   The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
+    The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
 
-   You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
+    You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
 2. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
 
@@ -98,7 +98,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 3. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
 
-   See `docs/config_file.md` for more information.
+    See `docs/config_file.md` for more information.
 
 ## Generate console links
 
@@ -108,7 +108,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager console <ID> <CONSOLE_URL>
     ```
 
-   It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
+    It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
 
 ## Usage
 
@@ -149,7 +149,7 @@ Make sure you replaced `{PROFILE}` with the actual name of the profile. The use 
 <details>
 <summary>Compared to aws-sso-cli</summary><br>
 
-This project, and [aws-sso-cli], have some overlap. This project tries to follow the Unix philosophy of _doing one thing well_. Both projects are written in Go and have zero runtime dependencies. `aws-sso-cli` begins to cross the boundary into what [AWS Vault] does well, and has several additional integrations that are powerful at the cost of complexity. This project is intentionally less complex, and focuses more narrowly on managing SSO profiles. This project is licensed under the "open source" [Apache-2.0] license, while `aws-sso-cli` is licensed under the "free software" [GPL-3.0-or-later] license.
+This project, and [aws-sso-cli], have some overlap. This project tries to follow the Unix philosophy of _doing one thing well_. Both projects are written in Go and have zero runtime dependencies. `aws-sso-cli` begins to cross the boundary into what [AWS Vault] does well, and has several additional integrations that are powerful at the cost of complexity. This project is intentionally less complex, and focuses more narrowly on managing SSO profiles. This project is licensed under the "open source" [Apache 2.0][Apache-2.0] license, while `aws-sso-cli` is licensed under the "free software" [GPL 3.0 (or later)][GPL-3.0-or-later] license.
 
 </details>
 
