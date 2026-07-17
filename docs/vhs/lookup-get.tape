@@ -7,7 +7,7 @@ Require "aws-sso-manager"
 Set WindowBar Colorful
 # Set Theme "Builtin Dark"
 
-Set Shell "zsh"
+Set Shell "bash"
 Set FontSize 12
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
@@ -23,6 +23,9 @@ Env PS1 "$ "
 Env FZF_DEFAULT_OPTS ""
 
 # Type a command in the terminal.
+Type "# View help for the 'lookup' command."
+Sleep 2s
+Enter
 Type "aws-sso-manager lookup --help"
 Sleep 200ms
 Enter
@@ -37,6 +40,9 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# View help for the 'get' command."
+Sleep 2s
+Enter
 Type "aws-sso-manager get --help"
 Sleep 200ms
 Enter
@@ -51,6 +57,9 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# View a list of AWS Account IDs that you have access to."
+Sleep 2s
+Enter
 Type "aws-sso-manager get accounts"
 Sleep 200ms
 Enter
@@ -65,6 +74,9 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# Get the AWS Account ID for an account alias (matched by substring)."
+Sleep 2s
+Enter
 Type "aws-sso-manager lookup account sandbox"
 Sleep 200ms
 Enter
@@ -79,6 +91,9 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# Get the list of roles for an account alias (matched by substring)."
+Sleep 2s
+Enter
 Type "aws-sso-manager get roles --for $(aws-sso-manager lookup account sandbox)"
 Sleep 200ms
 Enter
@@ -93,6 +108,9 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# Get a single role (matched by substring) for an account alias."
+Sleep 2s
+Enter
 Type "aws-sso-manager lookup role readonly --for $(aws-sso-manager lookup account sandbox)"
 Sleep 200ms
 Enter
@@ -107,6 +125,11 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
+Type "# Get a single role (matched by substring) for an account alias,"
+Enter
+Type "# for an account that is selected using an 'fzf' menu."
+Sleep 2s
+Enter
 Type "aws-sso-manager lookup role power --for $(aws-sso-manager get accounts | fzf)"
 Sleep 200ms
 Enter
@@ -115,26 +138,3 @@ Type@500ms "8903"
 Sleep 200ms
 Enter
 Sleep 5s
-
-# Keys:
-#   Escape[@<time>] [number]        Press the Escape key
-#   Backspace[@<time>] [number]     Press the Backspace key
-#   Delete[@<time>] [number]        Press the Delete key
-#   Insert[@<time>] [number]        Press the Insert key
-#   Down[@<time>] [number]          Press the Down key
-#   Enter[@<time>] [number]         Press the Enter key
-#   Space[@<time>] [number]         Press the Space key
-#   Tab[@<time>] [number]           Press the Tab key
-#   Left[@<time>] [number]          Press the Left Arrow key
-#   Right[@<time>] [number]         Press the Right Arrow key
-#   Up[@<time>] [number]            Press the Up Arrow key
-#   Down[@<time>] [number]          Press the Down Arrow key
-#   PageUp[@<time>] [number]        Press the Page Up key
-#   PageDown[@<time>] [number]      Press the Page Down key
-#   Ctrl+<key>                      Press the Control key + <key> (e.g. Ctrl+C)
-#
-# Display:
-#   Hide                            Hide the subsequent commands from the output
-#   Show                            Show the subsequent commands in the output
-#   ScrollUp[@<time>] [number]      Scroll terminal viewport up by rows
-#   ScrollDown[@<time>] [number]    Scroll terminal viewport down by rows

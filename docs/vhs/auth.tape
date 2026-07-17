@@ -6,7 +6,7 @@ Require "aws-sso-manager"
 # Style
 Set WindowBar Colorful
 
-Set Shell "zsh"
+Set Shell "bash"
 Set FontSize 12
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
@@ -21,6 +21,9 @@ Set BorderRadius 10
 Env PS1 "$ "
 
 # Type a command in the terminal.
+Type "# View help for the 'auth' command."
+Sleep 2s
+Enter
 Type "aws-sso-manager auth --help"
 Sleep 200ms
 Enter
@@ -35,7 +38,10 @@ Show
 Sleep 200ms
 
 # Type a command in the terminal.
-Type "aws-sso-manager auth"
+Type "# Authenticate with your AWS account."
+Sleep 2s
+Enter
+Type "aws-sso-manager auth nwl"
 Sleep 200ms
 Enter
 Sleep 7s

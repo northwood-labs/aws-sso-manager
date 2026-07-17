@@ -48,9 +48,9 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager init <ID>
     ```
 
-    The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
+   The `<ID>` value is simply how you want to refer to it in your configuration. We recommend something very short and easy to type (e.g., `goog`, `msft`, `appl`, `nwl`, `mhe`, `strp`, `rax`, `swa`).
 
-    You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
+   You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
 2. If you run `cat ~/.aws/config`, you should see the following at the bottom of the output:
 
@@ -98,7 +98,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 3. You can view the configuration with `cat ~/.aws/config`. If you do not like how the names were generated, or if you don't like the names that your AWS administrator configured on the server side, you can override them.
 
-    See `docs/config_file.md` for more information.
+   See `docs/config_file.md` for more information.
 
 ## Generate console links
 
@@ -108,7 +108,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
     aws-sso-manager console <ID> <CONSOLE_URL>
     ```
 
-    It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
+   It will ask for you to make a few other decisions, then will generate a URL. It will bounce you through authentication, then log into the AWS console with a particular AWS Account ID and Organizations Role.
 
 ## Usage
 
@@ -144,47 +144,54 @@ See the documentation for your specific SDK, but everything supported in the AWS
 
 Make sure you replaced `{PROFILE}` with the actual name of the profile. The use of `{PROFILE}` in the code samples is just a placeholder.
 
-## Comparison
+## Comparisons
 
-| Feature                                      | ASM (Us)                    | [aws-sso-cli] [^1] |
-|----------------------------------------------|-----------------------------|--------------------|
-| AWS SSO support                              | ✓                           | ✓                  |
-| Bulk SSO Role discovery                      | ✓                           | ✓                  |
-| Write `~/.aws/config`                        | ✓                           | ✓                  |
-| User defined ENV vars                        | —                           | ✓                  |
-| `$AWS_PROFILE` templates                     | ✓                           | ✓                  |
-| CLI auto-complete                            | ✓                           | ✓                  |
-| Sharable console links with account and role | ✓                           | —                  |
-| Supports multiple profiles                   | ✓                           | ✓                  |
-| Sandboxed AWS config updates                 | ✓                           | —                  |
-| Atomic writes with locking                   | ✓                           | —                  |
-| Supports `AWS_CONFIG_FILE`                   | ✓                           | ✓                  |
-| Configure a default SSO profile              | ✓                           | ✓                  |
-| Does not require the AWS CLI                 | ✓                           | ✓                  |
-| No runtime dependencies                      | ✓                           | ✓                  |
-| Runs on Windows                              | ✓                           | ✓                  |
-| Runs on macOS                                | ✓                           | ✓                  |
-| Runs on Linux                                | ✓                           | ✓                  |
-| macOS code signing (Gatekeeper)              | ✓                           | -                  |
-| Linux code signing                           | —                           | -                  |
-| Windows code signing                         | —                           | -                  |
-| Shell completion                             | Bash, Zsh, Fish, PowerShell | Bash, Zsh, Fish    |
-| License                                      | [Apache-2.0]                | [GPL-3.0-or-later] |
+<details>
+<summary>Compared to aws-sso-cli</summary><br>
 
-* _AWS SSO Manager_ very intentionally does not try to compete with [AWS Vault].
-* _AWS SSO Manager_ is specific to the [AWS Identity Center] solution; not SAML.
-* _AWS SSO Manager_ only tries to replace the SSO onboarding of the [AWS CLI v2] with improved automation.
+This project, and [aws-sso-cli], have some overlap. This project tries to follow the Unix philosophy of _doing one thing well_. Both projects are written in Go and have zero runtime dependencies. `aws-sso-cli` begins to cross the boundary into what [AWS Vault] does well, and has several additional integrations that are powerful at the cost of complexity. This project is intentionally less complex, and focuses more narrowly on managing SSO profiles. This project is licensed under the "open source" [Apache-2.0] license, while `aws-sso-cli` is licensed under the "free software" [GPL-3.0-or-later] license.
 
-## TODO
+</details>
 
-* [ ] Save JSON to keychain and delete from disk?
-* [ ] Support templating other parameters.
+<details>
+<summary>Compared to AWS CLI v2</summary><br>
+
+This project, and [AWS CLI v2], are _complementary_. `aws-sso-manager` is intended to _replace_ the `aws configure sso` command. It streamlines the work of setting up AWS SSO; supports pattern-matching to rename accounts, roles, and profiles locally; and makes it much easier to update your current list of SSO roles as they change over time.
+
+[AWS CLI v2] leverages the profile configurations that `aws-sso-manager` provides.
+
+</details>
+
+<details>
+<summary>Compared to AWS Vault</summary><br>
+
+This project, and [AWS Vault], are _complementary_. For the purpose of managing AWS Identity Center (née _SSO_), [AWS Vault] leverages the same AWS profile configuration that [AWS CLI v2] uses to authenticate, which is generated and maintained by this project.
+
+</details>
+
+<details>
+<summary>Compared to Gimme Creds</summary><br>
+
+[Gimme Creds] is a Python solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It also requires the use of Okta as the Identity Provider (IdP).
+
+This project is focused on AWS Identity Center, therefore it never crosses paths with [Gimme Creds]. They solve entirely different problems.
+
+</details>
+
+<details>
+<summary>saml2aws</summary><br>
+
+[saml2aws] is a Go solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It supports several Identity Providers (IdPs).
+
+This project is focused on AWS Identity Center, therefore it never crosses paths with [saml2aws]. They solve entirely different problems.
+
+</details>
 
 [Apache-2.0]: https://choosealicense.com/licenses/apache-2.0/
 [AWS CLI v2]: https://aws.amazon.com/cli/
 [AWS Identity Center]: https://aws.amazon.com/iam/identity-center/
 [AWS Vault]: https://github.com/ByteNess/aws-vault
 [aws-sso-cli]: https://synfinatic.github.io/aws-sso-cli/latest/
+[Gimme Creds]: https://github.com/Nike-Inc/gimme-aws-creds
 [GPL-3.0-or-later]: https://choosealicense.com/licenses/gpl-3.0/
-
-[^1]: As of version v2.1.0.
+[saml2aws]: https://github.com/Versent/saml2aws

@@ -6,7 +6,7 @@ Require "aws-sso-manager"
 # Style
 Set WindowBar Colorful
 
-Set Shell "zsh"
+Set Shell "bash"
 Set FontSize 12
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
@@ -20,6 +20,9 @@ Set BorderRadius 10
 # Prompt set last after "Set" stagements.
 Env PS1 "$ "
 
+Type "# View the ~/.aws/config file."
+Sleep 2s
+Enter
 Type "bat ~/.aws/config"
 Sleep 200ms
 Enter
@@ -36,13 +39,15 @@ Sleep 200ms
 Show
 Sleep 200ms
 
+Type "# View the list of all AWS SSO accounts and roles you have access to."
+Sleep 2s
+Enter
 Type "aws-sso-manager list nwl"
 Sleep 200ms
 Enter
 Sleep 3s
 
 Hide
-Backspace 40
 Type "clear"
 Sleep 200ms
 Enter
@@ -50,6 +55,9 @@ Sleep 200ms
 Show
 Sleep 200ms
 
+Type "# Edit user settings to change the generated profile name."
+Sleep 2s
+Enter
 Type "nano ~/.config/aws-sso-manager/config.toml"
 Sleep 200ms
 Enter
@@ -74,6 +82,9 @@ Sleep 200ms
 Show
 Sleep 200ms
 
+Type "# Update the list of SSO profiles in your ~/.aws/config file."
+Sleep 2s
+Enter
 Type "aws-sso-manager update nwl"
 Sleep 200ms
 Enter
@@ -87,6 +98,9 @@ Sleep 200ms
 Show
 Sleep 200ms
 
+Type "# View the updated the list of SSO profiles."
+Sleep 2s
+Enter
 Type "aws-sso-manager list nwl"
 Sleep 200ms
 Enter
