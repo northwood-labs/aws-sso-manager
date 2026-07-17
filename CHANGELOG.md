@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`25fdf1f`](https://github.com/northwood-labs/aws-sso-manager/commit/25fdf1f9a61268db724955897274dd917c2cf6c1): Enhanced comparison table with licensing and shell completion details. ([@skyzyx](https://github.com/skyzyx))
 * [`3b13c0f`](https://github.com/northwood-labs/aws-sso-manager/commit/3b13c0fcf24eea8e93270d7d51d7d185d0097caa): Add marker regex space-format bugfix specification. ([@skyzyx](https://github.com/skyzyx))
 * [`8ff3fa8`](https://github.com/northwood-labs/aws-sso-manager/commit/8ff3fa8bb12e90385f4b1f8d478e5547cafed67e): Enhance documentation and demo script clarity. ([@skyzyx](https://github.com/skyzyx))
+* [`6b04bf7`](https://github.com/northwood-labs/aws-sso-manager/commit/6b04bf7abf27d4976e53cef04a06b7facc143d1b): Revised README.md for clarity and formatting. ([@skyzyx](https://github.com/skyzyx))
 
 ### :closed_lock_with_key: Security
 
