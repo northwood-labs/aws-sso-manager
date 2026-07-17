@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`bf7786b`](https://github.com/northwood-labs/aws-sso-manager/commit/bf7786b8dc7d65b79c1276937bd2d3727d35e757): Refactored comparison table and enhanced feature documentation. ([@skyzyx](https://github.com/skyzyx))
 * [`25fdf1f`](https://github.com/northwood-labs/aws-sso-manager/commit/25fdf1f9a61268db724955897274dd917c2cf6c1): Enhanced comparison table with licensing and shell completion details. ([@skyzyx](https://github.com/skyzyx))
 * [`3b13c0f`](https://github.com/northwood-labs/aws-sso-manager/commit/3b13c0fcf24eea8e93270d7d51d7d185d0097caa): Add marker regex space-format bugfix specification. ([@skyzyx](https://github.com/skyzyx))
+* [`8ff3fa8`](https://github.com/northwood-labs/aws-sso-manager/commit/8ff3fa8bb12e90385f4b1f8d478e5547cafed67e): Enhance documentation and demo script clarity. ([@skyzyx](https://github.com/skyzyx))
 
 ### :closed_lock_with_key: Security
 
@@ -151,5 +152,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`6593683`](https://github.com/northwood-labs/aws-sso-manager/commit/6593683412b1718640bcd2263d7e18b5c3e68aef): Update to the latest Go version. ([@skyzyx](https://github.com/skyzyx))
 * [`f61e2f3`](https://github.com/northwood-labs/aws-sso-manager/commit/f61e2f39f196201ee79fcefeebbc6a17aa45f1a3): Migrate cli-helpers to v2 and update dependencies. ([@skyzyx](https://github.com/skyzyx))
 * [`120d36a`](https://github.com/northwood-labs/aws-sso-manager/commit/120d36ac7216394527c9aef10330d950fc5618d9): Add data file viewer support to VS Code settings. ([@skyzyx](https://github.com/skyzyx))
+* [`5a0fd87`](https://github.com/northwood-labs/aws-sso-manager/commit/5a0fd87b5dc4050ad78e627b17c3e9607337647e): Update Go module dependencies. ([@skyzyx](https://github.com/skyzyx))
+* [`d3c57a6`](https://github.com/northwood-labs/aws-sso-manager/commit/d3c57a690e2e1d4fbab677ccede7611776e0c8f8): Remove spinner dependency and standardize tooling config. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-07-15.</p>
+<p>Generated on 2026-07-17.</p>
