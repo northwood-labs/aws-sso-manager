@@ -157,5 +157,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`5a0fd87`](https://github.com/northwood-labs/aws-sso-manager/commit/5a0fd87b5dc4050ad78e627b17c3e9607337647e): Update Go module dependencies. ([@skyzyx](https://github.com/skyzyx))
 * [`d3c57a6`](https://github.com/northwood-labs/aws-sso-manager/commit/d3c57a690e2e1d4fbab677ccede7611776e0c8f8): Remove spinner dependency and standardize tooling config. ([@skyzyx](https://github.com/skyzyx))
 * [`8a17e46`](https://github.com/northwood-labs/aws-sso-manager/commit/8a17e465326f50567ce75daf231086731c3f92cc): Configured funding options in `FUNDING.yml`. ([@skyzyx](https://github.com/skyzyx))
+* [`2612ec5`](https://github.com/northwood-labs/aws-sso-manager/commit/2612ec55e5dfa583e18fa172531b120c10a8b836): Updated funding sources in `FUNDING.yml`. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-07-19.</p>
+<p>Generated on 2026-07-20.</p>
