@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`6b04bf7`](https://github.com/northwood-labs/aws-sso-manager/commit/6b04bf7abf27d4976e53cef04a06b7facc143d1b): Revised README.md for clarity and formatting. ([@skyzyx](https://github.com/skyzyx))
 * [`b2d31e7`](https://github.com/northwood-labs/aws-sso-manager/commit/b2d31e70cbf1b8e7e50244306b2ac3bbccab65c9): Added console URL demonstration video and script. ([@skyzyx](https://github.com/skyzyx))
 * [`f00eaad`](https://github.com/northwood-labs/aws-sso-manager/commit/f00eaadd453af395f3068037706173440473df13): Update videos. ([@skyzyx](https://github.com/skyzyx))
+* [`2c26f95`](https://github.com/northwood-labs/aws-sso-manager/commit/2c26f95f342f0dd41a5b0cdd92ccf69be0d2d8f2): Updated asset URLs in `README.md`. ([@skyzyx](https://github.com/skyzyx))
 
 ### :closed_lock_with_key: Security
 
