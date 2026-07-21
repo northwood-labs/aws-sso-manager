@@ -8,11 +8,11 @@ Set WindowBar Colorful
 # Set Theme "Builtin Dark"
 
 Set Shell "bash"
-Set FontSize 12
+Set FontSize 18
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
-Set Width 1400
-Set Height 600
+Set Width 1280
+Set Height 800
 Set Padding 20
 Set Margin 20
 Set MarginFill "#fdf6e3"
@@ -21,40 +21,6 @@ Set BorderRadius 10
 # Prompt set last after "Set" stagements.
 Env PS1 "$ "
 Env FZF_DEFAULT_OPTS ""
-
-# Type a command in the terminal.
-Type "# View help for the 'lookup' command."
-Sleep 2s
-Enter
-Type "aws-sso-manager lookup --help"
-Sleep 200ms
-Enter
-Sleep 5s
-
-Hide
-Type "clear"
-Sleep 200ms
-Enter
-Sleep 200ms
-Show
-Sleep 200ms
-
-# Type a command in the terminal.
-Type "# View help for the 'get' command."
-Sleep 2s
-Enter
-Type "aws-sso-manager get --help"
-Sleep 200ms
-Enter
-Sleep 5s
-
-Hide
-Type "clear"
-Sleep 200ms
-Enter
-Sleep 200ms
-Show
-Sleep 200ms
 
 # Type a command in the terminal.
 Type "# View a list of AWS Account IDs that you have access to."

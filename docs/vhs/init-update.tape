@@ -7,10 +7,10 @@ Require "aws-sso-manager"
 Set WindowBar Colorful
 
 Set Shell "bash"
-Set FontSize 12
+Set FontSize 18
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
-Set Width 1400
+Set Width 1280
 Set Height 800
 Set Padding 20
 Set Margin 20

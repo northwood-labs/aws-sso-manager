@@ -8,11 +8,11 @@ Set WindowBar Colorful
 # Set Theme "Builtin Dark"
 
 Set Shell "bash"
-Set FontSize 12
+Set FontSize 18
 Set LineHeight 1.2
 Set FontFamily "SF Mono"
-Set Width 1400
-Set Height 600
+Set Width 1280
+Set Height 800
 Set Padding 20
 Set Margin 20
 Set MarginFill "#fdf6e3"
@@ -21,23 +21,6 @@ Set BorderRadius 10
 # Prompt set last after "Set" stagements.
 Env PS1 "$ "
 Env FZF_DEFAULT_OPTS ""
-
-# Type a command in the terminal.
-Type "# View help for the 'console' command."
-Sleep 2s
-Enter
-Type "aws-sso-manager console --help"
-Sleep 200ms
-Enter
-Sleep 5s
-
-Hide
-Type "clear"
-Sleep 200ms
-Enter
-Sleep 200ms
-Show
-Sleep 200ms
 
 # Type a command in the terminal.
 Type "# This feature allows you to specify which AWS account and IAM/SSO role the viewer needs."
@@ -62,21 +45,21 @@ Enter
 Type "# Otherwise, you can pass it as a parameter. We will use a URL for the S3 console."
 Sleep 2s
 Enter
-Type "aws-sso-manager console https://533267280695-gm4gmcwm.us-east-2.console.aws.amazon.com/s3/home?region=us-east-2#"
+Type "aws-sso-manager console https://533267280695-gm4gmcwm.us-east-2.console.aws.amazon.com/s3/home?region=us-east-2"
 Sleep 200ms
 Enter
-Sleep 2s
 
 # nwl
-Enter
 Sleep 2s
+Enter
 
 # MSA
+Sleep 500ms
 Down 2
-Sleep 200ms
-Enter
 Sleep 2s
+Enter
 
 # Role
+Sleep 2s
 Enter
 Sleep 5s
