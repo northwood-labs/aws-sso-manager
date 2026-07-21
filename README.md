@@ -44,7 +44,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
-https://github.com/user-attachments/assets/e740b506-2d43-47dc-8b48-9c6f5317b49f
+https://github.com/user-attachments/assets/10753743-8749-4438-b2ef-44d73bbe0c58
 
 You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
@@ -52,7 +52,7 @@ You will be asked for your _SSO Start URL_, and your SSO region. You may need to
 
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
-    https://github.com/user-attachments/assets/a4981aae-1e0f-4652-a8b2-57160c737e82
+    https://github.com/user-attachments/assets/ebbafe38-17ac-4531-9943-ef29660085c5
 
 2. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
 
@@ -69,7 +69,7 @@ You will be asked for your _SSO Start URL_, and your SSO region. You may need to
 
 With a user configuration file, you can control how your AWS accounts and profile names are generated.
 
-https://github.com/user-attachments/assets/7fd08090-74eb-44dc-903d-f7456e9546d9
+https://github.com/user-attachments/assets/0ff7303e-19a4-40b4-9f15-4c2a0019b601
 
 See `docs/config_file.md` for more information.
 
@@ -77,19 +77,19 @@ See `docs/config_file.md` for more information.
 
 In order to save some typing, if there's one AWS Organization that you use most often, you can set it as your default value. If you want to run commands on a different AWS Organization, you can still specify the alias at runtime.
 
-https://github.com/user-attachments/assets/bc99a0e1-7df6-4bff-a2a4-ed40e09154ed
+https://github.com/user-attachments/assets/5125fc70-f3f8-472e-a093-5a1beb1ec91d
 
 ## Lookup accounts and role names
 
 You often need to lookup AWS Account IDs or SSO profile names as part of running commands with AWS CLI. AWS SSO Manager can simplify this.
 
-https://github.com/user-attachments/assets/9a1d3ef1-57fc-4fd0-afcc-13dee1a843c7
+https://github.com/user-attachments/assets/8accdeb0-8469-4354-a170-16e67f3983da
 
 ## Generate console links
 
 One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
 
-https://github.com/user-attachments/assets/591718da-59a9-4bee-ba85-d96b2f989fdb
+https://github.com/user-attachments/assets/0b1b37e9-7bf8-4966-8460-874199de957c
 
 ## Usage
 
