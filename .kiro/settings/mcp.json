@@ -1,17 +1,5 @@
 {
   "mcpServers": {
-    "aws-agent-toolkit": {
-      "args": [
-        "mcp-proxy-for-aws@latest",
-        "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--metadata",
-        "AWS_REGION=us-west-2"
-      ],
-      "command": "uvx",
-      "env": {
-        "AWS_PROFILE": "msa-ro"
-      }
-    },
     "kirograph": {
       "command": "kirograph",
       "args": [

@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -53,6 +54,9 @@ var initCmd = &cobra.Command{
 		profileName := ""
 
 		ctx := cmd.Context()
+		if ctx == nil {
+			ctx = context.Background()
+		}
 
 		logger.InfoContext(ctx, "Passed arguments", logKeyCount, len(args))
 

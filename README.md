@@ -44,7 +44,7 @@ It is _complementary_ to the AWS CLI and tools like [AWS Vault].
 
 1. Since this is the first time you're adding credentials, your `~/.aws/config` should be blank. If you already have credentials there, that's fine, but if you want this tool to manage them, you should delete them and set them up anew.
 
-https://github.com/user-attachments/assets/10753743-8749-4438-b2ef-44d73bbe0c58
+<https://github.com/user-attachments/assets/10753743-8749-4438-b2ef-44d73bbe0c58>
 
 You will be asked for your _SSO Start URL_, and your SSO region. You may need to ask your AWS administrator or team mates for this information.
 
@@ -52,7 +52,7 @@ You will be asked for your _SSO Start URL_, and your SSO region. You may need to
 
 1. Log into the SSO session. This will require a web browser to go through the authentication flow for your SSO provider.
 
-    https://github.com/user-attachments/assets/ebbafe38-17ac-4531-9943-ef29660085c5
+    <https://github.com/user-attachments/assets/ebbafe38-17ac-4531-9943-ef29660085c5>
 
 2. A new browser tab will open asking you to confirm the code in your Terminal matches the code on-screen. **If they match**, choose _Allow_.
 
@@ -69,27 +69,27 @@ You will be asked for your _SSO Start URL_, and your SSO region. You may need to
 
 With a user configuration file, you can control how your AWS accounts and profile names are generated.
 
-https://github.com/user-attachments/assets/0ff7303e-19a4-40b4-9f15-4c2a0019b601
+<https://github.com/user-attachments/assets/0ff7303e-19a4-40b4-9f15-4c2a0019b601>
 
 See `docs/config_file.md` for more information.
 
-## Configuring a default AWS Organization
+## Configuring a default AWS organization
 
 In order to save some typing, if there's one AWS Organization that you use most often, you can set it as your default value. If you want to run commands on a different AWS Organization, you can still specify the alias at runtime.
 
-https://github.com/user-attachments/assets/5125fc70-f3f8-472e-a093-5a1beb1ec91d
+<https://github.com/user-attachments/assets/5125fc70-f3f8-472e-a093-5a1beb1ec91d>
 
 ## Lookup accounts and role names
 
 You often need to lookup AWS Account IDs or SSO profile names as part of running commands with AWS CLI. AWS SSO Manager can simplify this.
 
-https://github.com/user-attachments/assets/8accdeb0-8469-4354-a170-16e67f3983da
+<https://github.com/user-attachments/assets/8accdeb0-8469-4354-a170-16e67f3983da>
 
 ## Generate console links
 
 One of the things that AWS Identity Center enables is the ability to generate links to the AWS Console with a built-in AWS Account ID and Organizations Role.
 
-https://github.com/user-attachments/assets/0b1b37e9-7bf8-4966-8460-874199de957c
+<https://github.com/user-attachments/assets/0b1b37e9-7bf8-4966-8460-874199de957c>
 
 ## Usage
 
@@ -119,6 +119,41 @@ aws-vault login {PROFILE}
 
 See the documentation for your specific SDK, but everything supported in the AWS CLI is also supported in the AWS SDKs.
 
+### With [agent toolkit for AWS](https://github.com/aws/agent-toolkit-for-aws)
+
+When you configure the _Agent Toolkit for AWS_, you need to configure an AWS profile to use. For example:
+
+```json
+{
+  "mcpServers": {
+    "aws-agent-toolkit": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://aws-mcp.us-east-1.api.aws/mcp"
+      ],
+      "env": {
+        "AWS_PROFILE": "sandbox-ro",
+        "AWS_REGION": "us-west-2"
+      },
+      "timeout": 100000,
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+> [!IMPORTANT]
+> Your agent harness (VS Code, Kiro, Cursor, etc.) may use a different name for `mcpServers`. Consult your software's documentation for the correct naming pattern.
+
+In the example of `"AWS_PROFILE": "sandbox-ro"`, if you know that profile `sandbox-ro` is part of the `abc` AWS Identity Center account, you simply need to authenticate.
+
+```bash
+aws-sso-manager auth abc
+```
+
+If necessary, you will be prompted to login with your Identity Provider (IdP).
+
 ## Troubleshooting
 
 ### `The profile [sso-session {PROFILE}] does not exist in the AWS config file.`
@@ -137,17 +172,17 @@ This project, and [AWS CLI v2], are _complementary_. `aws-sso-manager` is intend
 
 [AWS CLI v2] leverages the profile configurations that `aws-sso-manager` provides.
 
-### Compared to AWS Vault
+### Compared to AWS vault
 
 This project, and [AWS Vault], are _complementary_. For the purpose of managing AWS Identity Center (née _SSO_), [AWS Vault] leverages the same AWS profile configuration that [AWS CLI v2] uses to authenticate, which is generated and maintained by this project.
 
-### Compared to Gimme Creds
+### Compared to gimme creds
 
 [Gimme Creds] is a Python solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It also requires the use of Okta as the Identity Provider (IdP).
 
 This project is focused on AWS Identity Center, therefore it never crosses paths with [Gimme Creds]. They solve entirely different problems.
 
-### saml2aws
+### Saml2aws
 
 [saml2aws] is a Go solution for organizations which use the older SAML integration with AWS instead of the newer AWS Identity Center solution. It supports several Identity Providers (IdPs).
 

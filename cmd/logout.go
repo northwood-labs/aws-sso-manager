@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -38,6 +39,9 @@ var (
 			profileName := ""
 
 			ctx := cmd.Context()
+			if ctx == nil {
+				ctx = context.Background()
+			}
 
 			// Profile resolution: arg > config > interactive prompt.
 			if len(args) == 1 {

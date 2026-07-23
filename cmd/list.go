@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -84,6 +85,9 @@ var (
 			profileName := ""
 
 			ctx := cmd.Context()
+			if ctx == nil {
+				ctx = context.Background()
+			}
 
 			selectedOutputs := 0
 			if fJSON {

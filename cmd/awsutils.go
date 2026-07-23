@@ -719,6 +719,7 @@ func getCacheFilePath(ctx context.Context, sessionProfile *ssoProfile) (string, 
 	}
 
 	logger.DebugContext(ctx, "Cached data file", logKeyFile, cacheFilePath)
+	logger.DebugContext(ctx, "SSO session region", "region", sessionProfile.Region)
 
 	return cacheFilePath, nil
 }
