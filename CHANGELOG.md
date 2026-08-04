@@ -161,5 +161,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 * [`8a17e46`](https://github.com/northwood-labs/aws-sso-manager/commit/8a17e465326f50567ce75daf231086731c3f92cc): Configured funding options in `FUNDING.yml`. ([@skyzyx](https://github.com/skyzyx))
 * [`2612ec5`](https://github.com/northwood-labs/aws-sso-manager/commit/2612ec55e5dfa583e18fa172531b120c10a8b836): Updated funding sources in `FUNDING.yml`. ([@skyzyx](https://github.com/skyzyx))
 * [`f1ab979`](https://github.com/northwood-labs/aws-sso-manager/commit/f1ab97909528dcd11de9d4f1e006fba5f04d507b): Integrated `FUNDING.yml` with config-manager. ([@skyzyx](https://github.com/skyzyx))
+* [`7c1481c`](https://github.com/northwood-labs/aws-sso-manager/commit/7c1481c38078e1e5c7d0e81b312268b9c217b453): Applied security best practices ([#3](@REPO/issues/3)). ([@step-security-bot](https://github.com/step-security-bot))
 
-<p>Generated on 2026-07-21.</p>
+<p>Generated on 2026-08-04.</p>
