@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	charm.land/fang/v2 v2.0.1
 	github.com/alitto/pond/v2 v2.7.1
-	github.com/aws/aws-sdk-go-v2 v1.43.3
+	github.com/aws/aws-sdk-go-v2 v1.43.4
 	github.com/aws/aws-sdk-go-v2/config v1.32.30
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.73.3
 	github.com/spf13/cobra v1.10.2
