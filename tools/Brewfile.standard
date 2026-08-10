@@ -10,6 +10,7 @@ tap "go-task/tap", trusted: true
 tap "okooo5km/tap", trusted: true
 tap "oven-sh/bun", trusted: true
 tap "trufflesecurity/trufflehog", trusted: true
+tap "updatecli/updatecli", trusted: true
 tap "vet-run/vet", trusted: true
 # @config-manager:end taps
 
@@ -17,9 +18,6 @@ tap "vet-run/vet", trusted: true
 # FORMULAE
 
 # @config-manager:start brew
-# https://aube.en.dev
-brew "aube"
-
 # https://github.com/sharkdp/bat
 brew "bat"
 
@@ -109,6 +107,9 @@ brew "trivy"
 
 # https://github.com/trufflesecurity/trufflehog
 brew "trufflesecurity/trufflehog/trufflehog"
+
+# https://github.com/updatecli/updatecli
+brew "updatecli/updatecli/updatecli"
 
 # https://github.com/vet-run/vet
 brew "vet-run/vet/vet-run"

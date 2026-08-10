@@ -14,8 +14,7 @@ body:
     id: what-do-you-want
     attributes:
       label: What functionality would you like to see?
-      description: |
-        @TODO: Update me!
+      description: ""
       placeholder: I would like to see…
       value: I would like to see…
     validations:

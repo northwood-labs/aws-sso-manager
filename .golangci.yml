@@ -266,6 +266,7 @@ linters:
             - github.com/gin-contrib/
             - github.com/gin-gonic/
             - github.com/go-enry/go-enry
+            - github.com/go-openapi/testify
             - github.com/google/go-cmp
             - github.com/google/go-github
             - github.com/grpc-ecosystem/
@@ -292,7 +293,6 @@ linters:
             - github.com/rs/zerolog
             - github.com/spf13/cobra
             - github.com/spf13/viper
-            - github.com/stretchr/testify
             - github.com/teekennedy/goldmark-markdown
             - github.com/valkey-io/valkey-go
             - github.com/valkey-io/valkey-go/valkeycompat
@@ -358,6 +358,9 @@ linters:
 
             - pkg: "github.com/sirupsen/logrus"
               desc: Use charm.land/log/v2 (with log/slog) for CLIs or github.com/rs/zerolog for servers instead.
+
+            - pkg: "github.com/stretchr/testify"
+              desc: Use github.com/go-openapi/testify instead.
 
             - pkg: "go.uber.org/zap"
               desc: Use charm.land/log/v2 (with log/slog) for CLIs or github.com/rs/zerolog for servers instead.
@@ -2143,7 +2146,7 @@ linters:
           severity: warning
           disabled: false
           exclude: [""]
-          arguments: [5]
+          arguments: [20]
 
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#modifies-parameter
         - name: modifies-parameter
@@ -2691,9 +2694,7 @@ linters:
       # Default: false
       enable-all: true
 
-      disable: []
       disable-all: false
-      enable:
 
       bool-compare:
         # To ignore user defined types (over builtin bool).
@@ -2710,7 +2711,7 @@ linters:
         # Default: true
         check-format-string: true
 
-        # To require f-assertions (e.g. `assert.Equalf`) if format string is used, even if there are no variable-length
+        # To require f-assertions (e.g., `assert.Equalf`) if format string is used, even if there are no variable-length
         # variables, i.e. it requires `require.NoErrorf` for both these cases:
         # - require.NoErrorf(t, err, "unexpected error")
         # - require.NoErrorf(t, err, "unexpected error for sid: %v", sid)
@@ -2872,7 +2873,7 @@ linters:
       # Default: true
       field-writes-are-uses: true
 
-      # Treat IncDec statement (e.g. `i++` or `i--`) as both read and write operation instead of just write.
+      # Treat IncDec statement (e.g., `i++` or `i--`) as both read and write operation instead of just write.
       # Default: false
       post-statements-are-reads: false
 
@@ -3120,14 +3121,40 @@ linters:
           - wsl
 
       - source: lint:allow_complexity
-        text: (cognitive complexity)
+        text: ((cognitive|cyclomatic) complexity)
         linters:
           - gocognit
+          - gocyclo
 
       - source: lint:no_const
         text: (make it a constant)
         linters:
           - goconst
+
+      - source: lint:allow_naming_conflict_stdlib
+        text: (because it conflicts with Go standard library package)
+        linters:
+          - revive
+
+      - source: lint:allow_bad_package_name
+        text: (because it is a bad package name)
+        linters:
+          - revive
+
+      - source: lint:allow_unexported_return
+        text: (returns unexported type)
+        linters:
+          - revive
+
+      - source: lint:allow_control_coupling_antipattern
+        text: (avoid control coupling)
+        linters:
+          - revive
+
+      - source: lint:allow_exit
+        text: "deep-exit:"
+        linters:
+          - revive
 
       - source: (fmt|lipgloss)\.(Fprint|Print|Sprint)(f|ln)?
         text: (is not checked)
@@ -3307,62 +3334,22 @@ output:
       # Use colors.
       # Default: true
       colors: true
-      # Prints issues in a JSON representation.
-      # json:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: stdout
 
-      # Prints issues in columns representation separated by tabulations.
-      # tab:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: stdout
+    # Prints issues in a JSON representation.
+    # json:
+    #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
+    #   # Default: stdout
+    #   path: stdout
 
-      #   # Print linter name in the end of issue text.
-      #   # Default: true
-      #   print-linter-name: true
+    # Prints issues in the SARIF format.
+    sarif:
+      # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      # Default: stdout
+      path: golangci-lint.sarif
 
-      #   # Use colors.
-      #   # Default: true
-      #   colors: true
-
-      # Prints issues in the Checkstyle format.
-      # checkstyle:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: stdout
-
-      # Prints issues in the Code Climate format.
-      # code-climate:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: stdout
-
-      # Prints issues in the JUnit XML format.
-      # junit-xml:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: stdout
-      #   # Support extra JUnit XML fields.
-      #   # Default: false
-      #   extended: true
-
-      # Prints issues in the TeamCity format.
-      # teamcity:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: ./path/to/output.txt
-
-      # Prints issues in the SARIF format.
-      # sarif:
-      #   # Output path can be either `stdout`, `stderr` or path to the file to write to.
-      #   # Default: stdout
-      #   path: ./path/to/output.json
-
-      # Add a prefix to the output file references.
-      # This option is ignored when using `output.path-mode: abs` mode.
-      # Default: ""
+  # Add a prefix to the output file references.
+  # This option is ignored when using `output.path-mode: abs` mode.
+  # Default: ""
   path-prefix: ""
 
   # By default, the report are related to the path obtained by `run.relative-path-mode`.
@@ -3396,7 +3383,7 @@ output:
 # Options for analysis running.
 run:
   # @config-manager:start run
-  # Timeout for total work, e.g. 30s, 5m, 5m30s.
+  # Timeout for total work, e.g., 30s, 5m, 5m30s.
   # If the value is lower or equal to 0, the timeout is disabled.
   # Default: 0 (disabled)
   timeout: 1m
@@ -3469,15 +3456,16 @@ severity:
   # - GitHub: https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
   # - TeamCity: https://www.jetbrains.com/help/teamcity/service-messages.html#Inspection+Instance
   #
-  # `@linter` can be used as severity value to keep the severity from linters (e.g. revive, gosec, ...)
+  # `@linter` can be used as severity value to keep the severity from linters (e.g., revive, gosec, ...)
   #
   # Default: ""
   default: error
+
   # When a list of severity rules are provided, severity information will be added to lint issues.
   # Severity rules have the same filtering capability as exclude rules
   # except you are allowed to specify one matcher per severity rule.
   #
-  # `@linter` can be used as severity value to keep the severity from linters (e.g. revive, gosec, ...)
+  # `@linter` can be used as severity value to keep the severity from linters (e.g., revive, gosec, ...)
   #
   # Only affects out formats that support setting severity information.
   #

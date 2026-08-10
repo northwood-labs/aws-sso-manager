@@ -64,7 +64,7 @@ timeout = 30
 retry_wait_time = 2
 
 # Comma-separated list of accepted status codes for valid links.
-accept = [ "200..=308", "429" ]
+accept = ["200..=308", "429"]
 
 # Proceed for server connections considered insecure (invalid TLS).
 insecure = false
@@ -130,6 +130,7 @@ host_request_interval = "500ms"
 exclude = [
   # @config-manager:start host-excludes
   '@github.com',
+  'bit.ly',
   'bitbucket.org/org/',
   'file://..',
   'github.com/org/',
@@ -145,6 +146,7 @@ exclude = [
   'pkg.go.dev/go.nwlabs.dev',
   'shellcheck.net',
   'taplo://',
+  'x-access-token',
   # @config-manager:end host-excludes
   '://...',
   '://host/',

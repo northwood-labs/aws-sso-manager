@@ -21,30 +21,70 @@ last_sync_time = '2026-07-17T22:22:49Z'
 source_hash = ''
 dest_hash = 'sha256:0370fa79804d2f4734c02214b9929a035d8682cede2631beab242512df95bc7c'
 
+[files.'.github/FUNDING.yml']
+last_sync_time = '2026-08-04T22:45:11Z'
+source_hash = ''
+dest_hash = 'sha256:d66afeb2fed2fb1be42624da553a483407bb50f86005667d6b6585d5a54d402c'
+
+[files.'.github/ISSUE_TEMPLATE/']
+last_sync_time = '2026-08-04T22:50:09Z'
+source_hash = ''
+dest_hash = 'dir:initialized'
+
 [files.'.github/dco.yml']
 last_sync_time = '2026-07-17T22:22:49Z'
 source_hash = ''
 dest_hash = 'sha256:7dd87ff71dc8fb0b8e4687260c3be516c01945b385d52bc80886480d511b6d13'
 
-[files.'.github/workflows/dependabot-auto-merge.yml']
-last_sync_time = '2026-07-17T22:22:49Z'
+[files.'.github/workflows/codeql.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
-dest_hash = 'sha256:03154863783dd94419b1eec592dc272255f7c4471188d77fe566c07af59aa7e4'
+dest_hash = 'sha256:5cb4c31f95c0f25310e4394add697279d9b84ceaa84f928af3c30d0a17d8d590'
+
+[files.'.github/workflows/dependabot-auto-merge.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:03f31d01d1194810e992aaf1e3e2c2f7d2c84eec87add36da55968960595b3c5'
+
+[files.'.github/workflows/dependency-review.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:72fac88953361e9aad6ceff73dece0f7c1c9dc90f82f2b90a42e6ac8c8d96567'
+
+[files.'.github/workflows/osv-scanner.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:b883020bb298a0c559d6cb1ab6323a3b8211a107f63991c4d8bde5f7cccdd6e8'
+
+[files.'.github/workflows/scorecard.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:deb21fbc1912b948cd0b352b8b20f9ffc1ff12386aac4c052ff72f119458db41'
+
+[files.'.github/workflows/test.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:9aadf22ab92332b45ec48e82622512f377492fb9d1ef6cba680f6044307c2869'
+
+[files.'.github/workflows/trufflehog.yml']
+last_sync_time = '2026-08-10T22:20:35Z'
+source_hash = ''
+dest_hash = 'sha256:eb556452693de842ec671de8d0649ed23921088009ad4aac7ba5db03061e3af1'
 
 [files.'.github/workflows/update-on-push.yml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
-dest_hash = 'sha256:2bc7eb6e2ce81b0a7421b3fcf4b7fa55ccdef10710d0f6b8edb653ae8572952f'
+dest_hash = 'sha256:55f0bb471d569460214e36c93abc11424bf0f76913d366d6234148e1921787df'
 
 [files.'.github/zizmor.yml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:12:50Z'
 source_hash = ''
-dest_hash = 'sha256:d18075679be812adf274e9c9b1b11bca667aae81d079462dbdc6019204c82d7c'
+dest_hash = 'sha256:7a5d228ab5dac305192a23dee16960c3caf9e57d6f1bf58db8f06840572dd233'
 
 [files.'.golangci.yml']
-last_sync_time = '2026-07-17T22:22:48Z'
+last_sync_time = '2026-08-10T22:12:50Z'
 source_hash = ''
-dest_hash = 'sha256:b2a7e3f66709be1d974da10ac58ea3081c6816a6d54c8e8e355e97eb8c8f48f8'
+dest_hash = 'sha256:b3f0cdae72ef788c8b18e05e2d6b0c2f6e9964220e03941f4ebc3ce383fd1be3'
 
 [files.'.gommit.toml']
 last_sync_time = '2026-07-17T22:22:49Z'
@@ -66,10 +106,15 @@ last_sync_time = '2026-07-17T22:22:49Z'
 source_hash = ''
 dest_hash = 'sha256:7ac823d020226850ad79201f67c54ece6a513573c46aca2ae3b3fb3c2cafb363'
 
-[files.'.rumdl.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+[files.'.pinact.yaml']
+last_sync_time = '2026-08-10T22:17:48Z'
 source_hash = ''
-dest_hash = 'sha256:7029313132bb91a5d59e29524fe18c3c97fb5ce46a4427792e5d395177ac270a'
+dest_hash = 'sha256:d3d0b7bfa2575418c0f1a7446b6265d0aa933c0c643992fcb9c216c6c32ac9da'
+
+[files.'.rumdl.toml']
+last_sync_time = '2026-08-04T22:45:11Z'
+source_hash = ''
+dest_hash = 'sha256:39c36027097f8eb8702f224ace28aa514dc0cec80f05ed07d3621e9a74ad8bab'
 
 [files.'.shellcheckrc']
 last_sync_time = '2026-07-17T22:22:49Z'
@@ -77,14 +122,19 @@ source_hash = ''
 dest_hash = 'sha256:64f0be43f9a3a049d5e56951767113f21900269f1f4ac33a63f9d19111142352'
 
 [files.'.shuck.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
 dest_hash = 'sha256:835ba2f43b09defb26cc31b569e87f54810411993084051fc524a7a367534e53'
 
 [files.'.taplo.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
 dest_hash = 'sha256:4dddd90976ca596b7c5cb8a24020d0fbcd0608340670f72ecb314e1ff06c516d'
+
+[files.'.trivyignore.yaml']
+last_sync_time = '2026-08-10T22:12:50Z'
+source_hash = ''
+dest_hash = 'sha256:ad0f1a6c94a321064322cd62c813e056261c713a0a853ce4c3317931e15afd6c'
 
 [files.'.vscode/README.md']
 last_sync_time = '2026-07-17T22:22:49Z'
@@ -107,12 +157,12 @@ source_hash = ''
 dest_hash = 'sha256:d525ead29cc7ddab318b5376924a61171fa7da3cdfa7d69203dacbf297eb2976'
 
 [files.'.vscode/settings-golang.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
 dest_hash = 'sha256:c1efc9e31bbd67ed5011a12c390ddf3fa37dc5153ac2d154bbf93df0c9e6ba0b'
 
 [files.'.vscode/settings-llm.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:36Z'
 source_hash = ''
 dest_hash = 'sha256:94bbbdabe84fc9e899b566ed20dfc44f7bb1e542c8ee18a9d8879d554811140e'
 
@@ -122,9 +172,9 @@ source_hash = ''
 dest_hash = 'sha256:4390e4b17740e84c594b9ca41ec20d4319cfed464612e5ebfbe7e1a2b9bdea60'
 
 [files.'.vscode/settings-standard.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:17:48Z'
 source_hash = ''
-dest_hash = 'sha256:dd0a0eade759a13b1f7414a6ad5d28e69d463bc8ff61f121abd6c8479566933b'
+dest_hash = 'sha256:35be7e78e973c80c2f5983a7fda25700ffc7b1925d8f5ea06b6e3666b29b6a87'
 
 [files.'.vscode/settings.sh']
 last_sync_time = '2026-07-17T22:22:49Z'
@@ -137,29 +187,29 @@ source_hash = ''
 dest_hash = 'sha256:682525d5f96c552b6ad00496bae95e238d4f9fb0331b6f38868322def11db6b9'
 
 [files.'Taskfile.dist.yml']
-last_sync_time = '2026-07-17T22:22:50Z'
+last_sync_time = '2026-08-10T22:20:36Z'
 source_hash = ''
 dest_hash = 'sha256:a0d2d13ec97473927aeb06283b2c485ddf494212c71ed710f744c044e238c304'
 
 [files.'cliff.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
-dest_hash = 'sha256:4e1055ea24a40ccf23d415262b14eed1bee75aec688629c3e26d23da20b18ec6'
+dest_hash = 'sha256:d29003859e88932bdb7538c96b48456a652c737c641cbf942e55b92680f801bf'
 
 [files.'ecrc.toml']
-last_sync_time = '2026-07-17T22:22:50Z'
+last_sync_time = '2026-08-10T22:20:36Z'
 source_hash = ''
-dest_hash = 'sha256:9a1b915c24a73f9443a2505dd04fb7c34ca57311d841b0793693232c8f31618f'
+dest_hash = 'sha256:19dad5110aebe2cc83c27f0e9e5530e2fa4325ba7e363f5ed92672bc707e40f6'
 
 [files.'hk.pkl']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-10T22:20:35Z'
 source_hash = ''
-dest_hash = 'sha256:7e4ae641fd8116a65ac92d8b5ad7e9d44e0da1de8c08417d1ef29da796332501'
+dest_hash = 'sha256:4a26539314ee50171e2fc1bfca0907b831f9f20d205d2dd82421e4ff213122df'
 
 [files.'lychee.toml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-04T22:45:11Z'
 source_hash = ''
-dest_hash = 'sha256:f189d7d4c294f16213e6a960e0be516cbb0f73f4df6afa2926f1102c80b1ecf2'
+dest_hash = 'sha256:33a08bc3c709b1a1390974b3d6e59465b8b0735bcb843398c356378355da8361'
 
 [files.'scripts/generate-contributors.sh']
 last_sync_time = '2026-07-17T22:22:49Z'
@@ -172,9 +222,9 @@ source_hash = ''
 dest_hash = 'sha256:a62e3351eedfbbc596ac16cfebfd50368067e9e0dc00ce9f58d74e66f6155dd1'
 
 [files.'tools/Brewfile.standard']
-last_sync_time = '2026-07-17T22:22:50Z'
+last_sync_time = '2026-08-10T22:13:01Z'
 source_hash = ''
-dest_hash = 'sha256:c7d6f1b1413e479177bf7688d27ebc519eb1017b1ae4f1a4465eccb28ca1f57a'
+dest_hash = 'sha256:027ac697cba028cd425e1a2c67039742ed15ec897603c2a5daf00ea0dc3e4daa'
 
 [files.'tools/Taskfile.admin.yml']
 last_sync_time = '2026-07-17T22:22:50Z'
@@ -207,11 +257,11 @@ source_hash = ''
 dest_hash = 'sha256:9d73bf69dc01d7ab0b571a4caf3ac1cc092fd053440855f3d322a2fbf05f8c0c'
 
 [files.'trivy-license.yaml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-04T22:45:11Z'
 source_hash = ''
-dest_hash = 'sha256:474ffe4049c40354708e12c51d87ef3b1692de5aa26351c9fd9956a431b7390e'
+dest_hash = 'sha256:c2810b6f48789870be1b9473b2cb2afbe2c590844ed4d7d6645051c0e9214e47'
 
 [files.'trivy-vuln.yaml']
-last_sync_time = '2026-07-17T22:22:49Z'
+last_sync_time = '2026-08-04T22:45:11Z'
 source_hash = ''
-dest_hash = 'sha256:5a4cf755416da735cf71fba08e55953dcf178beae08a7153fd029b8eeb8b5f72'
+dest_hash = 'sha256:fa359d0b9e9559e78b23f01cb9d01a7926042d7a98ecf7d517ac6432b22d9306'

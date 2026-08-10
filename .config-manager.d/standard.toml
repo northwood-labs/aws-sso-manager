@@ -78,6 +78,13 @@
   stub        = 'configs/stubs/osv-scanner.toml'
   destination = 'osv-scanner.toml'
 
+# Pinact
+# https://github.com/suzuki-shunsuke/pinact
+[[files]]
+  stub        = 'configs/stubs/pinact.yaml'
+  source      = 'configs/templates/pinact.yaml'
+  destination = '.pinact.yaml'
+
 # rumdl replaces Markdownlint
 # https://rumdl.dev
 [[files]]
@@ -110,8 +117,9 @@
 # Trivy for vulnerability and license scanning
 # https://trivy.dev
 [[files]]
-  stub        = 'configs/stubs/trivyignore'
-  destination = '.trivyignore'
+  stub        = 'configs/stubs/trivyignore.yaml'
+  destination = '.trivyignore.yaml'
+  replaces    = ['.trivyignore']
 
 [[files]]
   stub        = 'configs/stubs/trivy-license.yaml'
@@ -195,14 +203,72 @@
   destination = '.github/zizmor.yml'
 
 [[files]]
-  stub        = 'configs/stubs/.github/workflows/dependabot-auto-merge.yml'
-  source      = 'configs/templates/.github/workflows/dependabot-auto-merge.yml'
+  stub = 'configs/stubs/.github/workflows/codeql.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/codeql.yml',
+  ]
+  destination = '.github/workflows/codeql.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/dependabot-auto-merge.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/dependabot-auto-merge.yml',
+  ]
   destination = '.github/workflows/dependabot-auto-merge.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/dependency-review.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/dependency-review.yml',
+  ]
+  destination = '.github/workflows/dependency-review.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/osv-scanner.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/osv-scanner.yml',
+  ]
+  destination = '.github/workflows/osv-scanner.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/scorecard.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/scorecard.yml',
+  ]
+  destination = '.github/workflows/scorecard.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/test.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+  ]
+  destination = '.github/workflows/test.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/trufflehog.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/trufflehog.yml',
+  ]
+  destination = '.github/workflows/trufflehog.yml'
 
 [[files]]
   stub = 'configs/stubs/.github/workflows/update-on-push.yml'
   source = [
     'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
     'configs/templates/.github/workflows/update-on-push.yml',
   ]
   destination = '.github/workflows/update-on-push.yml'

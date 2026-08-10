@@ -4,44 +4,49 @@
 # policy, and support documentation.
 
 # @config-manager:start workflow-name
-name: "CodeQL"
+name: Security scorecard
 # @config-manager:end workflow-name
 
 # @config-manager:start workflow-on
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main"]
+    branches: [main]
+  # For Branch-Protection check. Only the default branch is supported. See
+  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
+  branch_protection_rule:
+  # To guarantee Maintained check is occasionally updated. See
+  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   schedule:
-    # https://crontab.guru/#0_0_*_*_1
-    - cron: "0 0 * * 1"
+    # https://crontab.guru/#40_8_*_*_1
+    - cron: 40 8 * * 5
       # @config-manager:end workflow-on
 
 # @config-manager:start workflow-permissions
-permissions:
-  contents: read
+# Declare default permissions as read only.
+permissions: read-all
 # @config-manager:end workflow-permissions
 
+# @config-manager:start workflow-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+# @config-manager:end workflow-concurrency
+
 jobs:
-  analyze:
-    name: Analyze
+  analysis:
+    name: Perform analysis
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       # @config-manager:start workflow-permissions-job
-      actions: read
-      contents: read
+      # Needed to upload the results to code-scanning dashboard.
       security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+      id-token: write
       # @config-manager:end workflow-permissions-job
-    strategy:
-      # @config-manager:start workflow-strategy
-      fail-fast: false
-      # @config-manager:end workflow-strategy
-      matrix:
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        language: ["go"]
+      # Uncomment the permissions below if installing in a private repository.
+      # contents: read
+      # actions: read
 
     steps:
       # @config-manager:start harden-runner
@@ -178,14 +183,27 @@ jobs:
           persist-credentials: false
       # @config-manager:end workflow-clone
 
-      # @config-manager:start workflow-codeql
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      # @config-manager:start workflow-analysis
+      - name: Run analysis
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
-          languages: ${{ matrix.language }}
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      # @config-manager:end workflow-analysis
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      # @config-manager:start workflow-upload
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          category: "/language:${{matrix.language}}"
-    # @config-manager:end workflow-codeql
+          name: SARIF file
+          path: results.sarif
+          retention-days: 90
+      # @config-manager:end workflow-upload
+
+      # @config-manager:start workflow-upload-codeql
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          sarif_file: results.sarif
+    # @config-manager:end workflow-upload-codeql

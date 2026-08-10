@@ -3,46 +3,32 @@
 # by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
 
-# @config-manager:start workflow-name
-name: "CodeQL"
-# @config-manager:end workflow-name
+name: Tests
 
-# @config-manager:start workflow-on
 on:
+  # Adapt this for your project.
+  workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main"]
-  schedule:
-    # https://crontab.guru/#0_0_*_*_1
-    - cron: "0 0 * * 1"
-      # @config-manager:end workflow-on
+    branches:
+      - main
 
-# @config-manager:start workflow-permissions
+# @config-manager:start workflow-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+# @config-manager:end workflow-concurrency
+
 permissions:
   contents: read
-# @config-manager:end workflow-permissions
 
 jobs:
-  analyze:
-    name: Analyze
+  unit:
+    name: Unit
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      # @config-manager:start workflow-permissions-job
-      actions: read
-      contents: read
-      security-events: write
-      # @config-manager:end workflow-permissions-job
-    strategy:
-      # @config-manager:start workflow-strategy
-      fail-fast: false
-      # @config-manager:end workflow-strategy
-      matrix:
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        language: ["go"]
-
     steps:
       # @config-manager:start harden-runner
       - name: Harden Runner
@@ -176,16 +162,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # @config-manager:end workflow-clone
+    # @config-manager:end workflow-clone
 
-      # @config-manager:start workflow-codeql
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        with:
-          languages: ${{ matrix.language }}
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        with:
-          category: "/language:${{matrix.language}}"
-    # @config-manager:end workflow-codeql
+    # @TODO: The rest of the test steps need to be written for this project.
+    # - name: I need to be filled-in.

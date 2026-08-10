@@ -7,7 +7,7 @@
 
 [remote.github]
   owner = "northwood-labs"
-  repo  = "@TODO: Update the repository value here."
+  repo  = ""
 
 [changelog]
   # @config-manager:start changelog-content

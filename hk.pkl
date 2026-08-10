@@ -283,11 +283,11 @@ local linters = new Mapping<String, Group> {
         profiles = List("slow")
       }
       ["trivy-licenses"] {
-        check = "trivy fs --config trivy-license.yaml --ignorefile .trivyignore ."
+        check = "trivy fs --config trivy-license.yaml --ignorefile .trivyignore.yaml ."
         profiles = List("slow")
       }
       ["trivy-vulns"] {
-        check = "trivy fs --config trivy-vuln.yaml --ignorefile .trivyignore ."
+        check = "trivy fs --config trivy-vuln.yaml --ignorefile .trivyignore.yaml ."
         profiles = List("slow")
       }
       ["trufflehog"] {

@@ -4,7 +4,7 @@ dependency-tree: true
 exit-code: 0
 format: table
 ignore-policy: ""
-ignorefile: .trivyignore
+ignorefile: .trivyignore.yaml
 include-dev-deps: false
 insecure: false
 list-all-pkgs: true

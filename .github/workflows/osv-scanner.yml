@@ -4,45 +4,44 @@
 # policy, and support documentation.
 
 # @config-manager:start workflow-name
-name: "CodeQL"
+name: OSV Scanner
 # @config-manager:end workflow-name
 
 # @config-manager:start workflow-on
 on:
+  workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main"]
+    branches:
+      - main
   schedule:
-    # https://crontab.guru/#0_0_*_*_1
-    - cron: "0 0 * * 1"
-      # @config-manager:end workflow-on
+    # https://crontab.guru/#0_0_*_*_4
+    - cron: "0 0 * * 4"
+# @config-manager:end workflow-on
 
 # @config-manager:start workflow-permissions
 permissions:
+  # Required to upload SARIF file to CodeQL. See: https://github.com/github/codeql-action/issues/2117
+  actions: read
+  # Require writing security events to upload SARIF file to security tab
+  security-events: write
+  # Only need to read contents
   contents: read
 # @config-manager:end workflow-permissions
 
-jobs:
-  analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      # @config-manager:start workflow-permissions-job
-      actions: read
-      contents: read
-      security-events: write
-      # @config-manager:end workflow-permissions-job
-    strategy:
-      # @config-manager:start workflow-strategy
-      fail-fast: false
-      # @config-manager:end workflow-strategy
-      matrix:
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        language: ["go"]
+# @config-manager:start workflow-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+# @config-manager:end workflow-concurrency
 
+jobs:
+  osv_scanner_job:
+    runs-on: ubuntu-latest
+    name: Scan for vulns
+    timeout-minutes: 30
     steps:
       # @config-manager:start harden-runner
       - name: Harden Runner
@@ -178,14 +177,13 @@ jobs:
           persist-credentials: false
       # @config-manager:end workflow-clone
 
-      # @config-manager:start workflow-codeql
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      # @config-manager:start workflow-scanner
+      - name: "Run scanner on existing code"
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+        continue-on-error: true
         with:
-          languages: ${{ matrix.language }}
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        with:
-          category: "/language:${{matrix.language}}"
-    # @config-manager:end workflow-codeql
+          scan-args: |-
+            --format=json
+            --output=results.json
+            --recursive .
+    # @config-manager:end workflow-scanner

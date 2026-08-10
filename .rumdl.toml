@@ -66,8 +66,8 @@
 # https://rumdl.dev/md041/
 [MD041]
   # first-line-h1
-  enabled = true
-  # allow-preamble = true
+  enabled            = true
+  allow-preamble     = true
   fix                = false
   front-matter-title = "^\\s*(name|title)\\s*[:=]"
 
@@ -80,6 +80,14 @@
   min-level = 2
   preserve-cased-words = true
   style = "sentence-case"
+  sentence-case-restart-after = [
+    #
+    " - ", # Hyphen
+    " – ", # En-dash
+    ":",   # Colon
+    "—",   # Em-dash
+    #
+  ]
   lowercase-words = [
     "a",
     "an",
@@ -169,7 +177,9 @@
 # https://rumdl.dev/md077/
 [MD077]
   # list-continuation-indent
-  enabled = false
+  enabled = true
+  # style = "aligned"
+  style = "any"
   # @config-manager:end lists
 
   #-------------------------------------------------------------------------------
@@ -204,10 +214,16 @@
   # line-length
   enabled                  = true
   blockquotes              = false
+  code-block-line-length   = 0
   code-blocks              = false
+  code-spans               = false
+  heading-line-length      = 0
   headings                 = false
+  ignore-link-urls         = true
   line-length              = 0
+  math-blocks              = false
   paragraphs               = false
+  reflow                   = false
   require-sentence-capital = true
   strict                   = false
   tables                   = false
@@ -264,6 +280,7 @@
     "div",
     "img",
     "li",
+    "no-markdown-equivalent",
     "nobr",
     "ol",
     "p",
@@ -445,7 +462,13 @@
 # https://rumdl.dev/md057/
 [MD057]
   # existing-relative-links
-  enabled = true
+  enabled           = true
+  absolute-links    = "ignore"
+  check-frontmatter = false
+  compact-paths     = true
+  # ignore-frontmatter-fields = ["image", "cover"]
+  self-referential-links = true
+  # search-paths = ["assets", "images", "attachments"]
 
 # https://rumdl.dev/md059/
 [MD059]
@@ -549,6 +572,23 @@
     #
     #
   ]
+
+# https://rumdl.dev/md084/
+[MD084]
+  # invisible-characters
+  enabled = true
+  strict  = true
+  allow   = []
+
+  # MD082: Not configured.
+
+  # MD085: Not configured.
+
+# https://rumdl.dev/md086/
+[MD086]
+  # no-unclosed-comments
+  enabled = true
+
   # @config-manager:end other
 
   #-------------------------------------------------------------------------------
@@ -594,6 +634,10 @@
     # https://rumdl.dev/md073/
     # toc-validation
     "MD073",
+
+    # https://rumdl.dev/md084/
+    # invisible-characters
+    "MD084",
   ]
   flavor = "gfm"
   line-length = 0

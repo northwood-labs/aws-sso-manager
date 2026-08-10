@@ -7,22 +7,22 @@
 name: Generate CHANGELOG on push
 # @config-manager:end workflow-name
 
+# @config-manager:start workflow-on
 on:
-  # @config-manager:start workflow-on
   workflow_dispatch:
   push:
     branches:
       - main
-  # @config-manager:end workflow-on
+# @config-manager:end workflow-on
 
+# @config-manager:start workflow-concurrency
 concurrency:
-  # @config-manager:start workflow-concurrency
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-  # @config-manager:end workflow-concurrency
+# @config-manager:end workflow-concurrency
 
-# Declare default permissions as read only.
 # @config-manager:start workflow-permissions
+# Declare default permissions as read only.
 permissions: read-all
 # @config-manager:end workflow-permissions
 
@@ -32,15 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Generate CHANGELOG on push
     timeout-minutes: 2
-    permissions:
-      contents: write
     # @config-manager:end update-on-push-job
+    permissions:
+      # @config-manager:start workflow-permissions-job
+      contents: write
+      # @config-manager:end workflow-permissions-job
     steps:
       # @config-manager:start harden-runner
       - name: Harden Runner
         uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
-      # @config-manager:end harden-runner
-      # @config-manager:start step-security-hosts
+        # @config-manager:end harden-runner
+        # @config-manager:start step-security-hosts
         with:
           disable-sudo: true
           egress-policy: block
@@ -163,25 +165,30 @@ jobs:
             x.cp.wd.microsoft.com:443
       # @config-manager:end step-security-hosts
 
-      # @config-manager:start workflow-run-steps
+      # @config-manager:start workflow-install-node
       - name: Install Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "26"
           token: ${{ secrets.GITHUB_TOKEN }}
+      # @config-manager:end workflow-install-node
 
-      - name: Checkout Source
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      # @config-manager:start workflow-clone
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0
+      # @config-manager:end workflow-clone
 
+      # @config-manager:start workflow-https-pat
       - name: Configure Git to use HTTPS with the PAT
         run: |
           git config --global url."https://${{ secrets.GH_PUBLIC_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git config --global url."https://${{ secrets.GH_PUBLIC_TOKEN }}@github.com".insteadOf "ssh://git@github.com"
           git config --global advice.detachedHead false
+      # @config-manager:end workflow-https-pat
 
+      # @config-manager:start workflow-gen-changelog
       - name: Generate Changelog
         uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4.8.0
         with:
@@ -190,16 +197,22 @@ jobs:
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
+      # @config-manager:end workflow-gen-changelog
 
+      # @config-manager:start workflow-cleanup
       - name: Remove git-cliff artifacts
         run: |
           rm -Rf git-cliff*
+      # @config-manager:end workflow-cleanup
 
+      # @config-manager:start workflow-contributors
       - name: Generate artifacts
         run: |
           # Generate list of authors
           ./scripts/generate-contributors.sh
+      # @config-manager:end workflow-contributors
 
+      # @config-manager:start workflow-commit
       - name: Git commit if changed
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -216,4 +229,4 @@ jobs:
             git pull --rebase --autostash
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
           fi
-      # @config-manager:end workflow-run-steps
+    # @config-manager:end workflow-commit

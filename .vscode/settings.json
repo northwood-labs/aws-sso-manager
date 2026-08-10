@@ -191,6 +191,12 @@
         "prettier.config.js"
       ],
       "url": "https://www.schemastore.org/prettierrc"
+    },
+    {
+      "fileMatch": [
+        ".pinact.yaml"
+      ],
+      "url": "https://raw.githubusercontent.com/suzuki-shunsuke/pinact/refs/heads/main/json-schema/pinact.json"
     }
   ],
   "kiroAgent.agentAutonomy": "Autopilot",

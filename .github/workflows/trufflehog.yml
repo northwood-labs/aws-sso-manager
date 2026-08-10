@@ -4,45 +4,41 @@
 # policy, and support documentation.
 
 # @config-manager:start workflow-name
-name: "CodeQL"
+name: TruffleHog
 # @config-manager:end workflow-name
 
 # @config-manager:start workflow-on
 on:
+  workflow_dispatch:
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: ["main"]
-  schedule:
-    # https://crontab.guru/#0_0_*_*_1
-    - cron: "0 0 * * 1"
-      # @config-manager:end workflow-on
+    branches:
+      - main
+# @config-manager:end workflow-on
 
 # @config-manager:start workflow-permissions
 permissions:
   contents: read
 # @config-manager:end workflow-permissions
 
+# @config-manager:start workflow-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+# @config-manager:end workflow-concurrency
+
 jobs:
-  analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
+  trufflehog_job:
+    name: Scan for secrets
     timeout-minutes: 30
-    permissions:
-      # @config-manager:start workflow-permissions-job
-      actions: read
-      contents: read
-      security-events: write
-      # @config-manager:end workflow-permissions-job
+    runs-on: ubuntu-latest
     strategy:
       # @config-manager:start workflow-strategy
       fail-fast: false
       # @config-manager:end workflow-strategy
-      matrix:
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        language: ["go"]
-
     steps:
       # @config-manager:start harden-runner
       - name: Harden Runner
@@ -178,14 +174,11 @@ jobs:
           persist-credentials: false
       # @config-manager:end workflow-clone
 
-      # @config-manager:start workflow-codeql
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      # @config-manager:start workflow-trufflehog-scan
+      - name: Check secrets with TruffleHog OSS
+        uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
         with:
-          languages: ${{ matrix.language }}
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        with:
-          category: "/language:${{matrix.language}}"
-    # @config-manager:end workflow-codeql
+          path: ./
+          head: HEAD
+          extra_args: --only-verified
+    # @config-manager:end workflow-trufflehog-scan

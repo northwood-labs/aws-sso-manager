@@ -55,8 +55,11 @@ rules:
         - actions/*
         - astral-sh/setup-uv
         - github/codeql-action/*
+        - google/osv-scanner-action/osv-scanner-action
         - orhun/git-cliff-action
+        - ossf/scorecard-action
         - step-security/*
+        - trufflesecurity/trufflehog
 
   # https://docs.zizmor.sh/audits/#github-app
   github-app:

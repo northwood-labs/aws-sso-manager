@@ -115,6 +115,10 @@
   fileMatch = ['.prettierrc', 'prettier.config.js']
   url       = 'https://www.schemastore.org/prettierrc'
 
+[['json.schemas']]
+  fileMatch = ['.pinact.yaml']
+  url       = 'https://raw.githubusercontent.com/suzuki-shunsuke/pinact/refs/heads/main/json-schema/pinact.json'
+
 ['[markdown]']
   'editor.defaultFormatter' = 'fcrespo82.markdown-table-formatter'
 
