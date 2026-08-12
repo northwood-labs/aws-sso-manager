@@ -8,6 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 ### :closed_lock_with_key: Security
 
-* [`eadb54f`](https://github.com/northwood-labs/aws-sso-manager/commit/eadb54f3f6ec20bdcc86c68a6ed8ed2466ca4c1a): Add security scanning workflows and Pinact action pinning. ([@skyzyx](https://github.com/skyzyx))
+* [`de52f3e`](https://github.com/northwood-labs/aws-sso-manager/commit/de52f3eb5d46c6ae63d3ed807fecfb65b7859653): Update Dependabot and configuration management. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-08-10.</p>
+<p>Generated on 2026-08-12.</p>
