@@ -8,6 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 ### <!-- ZZZ -->:gear: Miscellaneous Tasks
 
-* [`245c4f6`](https://github.com/northwood-labs/aws-sso-manager/commit/245c4f6bbeb78db94e4b826f1277cde7f0a31383): Optimized Dependabot configuration. ([@skyzyx](https://github.com/skyzyx))
+* [`7e8fbd4`](https://github.com/northwood-labs/aws-sso-manager/commit/7e8fbd4238785c204d57abad93211763fd67865f): Enable Dependabot ecosystem defaults. ([@skyzyx](https://github.com/skyzyx))
 
 <p>Generated on 2026-08-12.</p>
