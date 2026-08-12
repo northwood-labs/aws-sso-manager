@@ -1,0 +1,67 @@
+# ─── Header Comment ───────────────────────────────────────────────────────────
+# Custom comment text prepended to the generated dependabot.yml. This replaces
+# the built-in default URL reference. Supports multi-line strings.
+
+header = """
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+#
+# Please see the documentation for all configuration options:
+# https://bit.ly/4qeBiwL
+#
+# See this blog post for suggestions for optimizing your config:
+# https://bit.ly/4zaBEZ4
+"""
+
+# ─── Ignore Directories ──────────────────────────────────────────────────────
+# Glob patterns matched against directory base names. Matching directories are
+# skipped during the scan. Uses filepath.Match semantics.
+# Default (when omitted): ["node_modules", ".venv", "venv", "vendor", ".*"]
+
+# ignore-dirs = [
+#   "node_modules",
+#   ".venv",
+#   "venv",
+#   "vendor",
+#   ".*",
+# ]
+
+# ─── Ecosystem Default Values ─────────────────────────────────────────────────
+# Per-ecosystem fields injected into each generated update entry. Keys use
+# dotted paths that expand into nested YAML (e.g., "schedule.interval" becomes
+# schedule: { interval: ... }).
+#
+# The special "_default" key applies to all ecosystems unless overridden by a
+# more specific section. Specific ecosystem keys override _default entirely for
+# that ecosystem.
+
+# Override global settings.
+# [ecosystems._default]
+# "schedule.interval" = "monthly"
+# "insecure-external-code-execution" = "deny"
+# "cooldown.default-days" = 7
+# "groups.monthly-batch.patterns" = ["*"]
+
+# Override github-actions settings.
+# [ecosystems.github-actions]
+# "schedule.interval" = "weekly"
+# "groups.actions.patterns" = ["*"]
+
+# Override gomod settings.
+# [ecosystems.gomod]
+# "schedule.interval" = "monthly"
+# "insecure-external-code-execution" = "deny"
+# "groups.go-deps.patterns" = ["*"]
+
+# Override npm settings.
+# [ecosystems.npm]
+# "schedule.interval" = "weekly"
+# "insecure-external-code-execution" = "deny"
+# "groups.npm-deps.patterns" = ["*"]
+# "groups.npm-deps.update-types" = ["minor", "patch"]
+
+# Override uv settings.
+# [ecosystems.uv]
+# "schedule.interval" = "weekly"
+# "insecure-external-code-execution" = "deny"
+# "groups.python-deps.patterns" = ["*"]

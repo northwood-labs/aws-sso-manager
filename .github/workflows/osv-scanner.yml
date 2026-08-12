@@ -52,6 +52,8 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            _grpc_config.api.deps.dev:443
+            _grpclb._tcp.api.deps.dev:443
             100.20.106.61:443
             100.23.207.142:443
             100.23.248.170:443
