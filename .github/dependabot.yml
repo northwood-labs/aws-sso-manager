@@ -15,10 +15,9 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      monthly-batch:
+      batch:
         patterns:
           - '*'
-    insecure-external-code-execution: deny
     schedule:
       interval: monthly
   - package-ecosystem: gomod
@@ -26,10 +25,9 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      monthly-batch:
+      batch:
         patterns:
           - '*'
-    insecure-external-code-execution: deny
     schedule:
       interval: monthly
   - package-ecosystem: gomod
@@ -37,10 +35,9 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      monthly-batch:
+      batch:
         patterns:
           - '*'
-    insecure-external-code-execution: deny
     schedule:
       interval: monthly
   - package-ecosystem: gomod
@@ -48,9 +45,8 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      monthly-batch:
+      batch:
         patterns:
           - '*'
-    insecure-external-code-execution: deny
     schedule:
       interval: monthly
