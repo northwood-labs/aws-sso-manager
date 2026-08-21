@@ -21,7 +21,11 @@
 
 [[files]]
   stub        = 'configs/stubs/depgen.toml'
+  source      = 'configs/templates/depgen.toml'
   destination = '.depgen.toml'
+
+  [files.post_update_hook]
+    bash = 'dependabot-generator run . > .github/dependabot.yml'
 
 # EditorConfig definition
 # https://editorconfig.org

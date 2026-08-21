@@ -359,17 +359,29 @@ linters:
             - pkg: "github.com/sirupsen/logrus"
               desc: Use charm.land/log/v2 (with log/slog) for CLIs or github.com/rs/zerolog for servers instead.
 
+            - pkg: "github.com/spf13/viper"
+              desc: Use github.com/knadh/koanf instead.
+
             - pkg: "github.com/stretchr/testify"
               desc: Use github.com/go-openapi/testify instead.
 
             - pkg: "go.uber.org/zap"
               desc: Use charm.land/log/v2 (with log/slog) for CLIs or github.com/rs/zerolog for servers instead.
 
+            - pkg: "gopkg.in/yaml.v1"
+              desc: Use go.yaml.in/yaml/v4 instead.
+
+            - pkg: "gopkg.in/yaml.v2"
+              desc: Use go.yaml.in/yaml/v4 instead.
+
+            - pkg: "gopkg.in/yaml.v3"
+              desc: Use go.yaml.in/yaml/v4 instead.
+
             - pkg: "go.yaml.in/yaml/v2"
-              desc: Use v4 instead.
+              desc: Use go.yaml.in/yaml/v4 instead.
 
             - pkg: "go.yaml.in/yaml/v3"
-              desc: Use v4 instead.
+              desc: Use go.yaml.in/yaml/v4 instead.
               # @config-manager:end linters-settings-depguard
 
     dogsled:
