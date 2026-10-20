@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 ## Unreleased
 
-### <!-- ZZZ -->:gear: Miscellaneous Tasks
+### :closed_lock_with_key: Security
 
-* [`473145b`](https://github.com/northwood-labs/aws-sso-manager/commit/473145b3490e83838ff7d8a355a262d959484be1): Standardize configuration formatting and update templates. ([@skyzyx](https://github.com/skyzyx))
+* [`2f634e8`](https://github.com/northwood-labs/aws-sso-manager/commit/2f634e86b0f5e25827c62844cddb6175b1cb0096): **config**: Modularize configuration management and update tooling. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-08-21.</p>
+<p>Generated on 2026-10-20.</p>
