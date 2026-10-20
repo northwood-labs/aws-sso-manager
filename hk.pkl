@@ -1,9 +1,9 @@
 // @config-manager:start imports
 // https://github.com/jdx/hk/blob/main/hk.pkl
 // https://github.com/jdx/hk/releases/latest
-amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+amends "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pkl"
 
-import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Builtins.pkl"
 // @config-manager:end imports
 
 local linters = new Mapping<String, Group> {
@@ -42,8 +42,12 @@ local linters = new Mapping<String, Group> {
       // mdschema
       ["mise-fmt"] = (Builtins.mise) {}
       ["mixed-line-ending"] = (Builtins.mixed_line_ending) {}
-      ["pinact"] = (Builtins.pinact) {}
-      ["pinact-update"] = (Builtins.pinact_update) {}
+      ["pinact"] = (Builtins.pinact) {
+        profiles = List("slow")
+      }
+      ["pinact-update"] = (Builtins.pinact_update) {
+        profiles = List("slow")
+      }
       ["pkl-eval"] = (Builtins.pkl) {
         glob = "**/*.pkl"
       }
@@ -51,7 +55,6 @@ local linters = new Mapping<String, Group> {
         glob = "**/*.pkl"
       }
       // vale
-      ["zizmor"] = (Builtins.zizmor) {}
     }
   }
   ["containers"] = new Group {
@@ -70,18 +73,6 @@ local linters = new Mapping<String, Group> {
   }
   ["frontend"] = new Group {
     steps {
-      // astro
-      //   ["knip"] = (Builtins.knip_strict) {
-      //     workspace_indicator = ".knip.jsonc"
-      //     check = """
-      //         cd {{ workspace }} && \\
-      //         bun knip --strict --exports --no-progress --directory .
-      //         """
-      //     fix = """
-      //         cd {{ workspace }} && \\
-      //         bun knip --fix --strict --exports --no-progress --directory .
-      //         """
-      //   }
       ["oxfmt"] = (Builtins.oxfmt) {
         workspace_indicator = ".oxfmtrc.jsonc"
         glob = "**/*.{jsx?,tsx?}"
@@ -125,8 +116,13 @@ local linters = new Mapping<String, Group> {
   }
   ["github"] = new Group {
     steps {
+      ["ghatm"] {
+        glob = ".github/workflows/*.y*ml"
+        fix = "ghatm set -auto -repo $(git github-remote)"
+      }
       ["ghalint-action"] = (Builtins.ghalint_action) {}
       ["ghalint-workflow"] = (Builtins.ghalint_workflow) {}
+      ["zizmor"] = (Builtins.zizmor) {}
     }
   }
   ["golang"] = new Group {
@@ -169,19 +165,19 @@ local linters = new Mapping<String, Group> {
             "go-mod-tidy",
             "go-modernize",
             "go-same-receiver-pointer",
-            "go-vet",
-            "golines",
+            "go-vet"
+            // "golines",
           )
         profiles = List("slow")
       }
-      ["golines"] {
-        workspace_indicator = "go.mod"
-        glob = "**/*.go"
-        check =
-          "golines --base-formatter=gofumpt --write-output --max-len=120 --dry-run {{ files }}"
-        fix = "golines --base-formatter=gofumpt --write-output --max-len=120 {{ files }}"
-        profiles = List("slow")
-      }
+      // ["golines"] {
+      //   workspace_indicator = "go.mod"
+      //   glob = "**/*.go"
+      //   check =
+      //     "golines --base-formatter=gofumpt --write-output --max-len=120 --dry-run {{ files }}"
+      //   fix = "golines --base-formatter=gofumpt --write-output --max-len=120 {{ files }}"
+      //   profiles = List("slow")
+      // }
       ["go-mod-tidy"] {
         workspace_indicator = "go.mod"
         glob = "**/*.go"
@@ -242,9 +238,8 @@ local linters = new Mapping<String, Group> {
       }
       ["python-typechecking"] {
         glob = List("**/*.py", "**/*.pyi")
-        check = "uv tool run zuban check {{ files }}"
+        check = "uv tool run pyrefly check {{ files }}"
       }
-      // ty
     }
   }
   ["rest-api"] = new Group {

@@ -139,5 +139,6 @@ go "github.com/pelletier/go-toml/v2/cmd/jsontoml"
 go "github.com/pelletier/go-toml/v2/cmd/tomljson"
 go "github.com/pelletier/go-toml/v2/cmd/tomll"
 go "github.com/psampaz/gothanks"
+go "github.com/suzuki-shunsuke/ghatm/cmd/ghatm"
 go "github.com/tomwright/dasel/v3/cmd/dasel"
 # @config-manager:end go

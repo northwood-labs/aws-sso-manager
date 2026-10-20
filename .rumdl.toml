@@ -82,10 +82,10 @@
   style = "sentence-case"
   sentence-case-restart-after = [
     #
-    " - ", # Hyphen
-    " – ", # En-dash
-    ":",   # Colon
-    "—",   # Em-dash
+    ".", # Numbers
+    ":", # Colon
+    "–", # En-dash
+    "—", # Em-dash
     #
   ]
   lowercase-words = [

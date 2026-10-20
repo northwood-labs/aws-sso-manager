@@ -419,6 +419,10 @@ linters:
 
     embeddedstructfieldcheck:
       # @config-manager:start linters-settings-embeddedstructfieldcheck
+      # Checks that there is an empty space between the embedded fields and regular fields.
+      # Default: true
+      empty-line: true
+
       # Checks that sync.Mutex and sync.RWMutex are not used as embedded fields.
       # Default: false
       forbid-mutex: true

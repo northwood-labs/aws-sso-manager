@@ -37,7 +37,7 @@ rules:
   dependabot-cooldown:
     disable: false
     config:
-      days: 7
+      days: 3
 
   # https://docs.zizmor.sh/audits/#dependabot-execution
   dependabot-execution:

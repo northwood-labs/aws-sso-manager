@@ -3,7 +3,7 @@
 version: 3
 min_age:
   # threshold in days
-  value: 7
+  value: 3
   # also run the passive audit on every `pinact run` (extra GitHub API calls)
   always: true
 separator: " # "
