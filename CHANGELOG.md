@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 ## Unreleased
 
-### :closed_lock_with_key: Security
+### :dependabot: Building and Dependencies
 
-* [`2f634e8`](https://github.com/northwood-labs/aws-sso-manager/commit/2f634e86b0f5e25827c62844cddb6175b1cb0096): **config**: Modularize configuration management and update tooling. ([@skyzyx](https://github.com/skyzyx))
+* [`3e94ac3`](https://github.com/northwood-labs/aws-sso-manager/commit/3e94ac3518ebcc4df59f3cbf187c6cbcbdd23be0): **deps**: Bump `AWS` SDK and other dependencies. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-10-20.</p>
+<p>Generated on 2026-11-08.</p>
